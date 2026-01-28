@@ -14,6 +14,7 @@ import { LeoWalletAdapter } from '@demox-labs/aleo-wallet-adapter-leo';
 import {
   DecryptPermission,
   WalletAdapterNetwork,
+  WalletReadyState,
 } from '@demox-labs/aleo-wallet-adapter-base';
 
 // Import global styles and wallet modal styles
@@ -26,9 +27,11 @@ import '@demox-labs/aleo-wallet-adapter-reactui/styles.css';
 import { CURRENT_NETWORK, CURRENT_RPC_URL } from '@/types';
 
 // Initialize the wallet adapters outside the component
+// The wallet adapter will automatically detect all available Aleo wallets
+// including Leo Wallet, Puzzle Wallet, Soter, FoxWallet, etc.
 const wallets = [
   new LeoWalletAdapter({
-    appName: 'zKontract',
+    appName: 'zkPredict',
   }),
 ];
 

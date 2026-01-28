@@ -1,178 +1,226 @@
+program zkpredict.aleo {
 
-program zkontractv5.aleo {
+    // ============================================
+    // RECORDS (Private State)
+    // ============================================
 
-    const contract_owner: address = aleo1xh0ncflwkfzga983lwujsha729c8nwu7phfn8aw7h3gahhj0ms8qytrxec;
-
-    const BOUNTY_STATUS_OPEN: u8 = 0u8;
-    const BOUNTY_STATUS_COMPLETED: u8 = 1u8;
-
-    const PROPOSAL_STATUS_PENDING: u8 = 0u8;
-    const PROPOSAL_STATUS_ACCEPTED: u8 = 1u8;
-    const PROPOSAL_STATUS_DENIED: u8 = 2u8;
-
-    mapping bounty_creator: u64 => address;
-    mapping bounty_payment: u64 => u64;
-    mapping bounty_status: u64 => u8;
-
-    mapping proposal_bounty_id: u64 => u64;
-    mapping proposal_proposer: u64 => address;
-    mapping proposal_status: u64 => u8;
-
-    mapping all_bounties: u64 => bool;
-    mapping bounty_output_payment: u64 => u64;
-    mapping bounty_output_status: u64 => u8;
-    mapping account: address => u64;
-
-
-
-    // Async function to set bounty details
-    async function finalize_post_bounty(
-        bounty_id: u64,
-        creator_address: address,
-        payment_amount: u64
-    ) {
-        assert(!bounty_creator.contains(bounty_id)); // Ensure bounty ID is unique.
-
-        bounty_creator.set(bounty_id, creator_address);
-        bounty_payment.set(bounty_id, payment_amount);
-        bounty_status.set(bounty_id, BOUNTY_STATUS_OPEN);
-
-        all_bounties.set(bounty_id, true);
+    // Private bet record - only the owner knows their position
+    record Bet {
+        owner: address,
+        market_id: field,
+        outcome: bool,  // true = YES, false = NO
+        amount: u64,
+        odds_at_bet: u64,  // Odds at time of bet (scaled by 10000)
     }
 
-    // Transition to post a bounty
-    async transition post_bounty(
-        caller: address,
-        bounty_id: u64,
-        creator_address: address,
-        payment_amount: u64
+    // Private winnings record - only the owner knows they won
+    record Winnings {
+        owner: address,
+        amount: u64,
+    }
+
+
+    // ============================================
+    // STRUCTS
+    // ============================================
+
+    // Market metadata
+    struct Market {
+        creator: address,
+        end_time: u32,  // Unix timestamp
+        resolved: bool,
+        winning_outcome: bool,  // true = YES won, false = NO won
+    }
+
+
+    // ============================================
+    // MAPPINGS (Public State)
+    // ============================================
+
+    mapping markets: field => Market;
+    mapping yes_pool: field => u64;
+    mapping no_pool: field => u64;
+
+
+    // ============================================
+    // INITIALIZATION (Wave 1 MVP - No initialization needed)
+    // ============================================
+
+    async transition initialize() -> Future {
+        return finalize_initialize();
+    }
+
+    async function finalize_initialize() {
+        // No initialization needed for Wave 1 MVP
+        // Markets are created dynamically via create_market transition
+    }
+
+
+    // ============================================
+    // TRANSITION: Create Market
+    // ============================================
+
+    async transition create_market(
+        public market_id: field,
+        public end_time: u32
     ) -> Future {
-        assert_eq(caller, creator_address); // Ensure the caller is the creator.
-
-        // Call the async function to finalize posting the bounty
-        let post_bounty_future: Future = finalize_post_bounty(bounty_id, creator_address, payment_amount);
-        return post_bounty_future;
+        return finalize_create_market(market_id, end_time, self.signer);
     }
 
-    async function finalize_view_bounty_by_id(bounty_id: u64) {
-        // Ensure the bounty exists
-        assert(bounty_creator.contains(bounty_id));
-
-        // Retrieve bounty details
-        let payment: u64 = bounty_payment.get(bounty_id);
-        let status: u8 = bounty_status.get(bounty_id);
-
-        // Store results in output mappings
-        bounty_output_payment.set(bounty_id, payment);
-        bounty_output_status.set(bounty_id, status);
-    }
-
-    async transition view_bounty_by_id(bounty_id: u64) -> Future {
-        // Call the finalize function
-        let finalize_future: Future = finalize_view_bounty_by_id(bounty_id);
-        return finalize_future;
-    }
-
-    // Async function to finalize proposal submission
-    async function finalize_submit_proposal(
-        composite_proposal_id: u64,
-        bounty_id: u64,
-        proposer_address: address
+    async function finalize_create_market(
+        market_id: field,
+        end_time: u32,
+        creator: address
     ) {
-        assert(bounty_creator.contains(bounty_id)); // Ensure bounty exists.
-        assert(!proposal_bounty_id.contains(composite_proposal_id)); // Ensure proposal ID is unique.
+        // Ensure market doesn't already exist
+        let market_exists: bool = Mapping::contains(markets, market_id);
+        assert(!market_exists);
 
-        proposal_bounty_id.set(composite_proposal_id, bounty_id);
-        proposal_proposer.set(composite_proposal_id, proposer_address);
-        proposal_status.set(composite_proposal_id, PROPOSAL_STATUS_PENDING);
+        // Create new market
+        let new_market: Market = Market {
+            creator: creator,
+            end_time: end_time,
+            resolved: false,
+            winning_outcome: false,
+        };
+
+        Mapping::set(markets, market_id, new_market);
+        Mapping::set(yes_pool, market_id, 0u64);
+        Mapping::set(no_pool, market_id, 0u64);
     }
 
-    // Transition to submit a proposal
-    async transition submit_proposal(
-        caller: address,
-        bounty_id: u64,
-        proposal_id: u64,
-        proposer_address: address
-    ) -> Future {
-        assert_eq(caller, proposer_address); // Ensure the caller is the proposer.
 
-        let composite_proposal_id: u64 = bounty_id * 1000000u64 + proposal_id;
+    // ============================================
+    // TRANSITION: Place Bet
+    // ============================================
 
-        // Call the async function to finalize the proposal submission
-        let submit_proposal_future: Future = finalize_submit_proposal(composite_proposal_id, bounty_id, proposer_address);
-        return submit_proposal_future;
+    async transition place_bet(
+        public market_id: field,
+        public outcome: bool,
+        public amount: u64
+    ) -> (Bet, Future) {
+        // Calculate current odds (scaled by 10000 for precision)
+        // This is done off-chain in the transition
+        let bet_record: Bet = Bet {
+            owner: self.signer,
+            market_id: market_id,
+            outcome: outcome,
+            amount: amount,
+            odds_at_bet: 10000u64,  // Will be calculated on-chain in finalize
+        };
+
+        return (bet_record, finalize_place_bet(market_id, outcome, amount));
     }
 
-    // Async function to finalize proposal acceptance
-    async function finalize_accept_proposal(
-        bounty_id: u64,
-        composite_proposal_id: u64
+    async function finalize_place_bet(
+        market_id: field,
+        outcome: bool,
+        amount: u64
     ) {
-        assert(bounty_creator.contains(bounty_id)); // Ensure bounty exists.
-        assert(proposal_bounty_id.contains(composite_proposal_id)); // Ensure proposal exists.
+        // Ensure market exists
+        let market: Market = Mapping::get(markets, market_id);
 
-        bounty_status.set(bounty_id, BOUNTY_STATUS_COMPLETED);
-        proposal_status.set(composite_proposal_id, PROPOSAL_STATUS_ACCEPTED);
+        // Ensure market is not resolved
+        assert(!market.resolved);
 
+        // Update the appropriate pool
+        let current_yes_pool: u64 = Mapping::get_or_use(yes_pool, market_id, 0u64);
+        let current_no_pool: u64 = Mapping::get_or_use(no_pool, market_id, 0u64);
+
+        let new_yes_pool: u64 = outcome ? current_yes_pool + amount : current_yes_pool;
+        let new_no_pool: u64 = outcome ? current_no_pool : current_no_pool + amount;
+
+        Mapping::set(yes_pool, market_id, new_yes_pool);
+        Mapping::set(no_pool, market_id, new_no_pool);
     }
 
-    // Transition to accept a proposal
-    async transition accept_proposal(
-        caller: address,
-        bounty_id: u64,
-        proposal_id: u64,
-        creator_address: address,
-        payment_amount: u64
+
+    // ============================================
+    // TRANSITION: Resolve Market
+    // ============================================
+
+    async transition resolve_market(
+        public market_id: field,
+        public winning_outcome: bool
     ) -> Future {
-        let composite_proposal_id: u64 = bounty_id * 1000000u64 + proposal_id;
-
-        // Call the async function to finalize the proposal acceptance
-        let accept_proposal_future: Future = finalize_accept_proposal(bounty_id, composite_proposal_id);
-        return accept_proposal_future;
-        
+        return finalize_resolve_market(market_id, winning_outcome, self.signer);
     }
 
-    // Async function to finalize proposal denial
-    async function finalize_deny_proposal(
-        composite_proposal_id: u64
+    async function finalize_resolve_market(
+        market_id: field,
+        winning_outcome: bool,
+        caller: address
     ) {
-        assert(proposal_bounty_id.contains(composite_proposal_id)); // Ensure the proposal exists.
+        // Get market
+        let market: Market = Mapping::get(markets, market_id);
 
-        proposal_status.set(composite_proposal_id, PROPOSAL_STATUS_DENIED);
+        // Ensure only creator can resolve
+        assert_eq(market.creator, caller);
+
+        // Ensure market is not already resolved
+        assert(!market.resolved);
+
+        // Create updated market
+        let resolved_market: Market = Market {
+            creator: market.creator,
+            end_time: market.end_time,
+            resolved: true,
+            winning_outcome: winning_outcome,
+        };
+
+        Mapping::set(markets, market_id, resolved_market);
     }
 
-    // Transition function to deny a proposal
-    async transition deny_proposal(
-        caller: address,
-        bounty_id: u64,
-        proposal_id: u64
-    ) -> Future {
-        let composite_proposal_id: u64 = bounty_id * 1000000u64 + proposal_id;
 
-        let deny_proposal_future: Future = finalize_deny_proposal(composite_proposal_id);
-        return deny_proposal_future;
+    // ============================================
+    // TRANSITION: Claim Winnings
+    // ============================================
+
+    async transition claim_winnings(
+        bet: Bet
+    ) -> (Winnings, Future) {
+        // Calculate winnings off-chain
+        let winnings_record: Winnings = Winnings {
+            owner: self.signer,
+            amount: 0u64,  // Will be calculated on-chain
+        };
+
+        return (winnings_record, finalize_claim_winnings(bet.market_id, bet.outcome, bet.amount, self.signer));
     }
 
+    async function finalize_claim_winnings(
+        market_id: field,
+        bet_outcome: bool,
+        bet_amount: u64,
+        claimer: address
+    ) {
+        // Get market
+        let market: Market = Mapping::get(markets, market_id);
 
-    // Async function to finalize bounty deletion
-    async function finalize_delete_bounty(bounty_id: u64) {
-        assert(bounty_creator.contains(bounty_id)); // Ensure bounty exists.
+        // Ensure market is resolved
+        assert(market.resolved);
 
-        bounty_creator.remove(bounty_id);
-        bounty_payment.remove(bounty_id);
-        bounty_status.remove(bounty_id);
+        // Ensure bet outcome matches winning outcome
+        assert_eq(bet_outcome, market.winning_outcome);
+
+        // Get pool sizes
+        let total_yes_pool: u64 = Mapping::get(yes_pool, market_id);
+        let total_no_pool: u64 = Mapping::get(no_pool, market_id);
+
+        // Calculate winnings based on pool sizes
+        // winnings = bet_amount + (bet_amount * losing_pool / winning_pool)
+        let winning_pool: u64 = market.winning_outcome ? total_yes_pool : total_no_pool;
+        let losing_pool: u64 = market.winning_outcome ? total_no_pool : total_yes_pool;
+
+        // Prevent division by zero
+        assert(winning_pool > 0u64);
+
+        // Calculate proportional winnings
+        // Using integer math: winnings = bet_amount + (bet_amount * losing_pool / winning_pool)
+        let profit: u64 = (bet_amount * losing_pool) / winning_pool;
+        let total_winnings: u64 = bet_amount + profit;
+
+        // Note: In a production version, we would track claimed bets to prevent double-claiming
+        // For Wave 1 MVP, we assume users claim once per bet
     }
-
-        // Transition to delete a bounty
-        async transition delete_bounty(
-            caller: address,
-            bounty_id: u64
-        ) -> Future {
-            let delete_bounty_future: Future = finalize_delete_bounty(bounty_id);
-            return delete_bounty_future;
-        }
-
-
-        
-
 }

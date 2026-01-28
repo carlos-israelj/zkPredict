@@ -1,7 +1,8 @@
 {
-  "name": "aleo_starter_template",
+  "name": "zkpredict",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "description": "Private prediction markets on Aleo blockchain",
   "scripts": {
     "clean": "rimraf \"{node_modules,.next,out.cache}\"",
     "delete-local-modules": "rimraf ./node_modules/@demox-labs/aleo-wallet-adapter-react/node_modules ./node_modules/@demox-labs/aleo-wallet-adapter-reactui/node_modules ./.next",

@@ -1,37 +1,57 @@
+# zkPredict - Private Prediction Markets on Aleo
 
-# 🛠️ Aleo Starter Template
+Full-stack decentralized application for private prediction markets built on Aleo blockchain.
 
-💡 This template is open-sourced to help others build on Aleo faster — even if it means creating our own competition. The goal is to grow the ecosystem and make privacy-first apps more accessible for everyone!
+**Wave 1 MVP**: Binary prediction markets with private bets and public pools.
 
+## Features
 
-A modern, open-source starter template for building **Aleo dApps** with:
+🔒 **Private Betting**: Your position (YES/NO) and bet amount are completely private using Aleo Records
+🌐 **Public Pools**: Total YES/NO pools are public for transparent odds calculation
+🎯 **Market Creation**: Anyone can create binary prediction markets
+⚖️ **Fair Resolution**: Market creators resolve outcomes on-chain
+💰 **Private Winnings**: Claim your winnings privately using your bet record
 
-- [Next.js](https://nextjs.org/) + [TypeScript](https://www.typescriptlang.org/)
-- [Tailwind CSS](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/)
-- Integrated [Leo Wallet](https://www.aleo.org/post/leo-wallet) support
-- Light/dark mode and reusable UI components
-- Bonus: Aleo program examples, fee calculation, private/public transfers, and more
+## Tech Stack
 
----
+### Frontend
+- [Next.js 13+](https://nextjs.org/) - React framework with App Router
+- [TypeScript](https://www.typescriptlang.org/) - Type-safe development
+- [Tailwind CSS](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/) - Styling
+- [@demox-labs/aleo-wallet-adapter](https://github.com/demox-labs/aleo-wallet-adapter) - Wallet integration
 
-## ⚡ Features
-
-✅ Wallet Connect w/ Leo Wallet  
-✅ Tailwind + DaisyUI pre-configured  
-✅ Dark mode toggle out of the box  
-✅ Reusable component & layout structure  
-✅ Aleo RPC interaction examples  
-✅ Ready-to-use file structure  
-✅ Built for dev speed & extensibility
+### Backend (Smart Contract)
+- **Leo Language** - Aleo's smart contract language
+- **Aleo Blockchain** - Privacy-preserving L1
+- **Records** - Private state (bets, winnings)
+- **Mappings** - Public state (pools, market metadata)
 
 ---
 
 ## 🚀 Quick Start
 
+### Prerequisites
+
+1. **Node.js & Yarn** (v18+)
+2. **Leo CLI**: `curl -L https://install.leo.app | bash`
+3. **Aleo Wallet**: [Leo Wallet](https://leo.app/) or [Puzzle Wallet](https://puzzle.online/)
+
+### Installation
+
 ```bash
-git clone https://github.com/mikenike360/aleo-starter-template.git
-cd aleo-starter-template
+# Clone repository
+git clone <your-repo-url> zkpredict-full
+cd zkpredict-full
+
+# Install frontend dependencies
 yarn install
+
+# Build Leo smart contract
+cd program
+leo build
+cd ..
+
+# Run development server
 yarn dev
 ```
 
@@ -39,21 +59,40 @@ Then open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🔐 Wallet Integration
+## 📦 Smart Contract
 
-This template includes Leo Wallet browser extension support.
+The zkPredict smart contract is located in `/program/src/main.leo`.
 
-
-## 🧩 Example Aleo Program
-
-Includes a demo `main.leo` program and compiled build:
+### Build Contract
 
 ```bash
 cd program
 leo build
 ```
 
-You can replace this with your own program and wire it into the frontend via Aleo RPC or your preferred method.
+### Deploy to Testnet
+
+```bash
+cd program
+leo deploy --network testnet --private-key YOUR_PRIVATE_KEY
+```
+
+### CLI Usage Examples
+
+```bash
+cd program
+
+# Create market
+leo execute create_market "1field" "1740000000u32" --network testnet
+
+# Place bet (YES)
+leo execute place_bet "1field" "true" "1000000u64" --network testnet
+
+# Resolve market (creator only)
+leo execute resolve_market "1field" "true" --network testnet
+```
+
+See [README-CONTRACT.md](./README-CONTRACT.md) for complete smart contract documentation.
 
 ---
 
@@ -94,36 +133,81 @@ You are now ready to build against Aleo mainnet!
 
 ---
 
-## 🧠 Bonus Utilities (Optional)
+## 🎯 Wave 1 MVP Scope
 
-- [`utils/feeCalculator.ts`](./src/utils/feeCalculator.ts) – helpful for estimating transaction costs
-- [`utils/privateTransfer.ts`](./src/utils/privateTransfer.ts) – Aleo private transfer logic
-- [`utils/publicTransfer.ts`](./src/utils/publicTransfer.ts) – public transfer example
-- [`utils/GLSLBackground.tsx`](./src/utils/GLSLBackground.tsx) – dynamic background component
+✅ **Smart Contract Complete**:
+- Create binary markets
+- Place private bets
+- Public pool tracking
+- Market resolution
+- Claim winnings
+- Non-upgradable (@noupgrade)
 
-These are **not required** but useful if you plan to build more complex interactions.
+🚧 **Frontend (Next Steps)**:
+- Wallet connection
+- Market listing UI
+- Betting interface
+- Odds display
+- Transaction management
 
----
+## 🗺️ Future Waves
 
-## 🤝 Use This Template
-
-You can click **“Use this template”** on GitHub to instantly clone and start building.
-
----
-
-## 📸 Screenshot
-
-![Alt text](public/screen_shot.png)
-
-
----
-
-## 🧑‍💻 Author
-
-Built by [@mikenike360](https://github.com/mikenike360) from [VenomLabs](https://venomlabs.xyz)
+- **Wave 2**: Time-based resolution, double-claim prevention
+- **Wave 3**: Multi-outcome markets, advanced odds
+- **Wave 4**: Market categories, discovery
+- **Wave 5**: Liquidity pools, AMM
+- **Wave 6-10**: Oracles, governance, cross-chain
 
 ---
 
-## 🌐 License
+## 🏗️ Architecture
 
-MIT – free to use, modify, and share.
+### Privacy Model
+
+| Data | Visibility |
+|------|-----------|
+| Your bet position (YES/NO) | 🔒 **Private** (Record) |
+| Your bet amount | 🔒 **Private** (Record) |
+| Your winnings | 🔒 **Private** (Record) |
+| Total YES pool | 🌐 **Public** (Mapping) |
+| Total NO pool | 🌐 **Public** (Mapping) |
+| Market state | 🌐 **Public** (Mapping) |
+
+### Smart Contract Components
+
+**Records** (Private State):
+- `Bet`: market_id, outcome, amount, odds_at_bet
+- `Winnings`: payout amount
+
+**Mappings** (Public State):
+- `markets`: Market metadata
+- `yes_pool`: Total YES bets
+- `no_pool`: Total NO bets
+
+**Transitions**:
+1. `create_market` - Create binary market
+2. `place_bet` - Place private bet
+3. `resolve_market` - Resolve outcome (creator only)
+4. `claim_winnings` - Claim payout with bet record
+
+---
+
+## 🧠 Included Utilities
+
+- `utils/feeCalculator.ts` - Transaction cost estimation
+- `utils/privateTransfer.ts` - Aleo private transfers
+- `utils/publicTransfer.ts` - Public transfers
+- `utils/GLSLBackground.tsx` - Dynamic backgrounds
+
+---
+
+## 📄 License
+
+MIT
+
+---
+
+## 🙏 Credits
+
+- Frontend starter: [@mikenike360](https://github.com/mikenike360) - [VenomLabs](https://venomlabs.xyz)
+- Built on [Aleo](https://aleo.org/) blockchain
