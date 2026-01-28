@@ -1,0 +1,220 @@
+import { useState, useEffect } from 'react';
+import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { Market, OddsData } from '@/types';
+
+interface PlaceBetProps {
+  market: Market;
+  pools: number[]; // Current pool sizes for each outcome
+}
+
+export default function PlaceBet({ market, pools }: PlaceBetProps) {
+  const { publicKey, requestTransaction } = useWallet();
+  const [selectedOutcome, setSelectedOutcome] = useState(0);
+  const [betAmount, setBetAmount] = useState('');
+  const [isPlacingBet, setIsPlacingBet] = useState(false);
+  const [oddsData, setOddsData] = useState<OddsData[]>([]);
+
+  // Calculate odds for all outcomes (Wave 3)
+  useEffect(() => {
+    if (!pools || pools.length === 0) {
+      setOddsData([]);
+      return;
+    }
+
+    const totalPool = pools.reduce((sum, pool) => sum + pool, 0);
+
+    const calculatedOdds: OddsData[] = pools.map((poolSize, index) => {
+      const poolShare = totalPool > 0 ? (poolSize / totalPool) * 100 : 0;
+      const probability = poolShare;
+      const odds = poolSize > 0 ? totalPool / poolSize : 0;
+
+      return {
+        outcome: index,
+        odds: Number(odds.toFixed(2)),
+        probability: Number(probability.toFixed(1)),
+        poolSize,
+        poolShare: Number(poolShare.toFixed(1)),
+      };
+    });
+
+    setOddsData(calculatedOdds);
+  }, [pools]);
+
+  const handlePlaceBet = async () => {
+    if (!publicKey) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    const amount = parseFloat(betAmount);
+    if (!amount || amount <= 0) {
+      alert('Please enter a valid bet amount');
+      return;
+    }
+
+    if (market.resolved) {
+      alert('This market is already resolved');
+      return;
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    if (now >= market.endTime) {
+      alert('This market has ended');
+      return;
+    }
+
+    setIsPlacingBet(true);
+
+    try {
+      // Wave 2: Generate unique nonce for bet_id
+      const nonce = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+      // Convert amount to microcredits (1 credit = 1,000,000 microcredits)
+      const amountInMicrocredits = Math.floor(amount * 1_000_000);
+
+      // Prepare transaction inputs
+      const inputs = [
+        market.marketId, // market_id: field
+        `${selectedOutcome}u8`, // outcome: u8
+        `${amountInMicrocredits}u64`, // amount: u64
+        nonce, // nonce: field (for unique bet_id)
+      ];
+
+      // Request transaction from wallet
+      const txResponse = await requestTransaction({
+        programId: 'zkpredict.aleo',
+        functionName: 'place_bet',
+        inputs,
+        fee: 500000, // 0.5 credit fee
+      });
+
+      console.log('Bet placed:', txResponse);
+
+      alert(`Bet placed successfully! ${amount} credits on "${market.outcomeLabels?.[selectedOutcome] || `Outcome ${selectedOutcome + 1}`}"`);
+
+      // Reset form
+      setBetAmount('');
+
+    } catch (error) {
+      console.error('Error placing bet:', error);
+      alert('Failed to place bet. Please try again.');
+    } finally {
+      setIsPlacingBet(false);
+    }
+  };
+
+  const currentOdds = oddsData[selectedOutcome];
+  const potentialReturn = currentOdds && betAmount
+    ? (parseFloat(betAmount) * currentOdds.odds).toFixed(2)
+    : '0.00';
+
+  return (
+    <div className="card bg-base-200 shadow-xl">
+      <div className="card-body">
+        <h3 className="card-title">Place Your Bet</h3>
+
+        {market.resolved ? (
+          <div className="alert alert-warning">
+            <span>This market has been resolved</span>
+          </div>
+        ) : Math.floor(Date.now() / 1000) >= market.endTime ? (
+          <div className="alert alert-info">
+            <span>This market has ended. Waiting for resolution...</span>
+          </div>
+        ) : (
+          <>
+            {/* Outcome Selection (Wave 3: Multi-outcome support) */}
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text">Select Outcome</span>
+              </label>
+              <div className="space-y-2">
+                {(market.outcomeLabels || Array(market.numOutcomes).fill(null)).map((label, index) => {
+                  const outcomeOdds = oddsData[index];
+                  return (
+                    <label
+                      key={index}
+                      className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        selectedOutcome === index
+                          ? 'border-primary bg-primary/10'
+                          : 'border-base-300 hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          name="outcome"
+                          className="radio radio-primary"
+                          checked={selectedOutcome === index}
+                          onChange={() => setSelectedOutcome(index)}
+                        />
+                        <div>
+                          <span className="font-semibold">
+                            {label || `Outcome ${index + 1}`}
+                          </span>
+                          {outcomeOdds && (
+                            <div className="text-xs text-gray-500">
+                              {outcomeOdds.poolSize} credits ({outcomeOdds.poolShare}% of pool)
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {outcomeOdds && (
+                        <div className="text-right">
+                          <div className="font-bold text-lg">{outcomeOdds.odds}x</div>
+                          <div className="text-xs text-gray-500">
+                            {outcomeOdds.probability}% probability
+                          </div>
+                        </div>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Bet Amount */}
+            <div className="form-control w-full mt-4">
+              <label className="label">
+                <span className="label-text">Bet Amount (credits)</span>
+              </label>
+              <input
+                type="number"
+                placeholder="0.00"
+                className="input input-bordered w-full"
+                value={betAmount}
+                onChange={(e) => setBetAmount(e.target.value)}
+                min="0"
+                step="0.01"
+              />
+            </div>
+
+            {/* Potential Return */}
+            {betAmount && currentOdds && (
+              <div className="alert alert-info mt-4">
+                <div className="flex flex-col gap-1">
+                  <span className="font-semibold">Potential Return</span>
+                  <span className="text-2xl font-bold">{potentialReturn} credits</span>
+                  <span className="text-sm">
+                    Profit: {(parseFloat(potentialReturn) - parseFloat(betAmount)).toFixed(2)} credits
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Place Bet Button */}
+            <div className="card-actions justify-end mt-4">
+              <button
+                className={`btn btn-primary ${isPlacingBet ? 'loading' : ''}`}
+                onClick={handlePlaceBet}
+                disabled={isPlacingBet || !publicKey || !betAmount}
+              >
+                {isPlacingBet ? 'Placing Bet...' : 'Place Bet'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
