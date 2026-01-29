@@ -1,7 +1,7 @@
 // Aleo blockchain interaction utilities
 // This module provides functions to read on-chain state from the zkpredict.aleo program
 
-const NETWORK_URL = process.env.RPC_URL || 'https://api.explorer.provable.com/v1';
+const NETWORK_URL = process.env.NEXT_PUBLIC_RPC_URL || process.env.RPC_URL || 'https://api.explorer.provable.com/v1';
 const PROGRAM_ID = 'zkpredict.aleo';
 
 export interface OnChainMarket {

@@ -51,31 +51,35 @@ export default function CreateMarket() {
       const endDateTime = new Date(`${endDate}T${endTime}`);
       const endTimestamp = Math.floor(endDateTime.getTime() / 1000);
 
-      // Generate market ID from title and timestamp
-      const marketId = `${Date.now()}_${title.replace(/\s+/g, '_')}`;
+      // Generate market ID as a simple field (use timestamp as unique ID)
+      // In production, you should use proper field hashing
+      const marketId = `${Date.now()}field`;
 
       if (!requestTransaction) {
         alert('Wallet does not support transactions');
         return;
       }
 
-      // Prepare transaction inputs
+      // Prepare transaction inputs for create_market
+      // Signature: create_market(market_id: field, end_time: u32, num_outcomes: u8, category: u8, auto_resolve: bool)
       const inputs = [
         marketId, // market_id: field
         `${endTimestamp}u32`, // end_time: u32
         `${numOutcomes}u8`, // num_outcomes: u8
         `${category}u8`, // category: u8
-        autoResolve ? 'true' : 'false', // auto_resolve: bool
+        autoResolve.toString(), // auto_resolve: bool (true/false as string)
       ];
+
+      console.log('Creating market with inputs:', inputs);
 
       // Create transaction object using the Aleo wallet adapter
       const transaction = Transaction.createTransaction(
         publicKey || '',
-        'testnet3',
-        'zkpredict.aleo',
+        'testnetbeta', // Use testnetbeta network
+        'zkpredict.aleo', // Our deployed program
         'create_market',
         inputs,
-        1000000, // 1 credit fee
+        10000000, // 10 credits fee (create_market is expensive)
         false // Public fee
       );
 

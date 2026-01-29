@@ -67,28 +67,31 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
     setIsPlacingBet(true);
 
     try {
-      // Wave 2: Generate unique nonce for bet_id
-      const nonce = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      // Wave 2: Generate unique nonce for bet_id (as field)
+      const nonce = `${Date.now()}field`;
 
       // Convert amount to microcredits (1 credit = 1,000,000 microcredits)
       const amountInMicrocredits = Math.floor(amount * 1_000_000);
 
-      // Prepare transaction inputs
+      // Prepare transaction inputs for place_bet
+      // Signature: place_bet(market_id: field, outcome: u8, amount: u64, nonce: field)
       const inputs = [
         market.marketId, // market_id: field
         `${selectedOutcome}u8`, // outcome: u8
         `${amountInMicrocredits}u64`, // amount: u64
-        nonce, // nonce: field (for unique bet_id)
+        nonce, // nonce: field (for unique bet_id generation)
       ];
+
+      console.log('Placing bet with inputs:', inputs);
 
       // Create transaction using the Aleo wallet adapter
       const transaction = Transaction.createTransaction(
         publicKey,
-        'testnet3',
-        'zkpredict.aleo',
+        'testnetbeta', // Use testnetbeta network
+        'zkpredict.aleo', // Our deployed program
         'place_bet',
         inputs,
-        500000, // 0.5 credit fee
+        5000000, // 5 credits fee (place_bet updates mappings)
         false // Public fee
       );
 
