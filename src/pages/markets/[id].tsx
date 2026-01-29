@@ -1,10 +1,13 @@
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { NextPageWithLayout } from '@/types';
 import PlaceBet from '@/components/markets/PlaceBet';
 import { Market, MarketCategory, CATEGORY_LABELS } from '@/types';
 import Link from 'next/link';
 import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
+import { useMarketMetadata } from '@/hooks/useMarketMetadata';
+import { useOnChainMarketPolling } from '@/hooks/useOnChainMarket';
 
 // Mock data - In production, fetch from blockchain + backend
 const MOCK_MARKETS: Record<string, Market> = {
@@ -33,9 +36,74 @@ const MarketDetailPage: NextPageWithLayout = () => {
   const { publicKey, requestTransaction } = useWallet();
   const [isResolving, setIsResolving] = useState(false);
   const [resolutionOutcome, setResolutionOutcome] = useState(0);
+  const [combinedMarket, setCombinedMarket] = useState<Market | null>(null);
 
-  const market = id ? MOCK_MARKETS[id as string] : null;
-  const pools = id ? MOCK_POOLS[id as string] || [] : [];
+  // Fetch metadata from backend
+  const { metadata, loading: metadataLoading } = useMarketMetadata(id as string);
+
+  // Fetch on-chain data (polls every 30 seconds)
+  const {
+    market: onChainMarket,
+    pools: onChainPools,
+    loading: onChainLoading,
+    lastUpdate
+  } = useOnChainMarketPolling(id as string, 30000);
+
+  // Combine metadata and on-chain data
+  useEffect(() => {
+    if (!id) return;
+
+    // Priority: on-chain data > metadata > mock data
+    if (onChainMarket && metadata) {
+      // Combine on-chain state with off-chain metadata
+      setCombinedMarket({
+        marketId: id as string,
+        creator: onChainMarket.creator,
+        endTime: onChainMarket.end_time,
+        resolved: onChainMarket.resolved,
+        winningOutcome: onChainMarket.winning_outcome,
+        numOutcomes: onChainMarket.num_outcomes,
+        category: onChainMarket.category as MarketCategory,
+        autoResolve: onChainMarket.auto_resolve,
+        title: metadata.title,
+        description: metadata.description,
+        outcomeLabels: metadata.outcomeLabels,
+      });
+    } else if (metadata) {
+      // Only metadata available, use mock on-chain data
+      setCombinedMarket({
+        marketId: id as string,
+        creator: 'aleo1tgk48pzlz2xws2ed8880ajqfcs0c750gmjm8dvf3u7g2mer8gcysxj8war',
+        endTime: Math.floor(Date.now() / 1000) + 86400 * 30,
+        resolved: false,
+        winningOutcome: 0,
+        numOutcomes: metadata.outcomeLabels.length,
+        category: MarketCategory.Other,
+        autoResolve: false,
+        title: metadata.title,
+        description: metadata.description,
+        outcomeLabels: metadata.outcomeLabels,
+      });
+    } else if (MOCK_MARKETS[id as string]) {
+      // Fall back to mock data
+      setCombinedMarket(MOCK_MARKETS[id as string]);
+    }
+  }, [id, onChainMarket, metadata]);
+
+  const market = combinedMarket;
+  const pools = onChainPools.yes_pool > 0 || onChainPools.no_pool > 0
+    ? [onChainPools.no_pool, onChainPools.yes_pool]
+    : (id ? MOCK_POOLS[id as string] || [] : []);
+
+  if (metadataLoading || onChainLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center py-12">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
+      </div>
+    );
+  }
 
   if (!market) {
     return (
@@ -68,7 +136,7 @@ const MarketDetailPage: NextPageWithLayout = () => {
   };
 
   const handleResolveMarket = async () => {
-    if (!publicKey) {
+    if (!publicKey || !requestTransaction) {
       alert('Please connect your wallet');
       return;
     }
@@ -84,12 +152,17 @@ const MarketDetailPage: NextPageWithLayout = () => {
         `${currentTime}u32`,
       ];
 
-      const txResponse = await requestTransaction({
-        programId: 'zkpredict.aleo',
-        functionName: 'resolve_market',
+      const transaction = Transaction.createTransaction(
+        publicKey,
+        'testnet3',
+        'zkpredict.aleo',
+        'resolve_market',
         inputs,
-        fee: 500000,
-      });
+        500000,
+        false
+      );
+
+      const txResponse = await requestTransaction(transaction);
 
       console.log('Market resolved:', txResponse);
       alert('Market resolved successfully!');

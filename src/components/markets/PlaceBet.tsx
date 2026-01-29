@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
 import { Market, OddsData } from '@/types';
 
 interface PlaceBetProps {
@@ -41,7 +42,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   }, [pools]);
 
   const handlePlaceBet = async () => {
-    if (!publicKey) {
+    if (!publicKey || !requestTransaction) {
       alert('Please connect your wallet first');
       return;
     }
@@ -80,13 +81,19 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
         nonce, // nonce: field (for unique bet_id)
       ];
 
-      // Request transaction from wallet
-      const txResponse = await requestTransaction({
-        programId: 'zkpredict.aleo',
-        functionName: 'place_bet',
+      // Create transaction using the Aleo wallet adapter
+      const transaction = Transaction.createTransaction(
+        publicKey,
+        'testnet3',
+        'zkpredict.aleo',
+        'place_bet',
         inputs,
-        fee: 500000, // 0.5 credit fee
-      });
+        500000, // 0.5 credit fee
+        false // Public fee
+      );
+
+      // Request transaction from wallet
+      const txResponse = await requestTransaction(transaction);
 
       console.log('Bet placed:', txResponse);
 
