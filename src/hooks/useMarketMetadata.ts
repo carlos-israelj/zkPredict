@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { MarketMetadata } from '@/lib/db';
+import type { MarketMetadata } from '@/lib/db-supabase';
 
 export const useMarketMetadata = (marketId?: string) => {
   const [metadata, setMetadata] = useState<MarketMetadata | null>(null);

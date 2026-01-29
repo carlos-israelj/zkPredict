@@ -5,3 +5,6 @@ node_modules
 *program.json*
 program/build
 program/backup
+
+# Claude Code documentation
+../CLAUDE.md

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { db, MarketMetadata } from '@/lib/db';
+import { db, MarketMetadata } from '@/lib/db-supabase';
 
 export default async function handler(
   req: NextApiRequest,

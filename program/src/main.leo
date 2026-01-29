@@ -61,15 +61,12 @@ program zkpredict.aleo {
 
 
     // ============================================
-    // INITIALIZATION (Wave 1 MVP - No initialization needed)
+    // CONSTRUCTOR (Required for deployment)
+    // Wave 1: Non-upgradable program
     // ============================================
 
-    async transition initialize() -> Future {
-        return finalize_initialize();
-    }
-
-    async function finalize_initialize() {
-        // No initialization needed for Wave 1 MVP
+    @noupgrade async constructor() {
+        // Constructor must be empty - Leo compiler will insert the appropriate code
         // Markets are created dynamically via create_market transition
     }
 
