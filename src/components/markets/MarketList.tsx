@@ -69,9 +69,9 @@ export default function MarketList({ markets, poolsMap }: MarketListProps) {
   }, [markets, selectedCategory, filterStatus, sortBy, searchQuery, poolsMap]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Search Bar */}
-      <div className="form-control">
+      <div className="form-control w-full">
         <input
           type="text"
           placeholder="Search markets..."
@@ -82,11 +82,11 @@ export default function MarketList({ markets, poolsMap }: MarketListProps) {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 items-center justify-between">
+      <div className="flex flex-col gap-4">
         {/* Category Filter (Wave 4) */}
         <div className="flex flex-wrap gap-2">
           <button
-            className={`btn btn-sm ${selectedCategory === 'all' ? 'btn-primary' : 'btn-ghost'}`}
+            className={`btn btn-xs sm:btn-sm ${selectedCategory === 'all' ? 'btn-primary' : 'btn-ghost'}`}
             onClick={() => setSelectedCategory('all')}
           >
             All
@@ -94,7 +94,7 @@ export default function MarketList({ markets, poolsMap }: MarketListProps) {
           {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
             <button
               key={key}
-              className={`btn btn-sm ${
+              className={`btn btn-xs sm:btn-sm ${
                 selectedCategory === Number(key) ? 'btn-primary' : 'btn-ghost'
               }`}
               onClick={() => setSelectedCategory(Number(key) as MarketCategory)}
@@ -104,10 +104,10 @@ export default function MarketList({ markets, poolsMap }: MarketListProps) {
           ))}
         </div>
 
-        {/* Status Filter */}
-        <div className="flex gap-2">
+        {/* Status and Sort Filters */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
           <select
-            className="select select-bordered select-sm"
+            className="select select-bordered select-sm w-full sm:w-auto"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
           >
@@ -117,9 +117,8 @@ export default function MarketList({ markets, poolsMap }: MarketListProps) {
             <option value="resolved">Resolved</option>
           </select>
 
-          {/* Sort Options */}
           <select
-            className="select select-bordered select-sm"
+            className="select select-bordered select-sm w-full sm:w-auto"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
           >
@@ -137,7 +136,7 @@ export default function MarketList({ markets, poolsMap }: MarketListProps) {
 
       {/* Market Grid */}
       {filteredMarkets.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredMarkets.map(market => (
             <MarketCard
               key={market.marketId}
