@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { NextPageWithLayout } from '@/types';
 import MarketList from '@/components/markets/MarketList';
 import CreateMarket from '@/components/markets/CreateMarket';
 import { Market, MarketCategory } from '@/types';
+import { useAllMarketsMetadata } from '@/hooks/useMarketMetadata';
 
 // Mock data for demonstration - In production, this would come from on-chain data + backend API
 const MOCK_MARKETS: Market[] = [
@@ -84,6 +85,33 @@ const MOCK_POOLS = new Map<string, number[]>([
 
 const MarketsPage: NextPageWithLayout = () => {
   const [showCreateMarket, setShowCreateMarket] = useState(false);
+  const { markets: metadataMarkets, loading, error } = useAllMarketsMetadata();
+  const [combinedMarkets, setCombinedMarkets] = useState<Market[]>(MOCK_MARKETS);
+
+  // Combine metadata from backend with mock on-chain data
+  useEffect(() => {
+    if (!loading && metadataMarkets.length > 0) {
+      // Merge metadata with mock on-chain data
+      const merged = metadataMarkets.map(metadata => {
+        // For now, create mock on-chain data for each metadata entry
+        // In production, this would query the actual blockchain
+        return {
+          marketId: metadata.marketId,
+          creator: 'aleo1tgk48pzlz2xws2ed8880ajqfcs0c750gmjm8dvf3u7g2mer8gcysxj8war',
+          endTime: Math.floor(Date.now() / 1000) + 86400 * 30, // Mock: 30 days from now
+          resolved: false,
+          winningOutcome: 0,
+          numOutcomes: metadata.outcomeLabels.length,
+          category: MarketCategory.Other, // Mock: would come from on-chain
+          autoResolve: false,
+          title: metadata.title,
+          description: metadata.description,
+          outcomeLabels: metadata.outcomeLabels,
+        } as Market;
+      });
+      setCombinedMarkets(merged);
+    }
+  }, [metadataMarkets, loading]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -107,13 +135,13 @@ const MarketsPage: NextPageWithLayout = () => {
       <div className="stats stats-vertical lg:stats-horizontal shadow mb-8 w-full">
         <div className="stat">
           <div className="stat-title">Total Markets</div>
-          <div className="stat-value">{MOCK_MARKETS.length}</div>
+          <div className="stat-value">{loading ? '...' : combinedMarkets.length}</div>
           <div className="stat-desc">Across all categories</div>
         </div>
         <div className="stat">
           <div className="stat-title">Active Markets</div>
           <div className="stat-value">
-            {MOCK_MARKETS.filter(m => !m.resolved && Math.floor(Date.now() / 1000) < m.endTime).length}
+            {loading ? '...' : combinedMarkets.filter(m => !m.resolved && Math.floor(Date.now() / 1000) < m.endTime).length}
           </div>
           <div className="stat-desc">Currently accepting bets</div>
         </div>
@@ -132,8 +160,16 @@ const MarketsPage: NextPageWithLayout = () => {
       {/* Main Content */}
       {showCreateMarket ? (
         <CreateMarket />
+      ) : loading ? (
+        <div className="flex justify-center items-center py-12">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
+      ) : error ? (
+        <div className="alert alert-error">
+          <span>Error loading markets: {error}</span>
+        </div>
       ) : (
-        <MarketList markets={MOCK_MARKETS} poolsMap={MOCK_POOLS} />
+        <MarketList markets={combinedMarkets} poolsMap={MOCK_POOLS} />
       )}
 
       {/* Features Info */}

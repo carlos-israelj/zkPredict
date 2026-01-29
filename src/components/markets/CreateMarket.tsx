@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
 import { MarketCategory, CATEGORY_LABELS } from '@/types';
+import { createMarketMetadata } from '@/hooks/useMarketMetadata';
 
 export default function CreateMarket() {
   const { publicKey, requestTransaction } = useWallet();
@@ -52,6 +54,11 @@ export default function CreateMarket() {
       // Generate market ID from title and timestamp
       const marketId = `${Date.now()}_${title.replace(/\s+/g, '_')}`;
 
+      if (!requestTransaction) {
+        alert('Wallet does not support transactions');
+        return;
+      }
+
       // Prepare transaction inputs
       const inputs = [
         marketId, // market_id: field
@@ -61,18 +68,35 @@ export default function CreateMarket() {
         autoResolve ? 'true' : 'false', // auto_resolve: bool
       ];
 
-      // Request transaction from wallet
-      const txResponse = await requestTransaction({
-        programId: 'zkpredict.aleo',
-        functionName: 'create_market',
+      // Create transaction object using the Aleo wallet adapter
+      const transaction = Transaction.createTransaction(
+        publicKey || '',
+        'testnet3',
+        'zkpredict.aleo',
+        'create_market',
         inputs,
-        fee: 1000000, // 1 credit fee
-      });
+        1000000, // 1 credit fee
+        false // Public fee
+      );
+
+      // Request transaction from wallet
+      const txResponse = await requestTransaction(transaction);
 
       console.log('Market created:', txResponse);
 
-      // TODO: Store off-chain metadata (title, description, outcomeLabels)
-      // This would typically go to a backend API or decentralized storage
+      // Store off-chain metadata to backend
+      try {
+        await createMarketMetadata({
+          marketId,
+          title,
+          description,
+          outcomeLabels,
+        });
+        console.log('Market metadata saved successfully');
+      } catch (metadataError) {
+        console.error('Error saving market metadata:', metadataError);
+        // Continue even if metadata save fails
+      }
 
       alert('Market created successfully!');
 
