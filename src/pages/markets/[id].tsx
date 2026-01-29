@@ -2,10 +2,11 @@ import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import type { NextPageWithLayout } from '@/types';
 import PlaceBet from '@/components/markets/PlaceBet';
+import ResolveMarket from '@/components/markets/ResolveMarket';
+import ClaimWinnings from '@/components/markets/ClaimWinnings';
 import { Market, MarketCategory, CATEGORY_LABELS } from '@/types';
 import Link from 'next/link';
 import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
-import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
 import { useMarketMetadata } from '@/hooks/useMarketMetadata';
 import { useOnChainMarketPolling } from '@/hooks/useOnChainMarket';
 
@@ -33,10 +34,9 @@ const MOCK_POOLS: Record<string, number[]> = {
 const MarketDetailPage: NextPageWithLayout = () => {
   const router = useRouter();
   const { id } = router.query;
-  const { publicKey, requestTransaction } = useWallet();
-  const [isResolving, setIsResolving] = useState(false);
-  const [resolutionOutcome, setResolutionOutcome] = useState(0);
+  const { publicKey } = useWallet();
   const [combinedMarket, setCombinedMarket] = useState<Market | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch metadata from backend
   const { metadata, loading: metadataLoading } = useMarketMetadata(id as string);
@@ -122,8 +122,6 @@ const MarketDetailPage: NextPageWithLayout = () => {
   const now = Math.floor(Date.now() / 1000);
   const isEnded = now >= market.endTime;
   const timeRemaining = market.endTime - now;
-  const canResolve = market.creator === publicKey && !market.resolved;
-  const canAutoResolve = market.autoResolve && isEnded && !market.resolved;
 
   const formatTimeRemaining = (seconds: number): string => {
     if (seconds <= 0) return 'Ended';
@@ -135,44 +133,9 @@ const MarketDetailPage: NextPageWithLayout = () => {
     return `${minutes} minutes`;
   };
 
-  const handleResolveMarket = async () => {
-    if (!publicKey || !requestTransaction) {
-      alert('Please connect your wallet');
-      return;
-    }
-
-    setIsResolving(true);
-
-    try {
-      const currentTime = Math.floor(Date.now() / 1000);
-
-      const inputs = [
-        market.marketId,
-        `${resolutionOutcome}u8`,
-        `${currentTime}u32`,
-      ];
-
-      const transaction = Transaction.createTransaction(
-        publicKey,
-        'testnet3',
-        'zkpredict.aleo',
-        'resolve_market',
-        inputs,
-        500000,
-        false
-      );
-
-      const txResponse = await requestTransaction(transaction);
-
-      console.log('Market resolved:', txResponse);
-      alert('Market resolved successfully!');
-
-    } catch (error) {
-      console.error('Error resolving market:', error);
-      alert('Failed to resolve market. Please try again.');
-    } finally {
-      setIsResolving(false);
-    }
+  // Refresh market data after resolution or claim
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -269,38 +232,13 @@ const MarketDetailPage: NextPageWithLayout = () => {
           </div>
 
           {/* Resolution Section (Wave 2) */}
-          {(canResolve || canAutoResolve) && (
-            <div className="card bg-base-200 shadow-xl">
-              <div className="card-body">
-                <h2 className="card-title">Resolve Market</h2>
-                {canAutoResolve && (
-                  <div className="alert alert-info mb-4">
-                    <span>This market has auto-resolve enabled. Anyone can resolve it after the end time.</span>
-                  </div>
-                )}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Select Winning Outcome</span>
-                  </label>
-                  <select
-                    className="select select-bordered"
-                    value={resolutionOutcome}
-                    onChange={(e) => setResolutionOutcome(Number(e.target.value))}
-                  >
-                    {market.outcomeLabels?.map((label, index) => (
-                      <option key={index} value={index}>{label}</option>
-                    ))}
-                  </select>
-                </div>
-                <button
-                  className={`btn btn-primary mt-4 ${isResolving ? 'loading' : ''}`}
-                  onClick={handleResolveMarket}
-                  disabled={isResolving}
-                >
-                  {isResolving ? 'Resolving...' : 'Resolve Market'}
-                </button>
-              </div>
-            </div>
+          {!market.resolved && (
+            <ResolveMarket market={market} onResolved={handleRefresh} />
+          )}
+
+          {/* Claim Winnings Section (Wave 2) */}
+          {market.resolved && (
+            <ClaimWinnings market={market} onClaimed={handleRefresh} />
           )}
         </div>
 

@@ -1,0 +1,59 @@
+
+> zkpredict@0.1.0 build
+> next build
+
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'webpack5'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+   ▲ Next.js 15.2.4
+   - Environments: .env.local
+
+   Skipping validation of types
+   Skipping linting
+   Creating an optimized production build ...
+> [PWA] Compile server
+> [PWA] Compile server
+> [PWA] Compile client (static)
+> [PWA] Auto register service worker with: /mnt/c/Users/CarlosIsraelJiménezJ/Documents/Aleo/zkPredict/node_modules/next-pwa/register.js
+> [PWA] Service worker: /mnt/c/Users/CarlosIsraelJiménezJ/Documents/Aleo/zkPredict/public/sw.js
+> [PWA]   url: /sw.js
+> [PWA]   scope: /
+/*! 🌼 daisyUI 5.5.14 */
+Found 1 warning while optimizing generated CSS:
+
+[2m│ }[22m
+[2m│ @layer base {[22m
+[2m│[22m   @property --radialprogress {
+[2m┆[22m            [33m[2m^--[22m Unknown at rule: @property[39m
+[2m┆[22m
+[2m│     syntax: "<percentage>";[22m
+[2m│     inherits: true;[22m
+
+ ✓ Compiled successfully
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5) 
+   Generating static pages (2/5) 
+   Generating static pages (3/5) 
+ ✓ Generating static pages (5/5)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (pages)                                 Size  First Load JS
+┌ ○ / (4009 ms)                            7.04 kB         133 kB
+├   /_app                                      0 B         116 kB
+├ ○ /404 (4018 ms)                         4.11 kB         130 kB
+├ ƒ /api/markets                               0 B         116 kB
+├ ƒ /api/markets/[id]                          0 B         116 kB
+├ ○ /markets (4017 ms)                     5.59 kB         124 kB
+└ ○ /markets/[id] (4030 ms)                 6.7 kB         125 kB
++ First Load JS shared by all               138 kB
+  ├ chunks/framework-bc46613fda2a0fa0.js   57.7 kB
+  ├ chunks/main-1d7012167bb5aff6.js        37.3 kB
+  ├ chunks/pages/_app-132b6fd888be8a1d.js  20.3 kB
+  ├ css/1f0e57f82812a46a.css               22.2 kB
+  └ other shared chunks (total)              737 B
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

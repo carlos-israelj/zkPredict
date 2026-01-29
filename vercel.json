@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
+    "NEXT_PUBLIC_RPC_URL": "@aleo-rpc-url",
+    "RPC_URL": "@aleo-rpc-url",
+    "URL": "@app-url",
+    "TWITTER": "https://twitter.com/AleoHQ",
+    "DISCORD": "https://discord.gg/aleohq"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
+      "NEXT_PUBLIC_RPC_URL": "@aleo-rpc-url",
+      "RPC_URL": "@aleo-rpc-url"
+    }
+  }
+}

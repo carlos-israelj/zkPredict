@@ -72,7 +72,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       onClick,
       ...buttonProps
     },
-    ref: React.Ref<HTMLButtonElement | null>
+    ref: React.Ref<HTMLButtonElement>
   ) => {
     let [dripShow, setDripShow] = useState<boolean>(false);
     let [dripX, setDripX] = useState<number>(0);
@@ -80,7 +80,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const colorClassNames = colors[color];
     const sizeClassNames = sizes[size];
     const buttonRef = useRef<HTMLButtonElement>(null);
-    useImperativeHandle(ref, () => buttonRef.current);
+    useImperativeHandle(ref, () => buttonRef.current!);
     function dripCompletedHandle() {
       setDripShow(false);
       setDripX(0);

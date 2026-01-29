@@ -159,49 +159,106 @@ Deberías ver los pools actualizados.
 
 ---
 
-## 6. Test: Resolve Market (CLI)
+## 6. Test: Resolve Market (UI) ✨ NUEVO
 
-Por ahora, la resolución se hace desde CLI:
+Ahora puedes resolver markets directamente desde la UI!
 
-### Paso 1: Obtener Current Time
-```bash
-date +%s
-```
+### Paso 1: Abrir un Market que hayas creado
+- Ve a Markets
+- Click en un market que hayas creado TÚ
+- Asegúrate de que el market haya terminado (end_time pasó) o que seas el creator
 
-Copia el timestamp (ej: 1740500000)
+### Paso 2: Resolver desde UI
+- Scroll hacia abajo hasta "Resolve Market" section
+- Selecciona el winning outcome (ej: "Yes" o "No")
+- Click en "Resolve Market"
+- **Tu wallet se abrirá pidiendo aprobación**
+- Aprueba la transacción
 
-### Paso 2: Resolver Market
-```bash
-cd program
-
-# Resolver con outcome YES (1u8)
-leo execute resolve_market \
-  "[MARKET_ID]field" \
-  "1u8" \
-  "[TIMESTAMP]u32" \
-  --network testnet
-```
+### Paso 3: Esperar Confirmación
+- Espera 30-60 segundos
+- Deberías ver un alert: "Market resolved successfully!"
+- El market se marcará como "Resolved" en la UI
 
 ### Verificación:
+- ✅ Market muestra badge "Resolved"
+- ✅ Winning outcome se muestra
+- ✅ Section de "Place Bet" desaparece
+- ✅ Section de "Claim Winnings" aparece
+
+**Verificar On-Chain:**
 ```bash
+cd program
 leo query markets "[MARKET_ID]field" --network testnet
 ```
 
-Deberías ver `resolved: true` y `winning_outcome: 1u8`.
+Deberías ver `resolved: true` y `winning_outcome: [OUTCOME]u8`.
+
+### Permisos de Resolución:
+- **Creator**: Puede resolver en cualquier momento
+- **Auto-resolve**: Cualquiera puede resolver después del end_time si auto_resolve está habilitado
 
 ---
 
-## 7. Test: Claim Winnings (Avanzado)
+## 7. Test: Claim Winnings (UI) ✨ NUEVO
 
-Esto requiere que tengas un Bet record de una apuesta ganadora.
+Ahora puedes reclamar tus ganancias desde la UI!
 
-```bash
-cd program
+### Pre-requisito:
+- Tener un Bet record de una apuesta GANADORA
+- El market debe estar resuelto
+- Tu bet debe ser en el outcome ganador
 
-leo execute claim_winnings \
-  "{owner: [TU_ADDRESS], market_id: [MARKET_ID]field, bet_id: [BET_ID]field, outcome: 1u8, amount: 1000000u64, odds_at_bet: 10000u64}" \
-  --network testnet
+### Paso 1: Obtener tu Bet Record
+1. Ve a tu wallet
+2. Busca la transacción donde colocaste tu bet
+3. En los "Outputs" o "Records", copia el Bet record completo
+4. Debería verse algo así:
 ```
+{
+  owner: aleo1...,
+  market_id: 1738097234field,
+  bet_id: 789field,
+  outcome: 1u8,
+  amount: 1000000u64,
+  odds_at_bet: 10000u64
+}
+```
+
+### Paso 2: Abrir el Market Resuelto
+- Ve a Markets
+- Click en el market que se resolvió
+- Deberías ver la sección "Claim Your Winnings"
+
+### Paso 3: Pegar tu Bet Record
+- Expand las instrucciones (click en "▶ How to find your Bet record")
+- Pega tu Bet record en el textarea
+- El sistema validará automáticamente si es un winning bet
+
+### Paso 4: Reclamar Ganancias
+- Click en "Claim Winnings"
+- **Tu wallet se abrirá pidiendo aprobación**
+- Aprueba la transacción
+
+### Paso 5: Esperar Confirmación
+- Espera 30-60 segundos
+- Deberías ver un alert: "Winnings claimed successfully!"
+- Recibirás un Winnings record en tu wallet
+
+### Verificación:
+- ✅ Alert de éxito
+- ✅ Winnings record en tu wallet
+- ✅ Balance actualizado en wallet
+
+**Notas Importantes:**
+- ⚠️ Solo puedes reclamar cada bet UNA VEZ (Wave 2 anti-double-claim)
+- ⚠️ Solo bets en el outcome GANADOR pueden ser reclamadas
+- ⚠️ El market debe estar RESUELTO primero
+
+### Problemas comunes:
+- "This bet has already been claimed" → Ya reclamaste este bet anteriormente
+- "This bet is for a losing outcome" → Tu bet no ganó, prueba con otro bet
+- "Invalid bet record format" → Verifica que copiaste el record completo
 
 ---
 

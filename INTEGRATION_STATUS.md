@@ -76,8 +76,8 @@ place_bet(
 
 ### Pendiente ⏳
 - [ ] Testing end-to-end del flujo completo
-- [ ] Resolve market desde UI (actualmente solo CLI)
-- [ ] Claim winnings desde UI (actualmente solo CLI)
+- [x] Resolve market desde UI ✅ (NUEVO - ResolveMarket component)
+- [x] Claim winnings desde UI ✅ (NUEVO - ClaimWinnings component)
 - [ ] Error handling mejorado
 - [ ] Loading states optimizados
 - [ ] Pool display actualizado en tiempo real
@@ -208,10 +208,11 @@ Basado en el deployment y estructura del contrato:
 
 **Workaround**: Refresh manual de la página o polling.
 
-### 4. Resolve/Claim solo en CLI
-**Issue**: No hay UI para resolver markets ni claim winnings.
-
-**Workaround**: Usar Leo CLI hasta que se implemente en UI.
+### 4. ~~Resolve/Claim solo en CLI~~ ✅ RESUELTO
+**Status**: ✅ Componentes UI implementados
+- ResolveMarket component (`src/components/markets/ResolveMarket.tsx`)
+- ClaimWinnings component (`src/components/markets/ClaimWinnings.tsx`)
+- Integrados en la página de detalle del market (`src/pages/markets/[id].tsx`)
 
 ---
 
@@ -260,14 +261,68 @@ Smart Contract:    ████████████████████ 
 Backend (Supabase): ████████████████████ 100% ✅
 Create Market:     ████████████████░░░░  80% 🚧
 Place Bet:         ████████████████░░░░  80% 🚧
-Resolve Market:    ████░░░░░░░░░░░░░░░░  20% ⏳
-Claim Winnings:    ████░░░░░░░░░░░░░░░░  20% ⏳
+Resolve Market:    ████████████████████ 100% ✅ (NUEVO!)
+Claim Winnings:    ████████████████████ 100% ✅ (NUEVO!)
 
-Total MVP:         ██████████████░░░░░░  70% 🚀
+Total MVP:         ██████████████████░░  90% 🎉
 ```
 
-**De 60% a 70% con integración on-chain!**
+**¡De 70% a 90% con UI completa para Resolve y Claim!**
+
+### 🎊 Nuevos Componentes Implementados (29 Enero 2026)
+
+#### 3. ResolveMarket Component ✅
+**Archivo**: `src/components/markets/ResolveMarket.tsx`
+
+**Características:**
+- ✅ Verifica permisos del usuario (creator o auto-resolve)
+- ✅ Validación de tiempo (end_time check)
+- ✅ Selección de winning outcome con radio buttons
+- ✅ Network: testnetbeta
+- ✅ Fee: 5 credits
+- ✅ Feedback visual con alerts
+- ✅ Callback onResolved para refresh de datos
+
+**Firma del contrato:**
+```leo
+resolve_market(
+  market_id: field,
+  winning_outcome: u8,
+  current_time: u32
+)
+```
+
+#### 4. ClaimWinnings Component ✅
+**Archivo**: `src/components/markets/ClaimWinnings.tsx`
+
+**Características:**
+- ✅ Input para pegar Bet record del wallet
+- ✅ Validación de formato de record
+- ✅ Instrucciones expandibles (cómo encontrar bet record)
+- ✅ Detección automática de winning/losing outcome
+- ✅ Network: testnetbeta
+- ✅ Fee: 5 credits
+- ✅ Error handling mejorado (double-claim, losing outcome, etc.)
+- ✅ Callback onClaimed para refresh de datos
+
+**Firma del contrato:**
+```leo
+claim_winnings(
+  bet: Bet
+)
+```
+
+#### 5. Integración en Pages ✅
+**Archivo**: `src/pages/markets/[id].tsx`
+
+**Cambios:**
+- ✅ Imports de ResolveMarket y ClaimWinnings
+- ✅ Reemplazó sección inline de resolve con componente dedicado
+- ✅ Añadió sección de ClaimWinnings para markets resueltos
+- ✅ Refresh automático al resolver o reclamar
+- ✅ Removed Transaction import (no longer needed)
+- ✅ Limpieza de código legacy
 
 ---
 
-*Última actualización: 29 Enero 2026, 03:15 AM*
+*Última actualización: 29 Enero 2026*
