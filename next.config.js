@@ -55,13 +55,26 @@ const nextConfig = {
     // Handle nextjs bug with wasm static files
     patchWasmModuleImport(config, options.isServer);
 
-    // In next.config.js, inside your webpack function:
+    // Handle WASM files for @demox-labs and @provablehq
     config.module.rules.push({
       test: /\.wasm$/,
-      include: /node_modules[\\/]@demox-labs[\\/]aleo-sdk-web/,
+      include: /node_modules[\\/](@demox-labs|@provablehq)[\\/]/,
       type: 'javascript/auto',
       loader: 'file-loader',
     });
+
+    // Exclude problematic WASM packages from being processed
+    config.externals = config.externals || [];
+    if (!Array.isArray(config.externals)) {
+      config.externals = [config.externals];
+    }
+
+    // Only externalize on server side
+    if (options.isServer) {
+      config.externals.push({
+        '@provablehq/sdk': 'commonjs @provablehq/sdk',
+      });
+    }
 
     return config;
   },
