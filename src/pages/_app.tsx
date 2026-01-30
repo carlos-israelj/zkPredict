@@ -28,11 +28,14 @@ import { CURRENT_NETWORK, CURRENT_RPC_URL } from '@/types';
 
 // Initialize the wallet adapters outside the component
 // The wallet adapter will automatically detect all available Aleo wallets
-// including Leo Wallet, Puzzle Wallet, Soter, FoxWallet, etc.
+// including Leo Wallet, Puzzle Wallet, Shield Wallet, Soter, FoxWallet, etc.
+// Puzzle and Shield wallets are detected automatically via Window Provider (window.aleo)
 const wallets = [
   new LeoWalletAdapter({
     appName: 'zkPredict',
   }),
+  // Puzzle Wallet and Shield Wallet are auto-detected via the standard Window Provider
+  // No need for explicit adapters - they will appear in the wallet modal automatically
 ];
 
 type AppPropsWithLayout = AppProps & {
@@ -55,7 +58,6 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
             decryptPermission={DecryptPermission.UponRequest}
             network={WalletAdapterNetwork.TestnetBeta}
             autoConnect
-            
           >
             <WalletModalProvider>
               <ThemeProvider attribute="data-theme" enableSystem={true} defaultTheme="dark">
