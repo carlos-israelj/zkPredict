@@ -33,14 +33,12 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
     setIsClaiming(true);
 
     try {
-      // Parse the bet record to validate format
-      // In a real app, you'd want more robust parsing
-      // The bet record should be in the format returned by place_bet transaction
+      // Get the bet record (can be encrypted "record1..." or decrypted JSON format)
       const betRecord = betRecordString.trim();
 
-      // Validate that it looks like a record
-      if (!betRecord.includes('owner:') || !betRecord.includes('market_id:')) {
-        alert('Invalid bet record format. Please paste the complete record from your bet transaction.');
+      // Basic validation - must not be empty
+      if (!betRecord) {
+        alert('Please paste your Bet record.');
         setIsClaiming(false);
         return;
       }
@@ -48,7 +46,7 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
       // Prepare transaction inputs for claim_winnings
       // Signature: claim_winnings(bet: Bet)
       const inputs = [
-        betRecord, // bet: Bet record
+        betRecord, // bet: Bet record (encrypted or decrypted format)
       ];
 
       console.log('Claiming winnings with bet record');
@@ -60,7 +58,7 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
         'zkpredict.aleo', // Our deployed program
         'claim_winnings',
         inputs,
-        5000000, // 5 credits fee (claim_winnings updates mappings)
+        100000, // 0.1 credits fee (reduced for testing)
         false // Public fee
       );
 
@@ -167,14 +165,15 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
                   <div className="text-sm space-y-2">
                     <p><strong>To claim your winnings, you need your Bet record:</strong></p>
                     <ol className="list-decimal list-inside space-y-1 ml-2">
-                      <li>Go to your wallet's transaction history</li>
-                      <li>Find the transaction where you placed your bet</li>
-                      <li>Look for the "Outputs" or "Records" section</li>
-                      <li>Copy the entire Bet record (should include owner, market_id, bet_id, outcome, amount, odds_at_bet)</li>
+                      <li>Open Leo Wallet extension</li>
+                      <li>Go to "Recent Activity" and find your bet transaction</li>
+                      <li>Click on the transaction to view details</li>
+                      <li>Scroll down to "OUTPUTS" section</li>
+                      <li>Copy the ENTIRE encrypted record (starts with "record1...")</li>
                       <li>Paste it in the field below</li>
                     </ol>
                     <p className="text-xs mt-2">
-                      <strong>Note:</strong> Bet records are private. Only you can see them in your wallet.
+                      <strong>Note:</strong> Bet records are private and encrypted. Only you can see them in your wallet.
                       Each bet can only be claimed once (Wave 2 anti-double-claim protection).
                     </p>
                   </div>
@@ -186,23 +185,23 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text">Paste Your Bet Record</span>
-                <span className="label-text-alt">From your wallet transaction</span>
+                <span className="label-text-alt">From Leo Wallet OUTPUTS section</span>
               </label>
               <textarea
-                placeholder={`Example format:\n{\n  owner: aleo1...,\n  market_id: 123456field,\n  bet_id: 789field,\n  outcome: 1u8,\n  amount: 1000000u64,\n  odds_at_bet: 10000u64\n}`}
+                placeholder="record1qvqsq6y59ff5yswzv72zkaarjl3jrxvryg8258l75yjvxc4w9hcq36csq5yk6ctjddjhghmfv3psqqszqqv44g03xwsjqxsutgd2n58fhpd6zqxvlmg0uhmxdys9z97qn7fp94fpjtv2dag07xxxprg70c3835pe8rygkq6jvqn9rz2yvgpuf3sgqe3x2azld9jyxqqzqgq2a4hk3eg5u4e9apsc9p8dw07qed248jv766t6q2pv8f9e49gajqtgmjh2mzarqr63ymk9m0vrksu39xmen0keg2hwx6xw7d7xktx3pgrk7at5vdhk6efrqqpqzqr95gxg2vut3228qphkeus467xn7g7z2l5f9zcde2nydysk8hw2pvrxzmt0w4h8ggcqqgqsqyenz5g6mqrtgzkk736u2xddpnwjf8kxn8lvaw2dckgzte9lergfpdhkgerntashghmzv46zxqqzqyqrqd07yu6glfcqgx5dc9u45u0y6dkekfssjg8xlkm6l4576nm3zy03u3cs0qwqp234wzrg4cn0la5dxwtayhyj4f9zpm35zeysdw69pg4yge8m"
                 className="textarea textarea-bordered h-40 font-mono text-xs"
                 value={betRecordString}
                 onChange={(e) => setBetRecordString(e.target.value)}
               />
             </div>
 
-            {/* Warning for Wrong Outcome */}
-            {betRecordString && betRecordString.includes(`outcome: ${market.winningOutcome}u8`) && (
-              <div className="alert alert-success mt-2">
-                <div>
+            {/* Info about encrypted records */}
+            {betRecordString && betRecordString.startsWith('record1') && (
+              <div className="alert alert-info mt-2">
+                <div className="text-xs">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="stroke-current flex-shrink-0 h-6 w-6"
+                    className="stroke-current flex-shrink-0 h-4 w-4 inline mr-2"
                     fill="none"
                     viewBox="0 0 24 24"
                   >
@@ -210,34 +209,11 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth="2"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <span>This bet is for the winning outcome! You can claim your winnings.</span>
-                </div>
-              </div>
-            )}
-
-            {betRecordString && !betRecordString.includes(`outcome: ${market.winningOutcome}u8`) && betRecordString.includes('outcome:') && (
-              <div className="alert alert-error mt-2">
-                <div>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="stroke-current flex-shrink-0 h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
                   <span>
-                    This bet is for a losing outcome. Only bets on the winning outcome (
-                    {market.outcomeLabels?.[market.winningOutcome] || `Outcome ${market.winningOutcome + 1}`}
-                    ) can be claimed.
+                    Encrypted record detected. The blockchain will verify if this bet is for the winning outcome when you claim.
                   </span>
                 </div>
               </div>
@@ -248,7 +224,7 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>Transaction fee: ~5 credits (actual: 2-4 credits)</span>
+              <span>Transaction fee: ~0.1 credits (reduced for testing)</span>
             </div>
 
             {/* Claim Button */}
