@@ -25,8 +25,8 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
       return;
     }
 
-    if (!betRecordString.trim()) {
-      alert('Please paste your Bet record');
+    if (!betId.trim()) {
+      alert('Please enter your Bet ID');
       return;
     }
 
@@ -35,13 +35,6 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
     try {
       // Get the bet_id (field value)
       const betIdTrimmed = betId.trim();
-
-      // Basic validation - must not be empty
-      if (!betIdTrimmed) {
-        alert('Please enter your Bet ID.');
-        setIsClaiming(false);
-        return;
-      }
 
       // Prepare transaction inputs for claim_winnings
       // Signature: claim_winnings(bet_id: field)
