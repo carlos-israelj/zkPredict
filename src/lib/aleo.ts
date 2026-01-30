@@ -1,9 +1,9 @@
 // Aleo blockchain interaction utilities
-// This module provides functions to read on-chain state from the zkpredict.aleo program
+// This module provides functions to read on-chain state from the zkpredict2.aleo program
 
 // Use Provable API v2 for reading program mappings (without /get/)
 const NETWORK_URL = 'https://api.provable.com/v2/testnet';
-const PROGRAM_ID = 'zkpredict.aleo';
+const PROGRAM_ID = 'zkpredict2.aleo';
 
 export interface OnChainMarket {
   creator: string;

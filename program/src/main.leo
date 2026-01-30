@@ -1,4 +1,4 @@
-program zkpredict.aleo {
+program zkpredict2.aleo {
 
     // ============================================
     // RECORDS (Private State)
