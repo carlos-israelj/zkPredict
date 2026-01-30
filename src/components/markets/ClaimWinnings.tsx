@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
-import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
+import { Transaction, WalletAdapterNetwork } from '@demox-labs/aleo-wallet-adapter-base';
 import { Market, Bet } from '@/types';
 
 interface ClaimWinningsProps {
@@ -42,18 +42,22 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
         betIdTrimmed, // bet_id: field
       ];
 
-      console.log('Claiming winnings with bet_id:', betIdTrimmed);
+      console.log('Claiming winnings with inputs:', inputs);
+      console.log('PublicKey:', publicKey);
+      console.log('Bet ID:', betIdTrimmed);
 
       // Create transaction using the Aleo wallet adapter
       const transaction = Transaction.createTransaction(
         publicKey,
-        'testnetbeta', // Use testnetbeta network
+        WalletAdapterNetwork.TestnetBeta,
         'zkpredict.aleo', // Our deployed program
         'claim_winnings',
         inputs,
         100000, // 0.1 credits fee (reduced for testing)
         false // Public fee
       );
+
+      console.log('Transaction object:', transaction);
 
       // Request transaction from wallet
       const txResponse = await requestTransaction(transaction);
