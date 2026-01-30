@@ -70,49 +70,89 @@ const MarketsPage: NextPageWithLayout = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Breadcrumb */}
-      <div className="text-sm breadcrumbs mb-6">
-        <ul>
-          <li><Link href="/">Home</Link></li>
-          <li>Markets</li>
+      <div className="text-sm breadcrumbs mb-6 font-mono">
+        <ul className="text-base-content/60">
+          <li><Link href="/" className="hover:text-cyan-400 transition-colors">Home</Link></li>
+          <li className="text-cyan-400">Markets</li>
         </ul>
       </div>
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Prediction Markets</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h1 className="font-display text-5xl font-bold mb-2 gradient-text-cyan">Prediction Markets</h1>
+          <p className="text-base-content/70 text-lg">
             Discover and bet on outcomes with complete privacy powered by Aleo
           </p>
         </div>
         <button
-          className="btn btn-primary"
+          className="btn btn-primary border-0 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 font-bold transition-all duration-300 shadow-lg hover:shadow-cyan-500/50"
           onClick={() => setShowCreateMarket(!showCreateMarket)}
         >
-          {showCreateMarket ? 'View Markets' : 'Create Market'}
+          {showCreateMarket ? (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              View Markets
+            </>
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Create Market
+            </>
+          )}
         </button>
       </div>
 
-      {/* Statistics */}
-      <div className="stats stats-vertical lg:stats-horizontal shadow mb-8 w-full">
-        <div className="stat">
-          <div className="stat-title">Total Markets</div>
-          <div className="stat-value">{loading ? '...' : combinedMarkets.length}</div>
-          <div className="stat-desc">Across all categories</div>
-        </div>
-        <div className="stat">
-          <div className="stat-title">Active Markets</div>
-          <div className="stat-value">
-            {loading ? '...' : combinedMarkets.filter(m => !m.resolved && Math.floor(Date.now() / 1000) < m.endTime).length}
+      {/* Statistics with enhanced design */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="relative card bg-base-300 border border-cyan-500/20 overflow-hidden group hover:border-cyan-500/50 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="card-body relative z-10">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs font-mono uppercase tracking-wider text-base-content/50">Total Markets</div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div className="font-display text-4xl font-bold gradient-text-cyan">
+              {loading ? '...' : combinedMarkets.length}
+            </div>
+            <div className="text-xs text-base-content/60 font-mono mt-1">Across all categories</div>
           </div>
-          <div className="stat-desc">Currently accepting bets</div>
         </div>
-        <div className="stat">
-          <div className="stat-title">Total Volume</div>
-          <div className="stat-value">
-            0.00
+
+        <div className="relative card bg-base-300 border border-emerald-500/20 overflow-hidden group hover:border-emerald-500/50 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="card-body relative z-10">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs font-mono uppercase tracking-wider text-base-content/50">Active Markets</div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div className="font-display text-4xl font-bold text-emerald-400">
+              {loading ? '...' : combinedMarkets.filter(m => !m.resolved && Math.floor(Date.now() / 1000) < m.endTime).length}
+            </div>
+            <div className="text-xs text-base-content/60 font-mono mt-1">Currently accepting bets</div>
           </div>
-          <div className="stat-desc">Credits locked (Coming soon)</div>
+        </div>
+
+        <div className="relative card bg-base-300 border border-amber-500/20 overflow-hidden group hover:border-amber-500/50 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="card-body relative z-10">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs font-mono uppercase tracking-wider text-base-content/50">Total Volume</div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="font-display text-4xl font-bold text-amber-400">0.00</div>
+            <div className="text-xs text-base-content/60 font-mono mt-1">Credits locked (Coming soon)</div>
+          </div>
         </div>
       </div>
 
@@ -131,29 +171,49 @@ const MarketsPage: NextPageWithLayout = () => {
         <MarketList markets={combinedMarkets} />
       )}
 
-      {/* Features Info */}
+      {/* Features Info with enhanced design */}
       <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card bg-base-200">
-          <div className="card-body">
-            <h3 className="card-title">Private Betting</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="relative card bg-base-300 border border-cyan-500/20 overflow-hidden group hover:border-cyan-500/50 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="card-body relative z-10">
+            <div className="flex items-center gap-3 mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <h3 className="font-display text-xl font-bold">Private Betting</h3>
+            </div>
+            <p className="text-sm text-base-content/70 leading-relaxed">
               Your bets are completely private using Aleo's zero-knowledge proofs. Only you know your positions.
             </p>
           </div>
         </div>
-        <div className="card bg-base-200">
-          <div className="card-body">
-            <h3 className="card-title">Multi-Outcome Markets</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Wave 3: Support for markets with 2-255 possible outcomes, not just binary YES/NO.
+
+        <div className="relative card bg-base-300 border border-amber-500/20 overflow-hidden group hover:border-amber-500/50 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="card-body relative z-10">
+            <div className="flex items-center gap-3 mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <h3 className="font-display text-xl font-bold">Multi-Outcome</h3>
+            </div>
+            <p className="text-sm text-base-content/70 leading-relaxed">
+              Support for markets with 2-255 possible outcomes, not just binary YES/NO.
             </p>
           </div>
         </div>
-        <div className="card bg-base-200">
-          <div className="card-body">
-            <h3 className="card-title">Smart Categories</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Wave 4: Discover markets by category - Sports, Politics, Crypto, Weather, and more.
+
+        <div className="relative card bg-base-300 border border-purple-500/20 overflow-hidden group hover:border-purple-500/50 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="card-body relative z-10">
+            <div className="flex items-center gap-3 mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <h3 className="font-display text-xl font-bold">Smart Categories</h3>
+            </div>
+            <p className="text-sm text-base-content/70 leading-relaxed">
+              Discover markets by category - Sports, Politics, Crypto, Weather, and more.
             </p>
           </div>
         </div>

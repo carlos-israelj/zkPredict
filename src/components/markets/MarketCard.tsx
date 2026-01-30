@@ -53,56 +53,70 @@ export default function MarketCard({ market, pools }: MarketCardProps) {
 
   return (
     <Link href={`/markets/${market.marketId}`}>
-      <div className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full">
-        <div className="card-body">
+      <div className="group relative card bg-base-300 border border-glow hover:border-cyan-500/50 transition-all duration-300 cursor-pointer h-full overflow-hidden">
+        {/* Animated gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+        {/* Cyber grid background */}
+        <div className="absolute inset-0 cyber-grid opacity-30" />
+
+        <div className="card-body relative z-10">
           {/* Header with category and status */}
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex gap-2">
-              <span className={`badge ${getCategoryBadgeColor(market.category)}`}>
+          <div className="flex items-start justify-between gap-2 mb-3">
+            <div className="flex gap-2 flex-wrap">
+              <span className={`badge ${getCategoryBadgeColor(market.category)} border-0 font-medium`}>
                 {CATEGORY_LABELS[market.category]}
               </span>
               {getStatusBadge()}
             </div>
-            <span className="badge badge-ghost text-xs">{formatTimeRemaining(timeRemaining)}</span>
+            <span className="badge badge-ghost border border-base-content/20 text-xs font-mono">
+              {formatTimeRemaining(timeRemaining)}
+            </span>
           </div>
 
           {/* Title */}
-          <h3 className="card-title text-lg line-clamp-2 min-h-[3.5rem]">
+          <h3 className="font-display text-xl font-bold line-clamp-2 min-h-[3.5rem] mb-2 group-hover:text-cyan-400 transition-colors duration-300">
             {market.title || `Market ${market.marketId.substring(0, 8)}...`}
           </h3>
 
           {/* Description */}
           {market.description && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+            <p className="text-sm text-base-content/70 line-clamp-2 mb-4 font-light">
               {market.description}
             </p>
           )}
 
-          {/* Pool Information */}
-          <div className="mt-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-semibold">Total Pool</span>
-              <span className="text-lg font-bold">{(totalPool / 1_000_000).toFixed(2)} credits</span>
+          {/* Pool Information with enhanced styling */}
+          <div className="mt-auto pt-4 border-t border-base-content/10">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-xs font-medium uppercase tracking-wider text-base-content/60">Total Pool</span>
+              <span className="font-display text-2xl font-bold gradient-text-cyan">
+                {(totalPool / 1_000_000).toFixed(2)}
+              </span>
             </div>
+            <div className="text-[10px] text-base-content/50 text-right font-mono -mt-2 mb-3">CREDITS</div>
 
-            {/* Outcome Distribution (Wave 3: Multi-outcome support) */}
+            {/* Outcome Distribution with enhanced bars */}
             {market.outcomeLabels && distribution.length > 0 && (
-              <div className="space-y-2 mt-3">
+              <div className="space-y-3 mt-4">
                 {market.outcomeLabels.map((label, index) => (
-                  <div key={index} className="space-y-1">
+                  <div key={index} className="space-y-1.5">
                     <div className="flex justify-between text-xs">
-                      <span className="font-medium">{label}</span>
-                      <span>{distribution[index].toFixed(1)}%</span>
+                      <span className="font-medium text-base-content/80">{label}</span>
+                      <span className="font-mono font-semibold text-cyan-400">{distribution[index].toFixed(1)}%</span>
                     </div>
-                    <div className="w-full bg-base-300 rounded-full h-2">
+                    <div className="relative w-full bg-base-100/50 rounded-full h-2 overflow-hidden">
                       <div
-                        className={`h-2 rounded-full ${
+                        className={`h-2 rounded-full transition-all duration-500 relative ${
                           market.resolved && market.winningOutcome === index
-                            ? 'bg-success'
-                            : 'bg-primary'
+                            ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 glow-emerald'
+                            : 'bg-gradient-to-r from-cyan-400 to-cyan-500'
                         }`}
                         style={{ width: `${distribution[index]}%` }}
-                      />
+                      >
+                        {/* Shimmer effect */}
+                        <div className="absolute inset-0 shimmer opacity-50" />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -110,24 +124,32 @@ export default function MarketCard({ market, pools }: MarketCardProps) {
             )}
           </div>
 
-          {/* Resolved Outcome */}
+          {/* Resolved Outcome with enhanced styling */}
           {market.resolved && market.outcomeLabels && (
-            <div className="alert alert-success mt-4">
-              <span className="text-sm">
-                <strong>Winner:</strong> {market.outcomeLabels[market.winningOutcome]}
-              </span>
+            <div className="mt-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+              <div className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm font-medium text-emerald-400">
+                  Winner: <span className="font-bold">{market.outcomeLabels[market.winningOutcome]}</span>
+                </span>
+              </div>
             </div>
           )}
 
-          {/* Auto-resolve indicator (Wave 2) */}
+          {/* Auto-resolve indicator with enhanced design */}
           {!market.resolved && market.autoResolve && (
-            <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="flex items-center gap-2 mt-3 text-xs text-base-content/50 font-mono">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>Auto-resolves after end time</span>
+              <span>AUTO-RESOLVE ENABLED</span>
             </div>
           )}
+
+          {/* Corner accent */}
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
       </div>
     </Link>
