@@ -210,50 +210,109 @@ export default function CreateMarket() {
           <p className="text-sm opacity-70">Set up your prediction market in a few simple steps</p>
         </div>
 
-        {/* INPUT ZONE 1: Market Question - Elevated Card */}
-        <div className="bg-base-100 rounded-xl p-6 border-2 border-base-300 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="text-primary font-bold">1</span>
+        {/* INPUT ZONE 1: Market Question - Enhanced Editorial Card */}
+        <div className="group relative bg-gradient-to-br from-base-100 to-base-100 rounded-2xl p-8 border-2 border-base-300 hover:border-primary/30 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-500">
+          {/* Decorative gradient corner */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 via-transparent to-transparent rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+          {/* Section header with refined badge */}
+          <div className="flex items-center gap-3 mb-6 relative">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:border-primary/50 transition-all duration-300">
+                <span className="font-display text-primary font-black text-lg">1</span>
+              </div>
             </div>
-            <div className="text-sm font-bold uppercase tracking-wider opacity-50">Market Question</div>
+            <div>
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-primary/60 mb-0.5">Step One</div>
+              <div className="text-base font-bold tracking-wide">Market Question</div>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            {/* Title */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-semibold text-base">What will people predict? *</span>
-                <span className="label-text-alt text-xs opacity-60">{title.length}/200</span>
+          <div className="space-y-6">
+            {/* Title Input - Magazine editorial style */}
+            <div className="form-control group/input">
+              <label className="label pb-3">
+                <span className="label-text font-bold text-base flex items-center gap-2">
+                  What will people predict?
+                  <span className="text-error text-sm">*</span>
+                </span>
+                <span className="font-mono text-xs tabular-nums px-2 py-1 rounded-md bg-base-200/50 border border-base-300">
+                  {title.length}<span className="opacity-40">/200</span>
+                </span>
               </label>
-              <input
-                type="text"
-                placeholder="Will Bitcoin reach $100,000 by December 31, 2025?"
-                className="input input-bordered input-lg bg-base-200 focus:bg-base-100 focus:border-primary focus:outline-none transition-colors"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                maxLength={200}
-              />
-              <label className="label">
-                <span className="label-text-alt text-xs opacity-60">Make it clear, specific, and unambiguous</span>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Will Bitcoin reach $100,000 by December 31, 2025?"
+                  className="input input-bordered w-full h-14 text-lg bg-base-200/50 border-2 border-base-300 focus:border-primary focus:bg-base-100 focus:shadow-lg focus:shadow-primary/5 hover:border-base-content/20 transition-all duration-300 placeholder:text-base-content/30 rounded-xl"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={200}
+                />
+                {/* Animated underline accent */}
+                <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-primary to-secondary group-hover/input:w-full transition-all duration-500" />
+              </div>
+              <label className="label pt-2">
+                <span className="label-text-alt text-xs flex items-center gap-1.5 opacity-60">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Make it clear, specific, and unambiguous
+                </span>
               </label>
             </div>
 
-            {/* Description */}
+            {/* Divider with dot pattern */}
+            <div className="flex items-center gap-2 py-2">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-base-300 to-transparent" />
+              <div className="flex gap-1">
+                <div className="w-1 h-1 rounded-full bg-base-300" />
+                <div className="w-1 h-1 rounded-full bg-base-300" />
+                <div className="w-1 h-1 rounded-full bg-base-300" />
+              </div>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-base-300 to-transparent" />
+            </div>
+
+            {/* Description Textarea - Refined editorial block */}
             <div className="form-control">
-              <label className="label">
-                <span className="label-text font-semibold">How will this be resolved? (Optional but recommended)</span>
+              <label className="label pb-3">
+                <span className="label-text font-bold flex items-center gap-2">
+                  How will this be resolved?
+                  <span className="text-xs font-normal opacity-60 bg-base-200 px-2 py-0.5 rounded-full">Optional but recommended</span>
+                </span>
               </label>
-              <textarea
-                placeholder="Example: This market resolves YES if Bitcoin (BTC/USD) trades at or above $100,000 on any major exchange (Coinbase, Binance, or Kraken) according to CoinMarketCap data on or before 11:59 PM UTC on December 31, 2025..."
-                className="textarea textarea-bordered h-32 bg-base-200 focus:bg-base-100 focus:border-primary focus:outline-none transition-colors leading-relaxed"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-              <label className="label">
-                <span className="label-text-alt text-xs opacity-60">Explain the resolution criteria to avoid disputes</span>
+              <div className="relative">
+                <textarea
+                  placeholder="Example: This market resolves YES if Bitcoin (BTC/USD) trades at or above $100,000 on any major exchange (Coinbase, Binance, or Kraken) according to CoinMarketCap data on or before 11:59 PM UTC on December 31, 2025..."
+                  className="textarea textarea-bordered w-full h-36 text-[15px] leading-relaxed bg-base-200/50 border-2 border-base-300 focus:border-primary focus:bg-base-100 focus:shadow-lg focus:shadow-primary/5 hover:border-base-content/20 transition-all duration-300 placeholder:text-base-content/30 placeholder:text-sm rounded-xl resize-none"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+                {/* Corner accent */}
+                <div className="absolute bottom-3 right-3 w-4 h-4 border-r-2 border-b-2 border-base-300 rounded-br-lg opacity-30" />
+              </div>
+              <label className="label pt-2">
+                <span className="label-text-alt text-xs flex items-center gap-1.5 opacity-60">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Explain the resolution criteria to avoid disputes
+                </span>
               </label>
             </div>
+
+            {/* Quality indicator - subtle but helpful */}
+            {title.length > 0 && (
+              <div className="flex items-center gap-2 p-3 bg-base-200/30 border border-base-300/50 rounded-lg animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className={`w-2 h-2 rounded-full ${title.length >= 20 ? 'bg-success' : 'bg-warning'} animate-pulse`} />
+                <span className="text-xs opacity-70">
+                  {title.length >= 20
+                    ? '✓ Good question length'
+                    : 'Try to be more specific (20+ characters recommended)'}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
