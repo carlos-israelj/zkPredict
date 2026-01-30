@@ -4,6 +4,7 @@ import MarketList from '@/components/markets/MarketList';
 import CreateMarket from '@/components/markets/CreateMarket';
 import { Market, MarketCategory } from '@/types';
 import { useAllMarketsMetadata } from '@/hooks/useMarketMetadata';
+import Link from 'next/link';
 
 // Mock data for demonstration - In production, this would come from on-chain data + backend API
 const MOCK_MARKETS: Market[] = [
@@ -134,6 +135,14 @@ const MarketsPage: NextPageWithLayout = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Breadcrumb */}
+      <div className="text-sm breadcrumbs mb-6">
+        <ul>
+          <li><Link href="/">Home</Link></li>
+          <li>Markets</li>
+        </ul>
+      </div>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
