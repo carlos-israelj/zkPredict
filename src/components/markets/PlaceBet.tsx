@@ -331,7 +331,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                           </span>
                           {outcomeOdds && (
                             <div className="text-xs text-gray-500">
-                              {outcomeOdds.poolSize} credits ({outcomeOdds.poolShare}% of pool)
+                              {(outcomeOdds.poolSize / 1_000_000).toFixed(2)} credits ({outcomeOdds.poolShare}% of pool)
                             </div>
                           )}
                         </div>
