@@ -210,198 +210,233 @@ export default function CreateMarket() {
           <p className="text-sm opacity-70">Set up your prediction market in a few simple steps</p>
         </div>
 
-        {/* Basic Info Section */}
-        <div className="space-y-4">
-          <div className="text-sm font-bold uppercase tracking-wider opacity-50">Market Question</div>
-
-          {/* Title */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold text-base">What will people predict? *</span>
-              <span className="label-text-alt text-xs opacity-60">{title.length}/200</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Will Bitcoin reach $100,000 by December 31, 2025?"
-              className="input input-bordered input-lg bg-base-100 focus:border-primary focus:outline-none transition-colors"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={200}
-            />
-            <label className="label">
-              <span className="label-text-alt text-xs opacity-60">Make it clear, specific, and unambiguous</span>
-            </label>
+        {/* INPUT ZONE 1: Market Question - Elevated Card */}
+        <div className="bg-base-100 rounded-xl p-6 border-2 border-base-300 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <span className="text-primary font-bold">1</span>
+            </div>
+            <div className="text-sm font-bold uppercase tracking-wider opacity-50">Market Question</div>
           </div>
 
-          {/* Description */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">How will this be resolved? (Optional but recommended)</span>
-            </label>
-            <textarea
-              placeholder="Example: This market resolves YES if Bitcoin (BTC/USD) trades at or above $100,000 on any major exchange (Coinbase, Binance, or Kraken) according to CoinMarketCap data on or before 11:59 PM UTC on December 31, 2025..."
-              className="textarea textarea-bordered h-32 bg-base-100 focus:border-primary focus:outline-none transition-colors leading-relaxed"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-            <label className="label">
-              <span className="label-text-alt text-xs opacity-60">Explain the resolution criteria to avoid disputes</span>
-            </label>
-          </div>
-        </div>
+          <div className="space-y-4">
+            {/* Title */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-semibold text-base">What will people predict? *</span>
+                <span className="label-text-alt text-xs opacity-60">{title.length}/200</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Will Bitcoin reach $100,000 by December 31, 2025?"
+                className="input input-bordered input-lg bg-base-200 focus:bg-base-100 focus:border-primary focus:outline-none transition-colors"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={200}
+              />
+              <label className="label">
+                <span className="label-text-alt text-xs opacity-60">Make it clear, specific, and unambiguous</span>
+              </label>
+            </div>
 
-        {/* Category - Button Pills */}
-        <div className="space-y-3 mt-6">
-          <label className="label">
-            <span className="label-text font-semibold">Category *</span>
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all ${
-                  category === Number(key)
-                    ? 'bg-primary text-primary-content shadow-md scale-105'
-                    : 'bg-base-100 hover:bg-base-300 border-2 border-base-300 hover:border-primary/30'
-                }`}
-                onClick={() => setCategory(Number(key) as MarketCategory)}
-              >
-                {label}
-              </button>
-            ))}
+            {/* Description */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-semibold">How will this be resolved? (Optional but recommended)</span>
+              </label>
+              <textarea
+                placeholder="Example: This market resolves YES if Bitcoin (BTC/USD) trades at or above $100,000 on any major exchange (Coinbase, Binance, or Kraken) according to CoinMarketCap data on or before 11:59 PM UTC on December 31, 2025..."
+                className="textarea textarea-bordered h-32 bg-base-200 focus:bg-base-100 focus:border-primary focus:outline-none transition-colors leading-relaxed"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              <label className="label">
+                <span className="label-text-alt text-xs opacity-60">Explain the resolution criteria to avoid disputes</span>
+              </label>
+            </div>
           </div>
         </div>
 
-        {/* Outcomes Section */}
-        <div className="space-y-4 mt-6 pt-6 border-t-2 border-base-300">
-          <div className="text-sm font-bold uppercase tracking-wider opacity-50">Possible Outcomes</div>
-
-          {/* Quick Presets for Binary */}
-          <div className="flex gap-2 flex-wrap">
-            <button
-              type="button"
-              className={`btn btn-sm ${numOutcomes === 2 ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => {
-                handleNumOutcomesChange(2);
-                setOutcomeLabels(['Yes', 'No']);
-              }}
-            >
-              Yes/No
-            </button>
-            <button
-              type="button"
-              className={`btn btn-sm ${numOutcomes === 3 ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => {
-                handleNumOutcomesChange(3);
-                setOutcomeLabels(['Option A', 'Option B', 'Option C']);
-              }}
-            >
-              3 Options
-            </button>
-            <button
-              type="button"
-              className={`btn btn-sm ${numOutcomes === 4 ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => {
-                handleNumOutcomesChange(4);
-                setOutcomeLabels(['Option A', 'Option B', 'Option C', 'Option D']);
-              }}
-            >
-              4 Options
-            </button>
+        {/* INPUT ZONE 2: Category Selection - Elevated Card */}
+        <div className="bg-base-100 rounded-xl p-6 border-2 border-base-300 shadow-sm mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <span className="text-primary font-bold">2</span>
+            </div>
+            <div className="text-sm font-bold uppercase tracking-wider opacity-50">Category</div>
           </div>
 
-          {/* Custom Number Input */}
-          <div className="form-control">
+          <div className="space-y-3">
             <label className="label">
-              <span className="label-text font-semibold">Or enter custom number (2-10)</span>
+              <span className="label-text font-semibold">Select a category *</span>
             </label>
-            <input
-              type="number"
-              min="2"
-              max="10"
-              className="input input-bordered bg-base-100 w-32"
-              value={numOutcomes}
-              onChange={(e) => handleNumOutcomesChange(Number(e.target.value))}
-            />
-          </div>
-
-          {/* Outcome Labels */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">Name each outcome *</span>
-            </label>
-            <div className="space-y-3">
-              {outcomeLabels.map((label, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="badge badge-primary badge-lg font-bold w-8 shrink-0">{index + 1}</div>
-                  <input
-                    type="text"
-                    placeholder={`e.g., ${index === 0 ? 'Yes' : index === 1 ? 'No' : `Option ${index + 1}`}`}
-                    className="input input-bordered bg-base-100 flex-1"
-                    value={label}
-                    onChange={(e) => handleOutcomeLabelChange(index, e.target.value)}
-                  />
-                </div>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all ${
+                    category === Number(key)
+                      ? 'bg-primary text-primary-content shadow-md scale-105'
+                      : 'bg-base-200 hover:bg-base-300 border-2 border-base-300 hover:border-primary/30'
+                  }`}
+                  onClick={() => setCategory(Number(key) as MarketCategory)}
+                >
+                  {label}
+                </button>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Deadline Section */}
-        <div className="space-y-4 mt-6 pt-6 border-t-2 border-base-300">
-          <div className="text-sm font-bold uppercase tracking-wider opacity-50">Trading Deadline</div>
-
-          <div className="alert bg-base-100 border-2 border-base-300">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="text-xs">After this time, no more bets can be placed</span>
+        {/* INPUT ZONE 3: Outcomes Section - Elevated Card */}
+        <div className="bg-base-100 rounded-xl p-6 border-2 border-base-300 shadow-sm mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <span className="text-primary font-bold">3</span>
+            </div>
+            <div className="text-sm font-bold uppercase tracking-wider opacity-50">Possible Outcomes</div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-4">
+            {/* Quick Presets for Binary */}
+            <div>
+              <label className="label">
+                <span className="label-text font-semibold">Quick setup</span>
+              </label>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  type="button"
+                  className={`btn btn-sm ${numOutcomes === 2 ? 'btn-primary' : 'btn-ghost'}`}
+                  onClick={() => {
+                    handleNumOutcomesChange(2);
+                    setOutcomeLabels(['Yes', 'No']);
+                  }}
+                >
+                  Yes/No
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-sm ${numOutcomes === 3 ? 'btn-primary' : 'btn-ghost'}`}
+                  onClick={() => {
+                    handleNumOutcomesChange(3);
+                    setOutcomeLabels(['Option A', 'Option B', 'Option C']);
+                  }}
+                >
+                  3 Options
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-sm ${numOutcomes === 4 ? 'btn-primary' : 'btn-ghost'}`}
+                  onClick={() => {
+                    handleNumOutcomesChange(4);
+                    setOutcomeLabels(['Option A', 'Option B', 'Option C', 'Option D']);
+                  }}
+                >
+                  4 Options
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Number Input */}
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-semibold">Date *</span>
+                <span className="label-text font-semibold">Or enter custom number (2-10)</span>
               </label>
               <input
-                type="date"
-                className="input input-bordered bg-base-100 font-mono"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
+                type="number"
+                min="2"
+                max="10"
+                className="input input-bordered bg-base-200 focus:bg-base-100 focus:border-primary focus:outline-none transition-colors w-32"
+                value={numOutcomes}
+                onChange={(e) => handleNumOutcomesChange(Number(e.target.value))}
               />
             </div>
+
+            {/* Outcome Labels */}
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-semibold">Time (UTC) *</span>
+                <span className="label-text font-semibold">Name each outcome *</span>
               </label>
-              <input
-                type="time"
-                className="input input-bordered bg-base-100 font-mono"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-              />
+              <div className="space-y-3">
+                {outcomeLabels.map((label, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="badge badge-primary badge-lg font-bold w-8 shrink-0">{index + 1}</div>
+                    <input
+                      type="text"
+                      placeholder={`e.g., ${index === 0 ? 'Yes' : index === 1 ? 'No' : `Option ${index + 1}`}`}
+                      className="input input-bordered bg-base-200 focus:bg-base-100 focus:border-primary focus:outline-none transition-colors flex-1"
+                      value={label}
+                      onChange={(e) => handleOutcomeLabelChange(index, e.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Auto-Resolve (Wave 2) */}
-        <div className="form-control mt-4">
-          <label className="label cursor-pointer">
-            <span className="label-text">
-              Enable auto-resolution after end time
-              <span className="text-xs text-gray-500 block">
-                Anyone can resolve the market after the end time
-              </span>
-            </span>
-            <input
-              type="checkbox"
-              className="checkbox checkbox-primary"
-              checked={autoResolve}
-              onChange={(e) => setAutoResolve(e.target.checked)}
-            />
-          </label>
+        {/* INPUT ZONE 4: Deadline Section - Elevated Card */}
+        <div className="bg-base-100 rounded-xl p-6 border-2 border-base-300 shadow-sm mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <span className="text-primary font-bold">4</span>
+            </div>
+            <div className="text-sm font-bold uppercase tracking-wider opacity-50">Trading Deadline</div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="alert bg-base-200 border-2 border-base-300">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-xs">After this time, no more bets can be placed</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold">Date *</span>
+                </label>
+                <input
+                  type="date"
+                  className="input input-bordered bg-base-200 focus:bg-base-100 focus:border-primary focus:outline-none transition-colors font-mono"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold">Time (UTC) *</span>
+                </label>
+                <input
+                  type="time"
+                  className="input input-bordered bg-base-200 focus:bg-base-100 focus:border-primary focus:outline-none transition-colors font-mono"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Auto-Resolve (Wave 2) */}
+            <div className="form-control pt-2">
+              <label className="label cursor-pointer justify-start gap-3">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-primary"
+                  checked={autoResolve}
+                  onChange={(e) => setAutoResolve(e.target.checked)}
+                />
+                <span className="label-text">
+                  <span className="font-semibold">Enable auto-resolution after end time</span>
+                  <span className="text-xs opacity-60 block mt-0.5">
+                    Anyone can resolve the market after the end time
+                  </span>
+                </span>
+              </label>
+            </div>
+          </div>
         </div>
 
         {/* Privacy & Transparency Section */}
