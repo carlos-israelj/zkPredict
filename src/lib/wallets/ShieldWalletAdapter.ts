@@ -269,25 +269,49 @@ export class ShieldWalletAdapter extends BaseMessageSignerWalletAdapter {
             if (!wallet) throw new WalletConnectionError('Shield Wallet is not available');
 
             try {
+                // Check if wallet has an isConnected method
+                let isAlreadyConnected = false;
+                if (wallet.isConnected) {
+                    isAlreadyConnected = await wallet.isConnected();
+                }
+
                 // Shield Wallet may return the public key from connect
-                const result = await wallet.connect(decryptPermission, network, programs);
+                let result;
+                if (!isAlreadyConnected) {
+                    result = await wallet.connect(decryptPermission, network, programs);
+                }
 
                 // Try to get publicKey from result, wallet object, or wallet.publicKey
                 let publicKey = result?.publicKey || wallet.publicKey || wallet?.account?.address;
 
                 // Some wallets might need explicit account request
                 if (!publicKey && wallet.getAccount) {
-                    const account = await wallet.getAccount();
-                    publicKey = account?.address || account?.publicKey;
+                    try {
+                        const account = await wallet.getAccount();
+                        publicKey = account?.address || account?.publicKey;
+                    } catch (e) {
+                        // Ignore getAccount errors, wallet might not support it
+                    }
+                }
+
+                // Last attempt: check if wallet updated publicKey after connection
+                if (!publicKey) {
+                    // Wait a bit for wallet to update its state
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    publicKey = wallet.publicKey || wallet?.account?.address;
                 }
 
                 if (!publicKey) {
-                    throw new WalletConnectionError('Failed to get public key from Shield Wallet');
+                    throw new WalletConnectionError('Failed to get public key from Shield Wallet. Please make sure you approved the connection in the wallet extension.');
                 }
 
                 this._publicKey = publicKey;
             } catch (error: any) {
-                throw new WalletConnectionError(error?.message, error);
+                // If user rejected, provide clear message
+                if (error?.message?.includes('rejected') || error?.message?.includes('denied')) {
+                    throw new WalletConnectionError('Connection request was rejected by the user', error);
+                }
+                throw new WalletConnectionError(error?.message || 'Failed to connect to Shield Wallet', error);
             }
 
             this._wallet = wallet;
