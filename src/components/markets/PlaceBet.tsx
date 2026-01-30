@@ -242,31 +242,21 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
 
           {/* Transaction Info */}
           <div className="alert alert-info w-full max-w-2xl mb-6">
-            <div className="flex flex-col gap-2 w-full">
-              <div className="font-semibold">Transaction ID:</div>
-              <div className="font-mono text-xs break-all">{successTxId}</div>
-              <a
-                href={getTransactionExplorerUrl(successTxId)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-sm btn-outline mt-2"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
-                </svg>
-                View on Explorer
-              </a>
+            <div className="flex flex-col gap-2 w-full text-left">
+              <div className="font-semibold">Transaction Submitted</div>
+              <div className="text-sm">
+                Your bet has been broadcast to the Aleo blockchain and is being confirmed.
+              </div>
+              <div className="text-xs opacity-75 mt-2 space-y-1">
+                <div><strong>To view your transaction:</strong></div>
+                <ol className="list-decimal list-inside space-y-1 ml-2">
+                  <li>Open Leo Wallet extension</li>
+                  <li>Go to "Recent Activity"</li>
+                  <li>Find this transaction and click for details</li>
+                  <li>Copy the transaction ID (starts with "at1...")</li>
+                  <li>Search it on <a href="https://testnet.explorer.provable.com" target="_blank" rel="noopener noreferrer" className="link link-primary">testnet.explorer.provable.com</a></li>
+                </ol>
+              </div>
             </div>
           </div>
 
