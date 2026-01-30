@@ -243,8 +243,16 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
               </div>
             )}
 
+            {/* Transaction Fee Info */}
+            <div className="text-xs text-gray-500 mt-4 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Transaction fee: ~5 credits (actual: 2-4 credits)</span>
+            </div>
+
             {/* Claim Button */}
-            <div className="card-actions justify-end mt-6">
+            <div className="card-actions justify-end mt-2">
               <button
                 className={`btn btn-success ${isClaiming ? 'loading' : ''}`}
                 onClick={handleClaimWinnings}

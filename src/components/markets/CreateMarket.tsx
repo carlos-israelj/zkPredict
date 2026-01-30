@@ -252,8 +252,24 @@ export default function CreateMarket() {
           </label>
         </div>
 
+        {/* Transaction Cost Info */}
+        <div className="alert alert-info mt-6">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2">
+            <div>
+              <h4 className="font-bold">Transaction Fee</h4>
+              <div className="text-sm">Creating a market costs approximately <strong>10 credits</strong></div>
+            </div>
+            <div className="text-xs opacity-75">
+              Actual cost: 10-16 credits
+            </div>
+          </div>
+        </div>
+
         {/* Create Button */}
-        <div className="card-actions justify-end mt-6">
+        <div className="card-actions justify-end mt-4">
           <button
             className={`btn btn-primary ${isCreating ? 'loading' : ''}`}
             onClick={handleCreateMarket}
