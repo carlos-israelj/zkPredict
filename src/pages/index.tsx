@@ -20,6 +20,11 @@ const MainPage: NextPageWithLayout = () => {
       <div className="container mx-auto px-4 py-16">
         {/* Hero Section - cleaner, simpler */}
         <div className="text-center mb-16 max-w-4xl mx-auto">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <img src="/logo.svg" alt="zkPredict Logo" className="h-24 w-24 sm:h-32 sm:w-32 md:h-40 md:w-40 animate-float" />
+          </div>
+
           {/* Status badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 mb-6">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
