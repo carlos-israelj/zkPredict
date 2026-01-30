@@ -40,22 +40,30 @@ export default function MarketCard({ market, pools }: MarketCardProps) {
     totalPool > 0 ? (pool / totalPool) * 100 : 0
   ) || [];
 
+  // Get status badge
+  const getStatusBadge = () => {
+    if (market.resolved) {
+      return <span className="badge badge-success">Resolved</span>;
+    }
+    if (isEnded) {
+      return <span className="badge badge-error">Ended</span>;
+    }
+    return <span className="badge badge-primary">Active</span>;
+  };
+
   return (
     <Link href={`/markets/${market.marketId}`}>
       <div className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full">
         <div className="card-body">
           {/* Header with category and status */}
           <div className="flex items-start justify-between gap-2 mb-2">
-            <span className={`badge ${getCategoryBadgeColor(market.category)}`}>
-              {CATEGORY_LABELS[market.category]}
-            </span>
-            {market.resolved ? (
-              <span className="badge badge-accent">Resolved</span>
-            ) : isEnded ? (
-              <span className="badge badge-warning">Pending Resolution</span>
-            ) : (
-              <span className="badge badge-ghost">{formatTimeRemaining(timeRemaining)}</span>
-            )}
+            <div className="flex gap-2">
+              <span className={`badge ${getCategoryBadgeColor(market.category)}`}>
+                {CATEGORY_LABELS[market.category]}
+              </span>
+              {getStatusBadge()}
+            </div>
+            <span className="badge badge-ghost text-xs">{formatTimeRemaining(timeRemaining)}</span>
           </div>
 
           {/* Title */}
