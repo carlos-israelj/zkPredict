@@ -269,11 +269,23 @@ export class ShieldWalletAdapter extends BaseMessageSignerWalletAdapter {
             if (!wallet) throw new WalletConnectionError('Shield Wallet is not available');
 
             try {
-                await wallet.connect(decryptPermission, network, programs);
-                if (!wallet?.publicKey) {
+                // Shield Wallet may return the public key from connect
+                const result = await wallet.connect(decryptPermission, network, programs);
+
+                // Try to get publicKey from result, wallet object, or wallet.publicKey
+                let publicKey = result?.publicKey || wallet.publicKey || wallet?.account?.address;
+
+                // Some wallets might need explicit account request
+                if (!publicKey && wallet.getAccount) {
+                    const account = await wallet.getAccount();
+                    publicKey = account?.address || account?.publicKey;
+                }
+
+                if (!publicKey) {
                     throw new WalletConnectionError('Failed to get public key from Shield Wallet');
                 }
-                this._publicKey = wallet.publicKey;
+
+                this._publicKey = publicKey;
             } catch (error: any) {
                 throw new WalletConnectionError(error?.message, error);
             }
