@@ -272,28 +272,20 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                 <ol className="list-decimal list-inside space-y-1 ml-2">
                   <li>Open Leo Wallet extension</li>
                   <li>Go to "Recent Activity" and click on this transaction</li>
-                  <li>Look for "Outputs" or "Records" section</li>
-                  <li>Find the Bet record (looks like the example below)</li>
-                  <li>Copy the ENTIRE record and paste it here</li>
+                  <li>Scroll down to "OUTPUTS" section</li>
+                  <li>Copy the ENTIRE encrypted record (starts with "record1...")</li>
+                  <li>Paste it here and save it in a safe place</li>
                 </ol>
               </div>
 
               <div className="form-control w-full">
                 <label className="label">
                   <span className="label-text font-semibold">Paste your Bet record:</span>
-                  <span className="label-text-alt">From Leo Wallet transaction output</span>
+                  <span className="label-text-alt">From Leo Wallet OUTPUTS section</span>
                 </label>
                 <textarea
                   className="textarea textarea-bordered h-40 font-mono text-xs"
-                  placeholder={`Example format:
-{
-  owner: aleo1...,
-  market_id: ${market.marketId},
-  bet_id: 789field,
-  outcome: ${selectedOutcome}u8,
-  amount: ${Math.floor(parseFloat(betAmount) * 1000000)}u64,
-  odds_at_bet: 10000u64
-}`}
+                  placeholder="record1qvqsq6y59ff5yswzv72zkaarjl3jrxvryg8258l75yjvxc4w9hcq36csq5yk6ctjddjhghmfv3psqqszqqv44g03xwsjqxsutgd2n58fhpd6zqxvlmg0uhmxdys9z97qn7fp94fpjtv2dag07xxxprg70c3835pe8rygkq6jvqn9rz2yvgpuf3sgqe3x2azld9jyxqqzqgq2a4hk3eg5u4e9apsc9p8dw07qed248jv766t6q2pv8f9e49gajqtgmjh2mzarqr63ymk9m0vrksu39xmen0keg2hwx6xw7d7xktx3pgrk7at5vdhk6efrqqpqzqr95gxg2vut3228qphkeus467xn7g7z2l5f9zcde2nydysk8hw2pvrxzmt0w4h8ggcqqgqsqyenz5g6mqrtgzkk736u2xddpnwjf8kxn8lvaw2dckgzte9lergfpdhkgerntashghmzv46zxqqzqyqrqd07yu6glfcqgx5dc9u45u0y6dkekfssjg8xlkm6l4576nm3zy03u3cs0qwqp234wzrg4cn0la5dxwtayhyj4f9zpm35zeysdw69pg4yge8m"
                   value={successBetRecord || ''}
                   onChange={(e) => setSuccessBetRecord(e.target.value)}
                 />
