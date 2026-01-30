@@ -10,6 +10,16 @@ export const CURRENT_NETWORK: WalletAdapterNetwork = WalletAdapterNetwork.Testne
 //MAINNET_RPC_URL=https://mainnet.aleorpc.com
 export const CURRENT_RPC_URL = "https://testnetbeta.aleorpc.com";
 
+// Explorer URL based on current network
+export const EXPLORER_URL = CURRENT_NETWORK === WalletAdapterNetwork.TestnetBeta
+  ? "https://testnet.explorer.provable.com"
+  : "https://explorer.provable.com";
+
+// Helper function to get transaction explorer URL
+export const getTransactionExplorerUrl = (txId: string): string => {
+  return `${EXPLORER_URL}/transaction/${txId}`;
+};
+
 export type NextPageWithLayout<P = {}> = NextPage<P> & {
   authorization?: boolean;
   getLayout?: (page: ReactElement) => ReactNode;

@@ -17,10 +17,6 @@ import {
   WalletReadyState,
 } from '@demox-labs/aleo-wallet-adapter-base';
 
-// Import custom wallet adapters
-import { PuzzleWalletAdapter } from '@/lib/wallets/PuzzleWalletAdapter';
-import { ShieldWalletAdapter } from '@/lib/wallets/ShieldWalletAdapter';
-
 // Import global styles and wallet modal styles
 import 'swiper/swiper-bundle.css';
 
@@ -32,15 +28,8 @@ import { CURRENT_NETWORK, CURRENT_RPC_URL } from '@/types';
 
 // Initialize the wallet adapters outside the component
 // The wallet adapter will automatically detect all available Aleo wallets
-// including Leo Wallet, Puzzle Wallet, Shield Wallet, and others
 const wallets = [
   new LeoWalletAdapter({
-    appName: 'zkPredict',
-  }),
-  new PuzzleWalletAdapter({
-    appName: 'zkPredict',
-  }),
-  new ShieldWalletAdapter({
     appName: 'zkPredict',
   }),
 ];

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
 import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
-import { MarketCategory, CATEGORY_LABELS } from '@/types';
+import { MarketCategory, CATEGORY_LABELS, getTransactionExplorerUrl } from '@/types';
 import { createMarketMetadata } from '@/hooks/useMarketMetadata';
 
 export default function CreateMarket() {
@@ -167,7 +167,7 @@ export default function CreateMarket() {
               <div className="font-semibold">Transaction ID:</div>
               <div className="font-mono text-xs break-all">{successTxId}</div>
               <a
-                href={`https://explorer.aleo.org/transaction/${successTxId}`}
+                href={getTransactionExplorerUrl(successTxId)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-sm btn-outline mt-2"

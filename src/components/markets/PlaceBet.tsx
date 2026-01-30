@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
 import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
-import { Market, OddsData } from '@/types';
+import { Market, OddsData, getTransactionExplorerUrl } from '@/types';
 
 const QUICK_BET_PERCENTAGES = [
   { label: '10%', value: 0.1 },
@@ -229,7 +229,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
               <div className="font-semibold">Transaction ID:</div>
               <div className="font-mono text-xs break-all">{successTxId}</div>
               <a
-                href={`https://explorer.aleo.org/transaction/${successTxId}`}
+                href={getTransactionExplorerUrl(successTxId)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-sm btn-outline mt-2"
