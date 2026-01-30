@@ -264,16 +264,36 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
           <div className="alert alert-warning w-full max-w-2xl mb-6">
             <div className="flex flex-col gap-3 w-full">
               <div className="text-sm">
-                <strong>IMPORTANT:</strong> Save your Bet record! You'll need it to claim winnings if you win.
+                <strong>⚠️ CRITICAL:</strong> You MUST save your Bet record to claim winnings!
+              </div>
+
+              <div className="bg-base-300 p-3 rounded text-xs space-y-2">
+                <div className="font-semibold">How to get your Bet record:</div>
+                <ol className="list-decimal list-inside space-y-1 ml-2">
+                  <li>Open Leo Wallet extension</li>
+                  <li>Go to "Recent Activity" and click on this transaction</li>
+                  <li>Look for "Outputs" or "Records" section</li>
+                  <li>Find the Bet record (looks like the example below)</li>
+                  <li>Copy the ENTIRE record and paste it here</li>
+                </ol>
               </div>
 
               <div className="form-control w-full">
                 <label className="label">
-                  <span className="label-text font-semibold">Paste your Bet record from Leo Wallet:</span>
+                  <span className="label-text font-semibold">Paste your Bet record:</span>
+                  <span className="label-text-alt">From Leo Wallet transaction output</span>
                 </label>
                 <textarea
-                  className="textarea textarea-bordered h-32 font-mono text-xs"
-                  placeholder="Paste your Bet record here from Leo Wallet transaction output..."
+                  className="textarea textarea-bordered h-40 font-mono text-xs"
+                  placeholder={`Example format:
+{
+  owner: aleo1...,
+  market_id: ${market.marketId},
+  bet_id: 789field,
+  outcome: ${selectedOutcome}u8,
+  amount: ${Math.floor(parseFloat(betAmount) * 1000000)}u64,
+  odds_at_bet: 10000u64
+}`}
                   value={successBetRecord || ''}
                   onChange={(e) => setSuccessBetRecord(e.target.value)}
                 />
@@ -289,18 +309,23 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      Copied!
+                      Copied to Clipboard!
                     </>
                   ) : (
                     <>
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
-                      Copy Bet Record
+                      Copy Bet Record to Save
                     </>
                   )}
                 </button>
               )}
+
+              <div className="text-xs opacity-75">
+                💡 <strong>Tip:</strong> Save this record in a safe place (notepad, password manager, etc.).
+                Without it, you cannot claim your winnings even if you win!
+              </div>
             </div>
           </div>
 
