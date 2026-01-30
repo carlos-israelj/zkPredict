@@ -23,12 +23,53 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   const [oddsData, setOddsData] = useState<OddsData[]>([]);
   const [successTxId, setSuccessTxId] = useState<string | null>(null);
   const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
-  // Fetch wallet balance (simplified - in production use wallet adapter methods)
+  // Fetch wallet balance from Aleo blockchain
   useEffect(() => {
-    // Mock balance for now - in production, get from wallet adapter
-    // publicKey?.getBalance() or similar
-    setWalletBalance(100); // Default 100 credits for demo
+    const fetchBalance = async () => {
+      if (!publicKey) {
+        setWalletBalance(0);
+        return;
+      }
+
+      try {
+        setIsLoadingBalance(true);
+
+        // Query balance from Aleo testnet
+        // Credits are stored in the credits.aleo program
+        const response = await fetch(
+          `https://api.provable.com/v2/testnet/program/credits.aleo/mapping/account/${publicKey}`
+        );
+
+        if (response.ok) {
+          const balanceData = await response.json();
+          // Balance is returned in microcredits (1 credit = 1,000,000 microcredits)
+          // Parse the u64 value
+          const balanceMicrocredits = typeof balanceData === 'string'
+            ? parseInt(balanceData.replace('u64', ''))
+            : balanceData;
+
+          const balanceCredits = balanceMicrocredits / 1_000_000;
+          setWalletBalance(balanceCredits);
+        } else {
+          // If 404, wallet has 0 balance
+          setWalletBalance(0);
+        }
+      } catch (error) {
+        console.error('Error fetching wallet balance:', error);
+        setWalletBalance(0);
+      } finally {
+        setIsLoadingBalance(false);
+      }
+    };
+
+    fetchBalance();
+
+    // Refresh balance every 30 seconds
+    const interval = setInterval(fetchBalance, 30000);
+
+    return () => clearInterval(interval);
   }, [publicKey]);
 
   // Calculate odds for all outcomes (Wave 3)
@@ -314,7 +355,11 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
               <label className="label">
                 <span className="label-text">Bet Amount (credits)</span>
                 <span className="label-text-alt text-gray-500">
-                  Balance: {walletBalance.toFixed(2)} credits
+                  {isLoadingBalance ? (
+                    'Loading balance...'
+                  ) : (
+                    `Balance: ${walletBalance.toFixed(2)} credits`
+                  )}
                 </span>
               </label>
               <input
