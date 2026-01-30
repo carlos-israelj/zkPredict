@@ -22,7 +22,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   const [isPlacingBet, setIsPlacingBet] = useState(false);
   const [oddsData, setOddsData] = useState<OddsData[]>([]);
   const [successTxId, setSuccessTxId] = useState<string | null>(null);
-  const [successBetRecord, setSuccessBetRecord] = useState<string | null>(null);
+  const [successBetId, setSuccessBetId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
@@ -159,8 +159,9 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
 
       console.log('Bet placed:', txResponse);
 
-      // Show success message with transaction ID
+      // Show success message with transaction ID and bet_id
       setSuccessTxId(txResponse as string);
+      setSuccessBetId(nonce); // Save the bet_id (same as nonce)
 
     } catch (error) {
       console.error('Error placing bet:', error);
@@ -186,7 +187,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   const handlePlaceAnotherBet = () => {
     setBetAmount('');
     setSuccessTxId(null);
-    setSuccessBetRecord(null);
+    setSuccessBetId(null);
     setCopied(false);
   };
 
@@ -236,6 +237,12 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                 <div>{currentOdds?.odds}x</div>
                 <div className="font-semibold">Potential Return:</div>
                 <div className="text-success font-bold">{potentialReturn} credits</div>
+                {successBetId && (
+                  <>
+                    <div className="font-semibold col-span-2 mt-2 border-t border-success/20 pt-2">Bet ID (save this to claim winnings):</div>
+                    <div className="col-span-2 font-mono text-xs break-all bg-base-300 p-2 rounded">{successBetId}</div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -260,63 +267,20 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
             </div>
           </div>
 
-          {/* Bet Record Section */}
+          {/* Bet ID Section */}
           <div className="alert alert-warning w-full max-w-2xl mb-6">
             <div className="flex flex-col gap-3 w-full">
-              <div className="text-sm">
-                <strong>⚠️ CRITICAL:</strong> You MUST save your Bet record to claim winnings!
+              <div className="text-sm flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <strong>SAVE YOUR BET ID!</strong> You need it to claim winnings if you win.
               </div>
 
               <div className="bg-base-300 p-3 rounded text-xs space-y-2">
-                <div className="font-semibold">How to get your Bet record:</div>
-                <ol className="list-decimal list-inside space-y-1 ml-2">
-                  <li>Open Leo Wallet extension</li>
-                  <li>Go to "Recent Activity" and click on this transaction</li>
-                  <li>Scroll down to "OUTPUTS" section</li>
-                  <li>Copy the ENTIRE encrypted record (starts with "record1...")</li>
-                  <li>Paste it here and save it in a safe place</li>
-                </ol>
-              </div>
-
-              <div className="form-control w-full">
-                <label className="label">
-                  <span className="label-text font-semibold">Paste your Bet record:</span>
-                  <span className="label-text-alt">From Leo Wallet OUTPUTS section</span>
-                </label>
-                <textarea
-                  className="textarea textarea-bordered h-40 font-mono text-xs"
-                  placeholder="record1qvqsq6y59ff5yswzv72zkaarjl3jrxvryg8258l75yjvxc4w9hcq36csq5yk6ctjddjhghmfv3psqqszqqv44g03xwsjqxsutgd2n58fhpd6zqxvlmg0uhmxdys9z97qn7fp94fpjtv2dag07xxxprg70c3835pe8rygkq6jvqn9rz2yvgpuf3sgqe3x2azld9jyxqqzqgq2a4hk3eg5u4e9apsc9p8dw07qed248jv766t6q2pv8f9e49gajqtgmjh2mzarqr63ymk9m0vrksu39xmen0keg2hwx6xw7d7xktx3pgrk7at5vdhk6efrqqpqzqr95gxg2vut3228qphkeus467xn7g7z2l5f9zcde2nydysk8hw2pvrxzmt0w4h8ggcqqgqsqyenz5g6mqrtgzkk736u2xddpnwjf8kxn8lvaw2dckgzte9lergfpdhkgerntashghmzv46zxqqzqyqrqd07yu6glfcqgx5dc9u45u0y6dkekfssjg8xlkm6l4576nm3zy03u3cs0qwqp234wzrg4cn0la5dxwtayhyj4f9zpm35zeysdw69pg4yge8m"
-                  value={successBetRecord || ''}
-                  onChange={(e) => setSuccessBetRecord(e.target.value)}
-                />
-              </div>
-
-              {successBetRecord && (
-                <button
-                  className={`btn btn-sm ${copied ? 'btn-success' : 'btn-primary'}`}
-                  onClick={handleCopyBetRecord}
-                >
-                  {copied ? (
-                    <>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      Copied to Clipboard!
-                    </>
-                  ) : (
-                    <>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                      Copy Bet Record to Save
-                    </>
-                  )}
-                </button>
-              )}
-
-              <div className="text-xs opacity-75">
-                💡 <strong>Tip:</strong> Save this record in a safe place (notepad, password manager, etc.).
-                Without it, you cannot claim your winnings even if you win!
+                <div className="font-semibold">Your Bet ID is shown above in the Bet Summary.</div>
+                <div>Copy it and save it in a safe place (notepad, password manager, screenshot, etc.)</div>
+                <div className="text-warning font-semibold mt-2">Without your Bet ID, you cannot claim your winnings!</div>
               </div>
             </div>
           </div>
@@ -466,12 +430,82 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
               </div>
             )}
 
-            {/* Transaction Fee Info */}
-            <div className="text-xs text-gray-500 mt-4 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>Transaction fee: ~5 credits (actual: 2-5 credits)</span>
+            {/* Privacy Information */}
+            <div className="bg-base-300 rounded-lg p-4 mt-6 border-l-4 border-primary">
+              <div className="flex items-start gap-3 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <div className="flex-1">
+                  <h4 className="font-semibold mb-1 text-sm">Your Bet is Completely Private</h4>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    Zero-knowledge proofs protect your betting activity from public view
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <h5 className="text-xs font-semibold mb-2 flex items-center gap-2">
+                    <span className="badge badge-xs gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Publicly Visible
+                    </span>
+                  </h5>
+                  <ul className="text-xs space-y-1">
+                    <li className="flex items-start gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-success flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Total pool size updates</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-success flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Current odds changes</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h5 className="text-xs font-semibold mb-2 flex items-center gap-2">
+                    <span className="badge badge-xs gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      Always Hidden
+                    </span>
+                  </h5>
+                  <ul className="text-xs space-y-1">
+                    <li className="flex items-start gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      <span>Your bet amount ({betAmount} credits)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      <span>Which outcome you chose</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      <span>Your wallet address</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="mt-3 pt-3 border-t border-base-content/10 text-xs text-gray-600 dark:text-gray-400">
+                <strong>Transaction fee:</strong> 0.1 credits (reduced for testing)
+              </div>
             </div>
 
             {/* Place Bet Button */}
