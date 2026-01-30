@@ -159,9 +159,38 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
 
       console.log('Bet placed:', txResponse);
 
-      // Show success message with transaction ID and bet_id
+      // Show success message with transaction ID
       setSuccessTxId(txResponse as string);
-      setSuccessBetId(nonce); // Save the bet_id (same as nonce)
+
+      // Fetch the actual bet_id from the transaction after it's confirmed
+      // The bet_id is the hash of the nonce, stored in the future arguments
+      setTimeout(async () => {
+        try {
+          const response = await fetch(`https://api.provable.com/v2/testnet/transaction/${txResponse}`);
+          const txData = await response.json();
+
+          // Extract bet_id from the future arguments (4th argument is the hashed bet_id)
+          const futureOutput = txData.execution?.transitions?.[0]?.outputs?.find(
+            (output: any) => output.type === 'future'
+          );
+
+          if (futureOutput?.value) {
+            // Parse the future value to extract the bet_id (4th argument)
+            const match = futureOutput.value.match(/arguments:\s*\[([\s\S]*?)\]/);
+            if (match) {
+              const args = match[1].split(',').map((arg: string) => arg.trim());
+              // The 4th argument (index 3) is the hashed bet_id
+              const betId = args[3];
+              console.log('Extracted bet_id from transaction:', betId);
+              setSuccessBetId(betId);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching bet_id from transaction:', error);
+          // Fallback to showing the nonce with a warning
+          setSuccessBetId(`${nonce} (Note: Use transaction explorer to get the actual bet_id)`);
+        }
+      }, 3000); // Wait 3 seconds for transaction to be indexed
 
     } catch (error) {
       console.error('Error placing bet:', error);
@@ -237,12 +266,14 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                 <div>{currentOdds?.odds}x</div>
                 <div className="font-semibold">Potential Return:</div>
                 <div className="text-success font-bold">{potentialReturn} credits</div>
-                {successBetId && (
-                  <>
-                    <div className="font-semibold col-span-2 mt-2 border-t border-success/20 pt-2">Bet ID (save this to claim winnings):</div>
-                    <div className="col-span-2 font-mono text-xs break-all bg-base-300 p-2 rounded">{successBetId}</div>
-                  </>
-                )}
+                <div className="font-semibold col-span-2 mt-2 border-t border-success/20 pt-2">
+                  Bet ID (save this to claim winnings):
+                </div>
+                <div className="col-span-2 font-mono text-xs break-all bg-base-300 p-2 rounded">
+                  {successBetId || (
+                    <span className="text-gray-500 italic">Loading bet_id from blockchain...</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
