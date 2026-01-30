@@ -22,6 +22,8 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   const [isPlacingBet, setIsPlacingBet] = useState(false);
   const [oddsData, setOddsData] = useState<OddsData[]>([]);
   const [successTxId, setSuccessTxId] = useState<string | null>(null);
+  const [successBetRecord, setSuccessBetRecord] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
@@ -168,9 +170,24 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
     }
   };
 
+  const handleCopyBetRecord = async () => {
+    if (!successBetRecord) return;
+
+    try {
+      await navigator.clipboard.writeText(successBetRecord);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      alert('Failed to copy to clipboard');
+    }
+  };
+
   const handlePlaceAnotherBet = () => {
     setBetAmount('');
     setSuccessTxId(null);
+    setSuccessBetRecord(null);
+    setCopied(false);
   };
 
   // Show success screen if transaction succeeded
@@ -253,11 +270,47 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
             </div>
           </div>
 
-          {/* Important Note */}
+          {/* Bet Record Section */}
           <div className="alert alert-warning w-full max-w-2xl mb-6">
-            <div className="text-sm">
-              <strong>IMPORTANT:</strong> Save the Bet record from your wallet's transaction output.
-              You'll need this record to claim your winnings if your outcome wins!
+            <div className="flex flex-col gap-3 w-full">
+              <div className="text-sm">
+                <strong>IMPORTANT:</strong> Save your Bet record! You'll need it to claim winnings if you win.
+              </div>
+
+              <div className="form-control w-full">
+                <label className="label">
+                  <span className="label-text font-semibold">Paste your Bet record from Leo Wallet:</span>
+                </label>
+                <textarea
+                  className="textarea textarea-bordered h-32 font-mono text-xs"
+                  placeholder="Paste your Bet record here from Leo Wallet transaction output..."
+                  value={successBetRecord || ''}
+                  onChange={(e) => setSuccessBetRecord(e.target.value)}
+                />
+              </div>
+
+              {successBetRecord && (
+                <button
+                  className={`btn btn-sm ${copied ? 'btn-success' : 'btn-primary'}`}
+                  onClick={handleCopyBetRecord}
+                >
+                  {copied ? (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      Copy Bet Record
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
 

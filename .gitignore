@@ -6,5 +6,5 @@ node_modules
 program/build
 program/backup
 
-# Claude Code documentation
-../CLAUDE.md
+# Claude Code documentation (local only)
+CLAUDE.md
