@@ -18,6 +18,9 @@ export default function CreateMarket() {
   const [endTime, setEndTime] = useState('12:00');
   const [autoResolve, setAutoResolve] = useState(false);
 
+  // Success state
+  const [successTxId, setSuccessTxId] = useState<string | null>(null);
+
   // Update outcome labels when numOutcomes changes
   const handleNumOutcomesChange = (num: number) => {
     setNumOutcomes(num);
@@ -102,17 +105,8 @@ export default function CreateMarket() {
         // Continue even if metadata save fails
       }
 
-      alert('Market created successfully!');
-
-      // Reset form
-      setTitle('');
-      setDescription('');
-      setNumOutcomes(2);
-      setOutcomeLabels(['Yes', 'No']);
-      setCategory(MarketCategory.Other);
-      setEndDate('');
-      setEndTime('12:00');
-      setAutoResolve(false);
+      // Show success message with transaction ID
+      setSuccessTxId(txResponse as string);
 
     } catch (error) {
       console.error('Error creating market:', error);
@@ -121,6 +115,101 @@ export default function CreateMarket() {
       setIsCreating(false);
     }
   };
+
+  const handleCreateAnother = () => {
+    // Reset form and success state
+    setTitle('');
+    setDescription('');
+    setNumOutcomes(2);
+    setOutcomeLabels(['Yes', 'No']);
+    setCategory(MarketCategory.Other);
+    setEndDate('');
+    setEndTime('12:00');
+    setAutoResolve(false);
+    setSuccessTxId(null);
+  };
+
+  const handleReturnToMarkets = () => {
+    window.location.href = '/markets';
+  };
+
+  // Show success screen if transaction succeeded
+  if (successTxId) {
+    return (
+      <div className="card bg-base-200 shadow-xl">
+        <div className="card-body items-center text-center">
+          {/* Success Icon */}
+          <div className="rounded-full bg-success/20 p-4 mb-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-16 w-16 text-success"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+
+          <h2 className="card-title text-3xl mb-2">Market Created Successfully!</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Your market has been submitted to the Aleo blockchain.
+          </p>
+
+          {/* Transaction Info */}
+          <div className="alert alert-info w-full max-w-2xl mb-6">
+            <div className="flex flex-col gap-2 w-full">
+              <div className="font-semibold">Transaction ID:</div>
+              <div className="font-mono text-xs break-all">{successTxId}</div>
+              <a
+                href={`https://explorer.aleo.org/transaction/${successTxId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-sm btn-outline mt-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+                View on Explorer
+              </a>
+            </div>
+          </div>
+
+          {/* Info Message */}
+          <div className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-xl">
+            <strong>Note:</strong> Your market will appear in the list once the transaction is confirmed
+            (usually 3-5 minutes). Pool data will be available after confirmation.
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+            <button className="btn btn-primary flex-1" onClick={handleCreateAnother}>
+              Create Another Market
+            </button>
+            <button className="btn btn-outline flex-1" onClick={handleReturnToMarkets}>
+              View All Markets
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card bg-base-200 shadow-xl">

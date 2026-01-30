@@ -14,6 +14,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   const [betAmount, setBetAmount] = useState('');
   const [isPlacingBet, setIsPlacingBet] = useState(false);
   const [oddsData, setOddsData] = useState<OddsData[]>([]);
+  const [successTxId, setSuccessTxId] = useState<string | null>(null);
 
   // Calculate odds for all outcomes (Wave 3)
   useEffect(() => {
@@ -100,10 +101,8 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
 
       console.log('Bet placed:', txResponse);
 
-      alert(`Bet placed successfully! ${amount} credits on "${market.outcomeLabels?.[selectedOutcome] || `Outcome ${selectedOutcome + 1}`}"`);
-
-      // Reset form
-      setBetAmount('');
+      // Show success message with transaction ID
+      setSuccessTxId(txResponse as string);
 
     } catch (error) {
       console.error('Error placing bet:', error);
@@ -112,6 +111,113 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
       setIsPlacingBet(false);
     }
   };
+
+  const handlePlaceAnotherBet = () => {
+    setBetAmount('');
+    setSuccessTxId(null);
+  };
+
+  // Show success screen if transaction succeeded
+  if (successTxId) {
+    const selectedOutcomeLabel = market.outcomeLabels?.[selectedOutcome] || `Outcome ${selectedOutcome + 1}`;
+    const currentOdds = oddsData[selectedOutcome];
+    const potentialReturn = currentOdds && betAmount
+      ? (parseFloat(betAmount) * currentOdds.odds).toFixed(2)
+      : '0.00';
+
+    return (
+      <div className="card bg-base-200 shadow-xl">
+        <div className="card-body items-center text-center">
+          {/* Success Icon */}
+          <div className="rounded-full bg-success/20 p-4 mb-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-16 w-16 text-success"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+
+          <h2 className="card-title text-3xl mb-2">Bet Placed Successfully!</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Your bet has been submitted to the Aleo blockchain.
+          </p>
+
+          {/* Bet Summary */}
+          <div className="alert alert-success w-full max-w-2xl mb-4">
+            <div className="flex flex-col gap-2 w-full text-left">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="font-semibold">Outcome:</div>
+                <div>{selectedOutcomeLabel}</div>
+                <div className="font-semibold">Amount:</div>
+                <div>{betAmount} credits</div>
+                <div className="font-semibold">Odds:</div>
+                <div>{currentOdds?.odds}x</div>
+                <div className="font-semibold">Potential Return:</div>
+                <div className="text-success font-bold">{potentialReturn} credits</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Transaction Info */}
+          <div className="alert alert-info w-full max-w-2xl mb-6">
+            <div className="flex flex-col gap-2 w-full">
+              <div className="font-semibold">Transaction ID:</div>
+              <div className="font-mono text-xs break-all">{successTxId}</div>
+              <a
+                href={`https://explorer.aleo.org/transaction/${successTxId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-sm btn-outline mt-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+                View on Explorer
+              </a>
+            </div>
+          </div>
+
+          {/* Important Note */}
+          <div className="alert alert-warning w-full max-w-2xl mb-6">
+            <div className="text-sm">
+              <strong>IMPORTANT:</strong> Save the Bet record from your wallet's transaction output.
+              You'll need this record to claim your winnings if your outcome wins!
+            </div>
+          </div>
+
+          {/* Info Message */}
+          <div className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-xl">
+            <strong>Note:</strong> Pool balances will update once the transaction is confirmed (3-5 minutes).
+          </div>
+
+          {/* Action Button */}
+          <button className="btn btn-primary w-full max-w-md" onClick={handlePlaceAnotherBet}>
+            Place Another Bet
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const currentOdds = oddsData[selectedOutcome];
   const potentialReturn = currentOdds && betAmount

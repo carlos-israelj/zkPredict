@@ -1,7 +1,8 @@
 // Aleo blockchain interaction utilities
 // This module provides functions to read on-chain state from the zkpredict.aleo program
 
-const NETWORK_URL = process.env.NEXT_PUBLIC_RPC_URL || process.env.RPC_URL || 'https://api.explorer.provable.com/v1';
+// Use Provable API v2 for reading program mappings (without /get/)
+const NETWORK_URL = 'https://api.provable.com/v2/testnet';
 const PROGRAM_ID = 'zkpredict.aleo';
 
 export interface OnChainMarket {
@@ -26,7 +27,7 @@ export interface MarketPools {
  */
 export async function fetchMarketOnChain(marketId: string): Promise<OnChainMarket | null> {
   try {
-    const response = await fetch(`${NETWORK_URL}/testnet3/program/${PROGRAM_ID}/mapping/markets/${marketId}`);
+    const response = await fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/markets/${marketId}`);
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -55,8 +56,8 @@ export async function fetchMarketOnChain(marketId: string): Promise<OnChainMarke
 export async function fetchMarketPools(marketId: string): Promise<MarketPools> {
   try {
     const [yesPoolRes, noPoolRes] = await Promise.all([
-      fetch(`${NETWORK_URL}/testnet3/program/${PROGRAM_ID}/mapping/yes_pool/${marketId}`),
-      fetch(`${NETWORK_URL}/testnet3/program/${PROGRAM_ID}/mapping/no_pool/${marketId}`),
+      fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/yes_pool/${marketId}`),
+      fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/no_pool/${marketId}`),
     ]);
 
     const yesPool = yesPoolRes.ok ? await yesPoolRes.json() : 0;
@@ -84,7 +85,7 @@ export async function fetchOutcomePool(marketId: string, outcomeIndex: number): 
     // For now, we'll use a simplified approach - in production, compute the actual BHP256 hash
     const poolKey = `${marketId}_${outcomeIndex}`;
 
-    const response = await fetch(`${NETWORK_URL}/testnet3/program/${PROGRAM_ID}/mapping/outcome_pools/${poolKey}`);
+    const response = await fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/outcome_pools/${poolKey}`);
 
     if (!response.ok) {
       return 0; // Pool doesn't exist or is empty
@@ -105,7 +106,7 @@ export async function fetchOutcomePool(marketId: string, outcomeIndex: number): 
  */
 export async function isBetClaimed(betId: string): Promise<boolean> {
   try {
-    const response = await fetch(`${NETWORK_URL}/testnet3/program/${PROGRAM_ID}/mapping/claimed_bets/${betId}`);
+    const response = await fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/claimed_bets/${betId}`);
 
     if (!response.ok) {
       return false; // Not claimed (or doesn't exist in mapping)
