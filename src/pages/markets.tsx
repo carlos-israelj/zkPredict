@@ -90,11 +90,28 @@ const MarketsPage: NextPageWithLayout = () => {
 
   // Combine metadata from backend with mock on-chain data
   useEffect(() => {
-    if (!loading && metadataMarkets.length > 0) {
-      // Merge metadata with mock on-chain data
-      const merged = metadataMarkets.map(metadata => {
-        // For now, create mock on-chain data for each metadata entry
-        // In production, this would query the actual blockchain
+    if (!loading) {
+      // Convert metadata from Supabase to Market objects
+      const realMarkets = metadataMarkets.map(metadata => {
+        // Try to detect category from title/description
+        let category = MarketCategory.Other;
+        const text = `${metadata.title} ${metadata.description}`.toLowerCase();
+
+        if (text.includes('bitcoin') || text.includes('btc') || text.includes('ethereum') ||
+            text.includes('eth') || text.includes('crypto') || text.includes('blockchain') ||
+            text.includes('aleo') || text.includes('token')) {
+          category = MarketCategory.Crypto;
+        } else if (text.includes('sport') || text.includes('football') || text.includes('soccer') ||
+                   text.includes('basketball') || text.includes('nfl') || text.includes('nba')) {
+          category = MarketCategory.Sports;
+        } else if (text.includes('election') || text.includes('president') || text.includes('politics') ||
+                   text.includes('government')) {
+          category = MarketCategory.Politics;
+        } else if (text.includes('weather') || text.includes('temperature') || text.includes('rain') ||
+                   text.includes('snow') || text.includes('climate')) {
+          category = MarketCategory.Weather;
+        }
+
         return {
           marketId: metadata.marketId,
           creator: 'aleo1tgk48pzlz2xws2ed8880ajqfcs0c750gmjm8dvf3u7g2mer8gcysxj8war',
@@ -102,14 +119,16 @@ const MarketsPage: NextPageWithLayout = () => {
           resolved: false,
           winningOutcome: 0,
           numOutcomes: metadata.outcomeLabels.length,
-          category: MarketCategory.Other, // Mock: would come from on-chain
+          category,
           autoResolve: false,
           title: metadata.title,
           description: metadata.description,
           outcomeLabels: metadata.outcomeLabels,
         } as Market;
       });
-      setCombinedMarkets(merged);
+
+      // Combine real markets from Supabase with mock demo markets
+      setCombinedMarkets([...realMarkets, ...MOCK_MARKETS]);
     }
   }, [metadataMarkets, loading]);
 
