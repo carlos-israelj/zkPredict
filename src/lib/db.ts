@@ -16,37 +16,10 @@ export interface MarketMetadata {
 // In-memory storage (will be replaced with real database)
 let marketsDb: Map<string, MarketMetadata> = new Map();
 
-// Initialize with some example data
+// Initialize with empty database - markets are created only when users create them
 const initializeDb = () => {
-  if (marketsDb.size === 0) {
-    // Add some sample markets
-    marketsDb.set('1', {
-      marketId: '1',
-      title: 'Will Bitcoin reach $100k by end of 2026?',
-      description: 'This market resolves to YES if Bitcoin (BTC) reaches or exceeds $100,000 USD on any major exchange by December 31, 2026, 23:59:59 UTC.',
-      outcomeLabels: ['No', 'Yes'],
-      createdAt: Date.now() - 86400000 * 7, // 7 days ago
-      updatedAt: Date.now() - 86400000 * 7,
-    });
-
-    marketsDb.set('2', {
-      marketId: '2',
-      title: 'Winner of Super Bowl LXI',
-      description: 'Which team will win Super Bowl LXI in 2027?',
-      outcomeLabels: ['Kansas City Chiefs', 'San Francisco 49ers', 'Other'],
-      createdAt: Date.now() - 86400000 * 5,
-      updatedAt: Date.now() - 86400000 * 5,
-    });
-
-    marketsDb.set('3', {
-      marketId: '3',
-      title: 'Will it rain in NYC tomorrow?',
-      description: 'Will there be measurable precipitation (>0.01 inches) in Central Park, NYC on the next calendar day?',
-      outcomeLabels: ['No', 'Yes'],
-      createdAt: Date.now() - 86400000 * 2,
-      updatedAt: Date.now() - 86400000 * 2,
-    });
-  }
+  // No sample markets - start with clean database
+  // Markets will be added when users create them through the CreateMarket form
 };
 
 // Initialize on module load
