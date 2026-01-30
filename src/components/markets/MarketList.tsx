@@ -70,68 +70,156 @@ export default function MarketList({ markets, poolsMap }: MarketListProps) {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Search Bar */}
-      <div className="form-control w-full">
+      {/* Search Bar - Modern with icon */}
+      <div className="relative">
+        <svg xmlns="http://www.w3.org/2000/svg" className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
         <input
           type="text"
-          placeholder="Search markets..."
-          className="input input-bordered w-full"
+          placeholder="Search markets by title, description, or outcome..."
+          className="input input-bordered w-full pl-12 bg-base-200 border-2 border-base-300 focus:border-primary focus:bg-base-100"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute right-4 top-1/2 -translate-y-1/2 hover:opacity-70 transition-opacity"
+            aria-label="Clear search"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
-      {/* Filters */}
+      {/* Filters - Modern Button Groups (Polymarket style) */}
       <div className="flex flex-col gap-4">
         {/* Category Filter (Wave 4) */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            className={`btn btn-xs sm:btn-sm ${selectedCategory === 'all' ? 'btn-primary' : 'btn-ghost'}`}
-            onClick={() => setSelectedCategory('all')}
-          >
-            All
-          </button>
-          {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+        <div>
+          <div className="text-xs font-bold uppercase tracking-wider opacity-50 mb-2">Category</div>
+          <div className="flex flex-wrap gap-2">
             <button
-              key={key}
-              className={`btn btn-xs sm:btn-sm ${
-                selectedCategory === Number(key) ? 'btn-primary' : 'btn-ghost'
+              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                selectedCategory === 'all'
+                  ? 'bg-primary text-primary-content'
+                  : 'bg-base-200 hover:bg-base-300'
               }`}
-              onClick={() => setSelectedCategory(Number(key) as MarketCategory)}
+              onClick={() => setSelectedCategory('all')}
             >
-              {label}
+              All
             </button>
-          ))}
+            {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+              <button
+                key={key}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                  selectedCategory === Number(key)
+                    ? 'bg-primary text-primary-content'
+                    : 'bg-base-200 hover:bg-base-300'
+                }`}
+                onClick={() => setSelectedCategory(Number(key) as MarketCategory)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Status and Sort Filters */}
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
-          <select
-            className="select select-bordered select-sm w-full sm:w-auto"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="ended">Ended</option>
-            <option value="resolved">Resolved</option>
-          </select>
+        {/* Status and Sort Filters - Segmented Button Groups */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Status Filter */}
+          <div className="flex-1">
+            <div className="text-xs font-bold uppercase tracking-wider opacity-50 mb-2">Status</div>
+            <div className="inline-flex bg-base-200 rounded-lg p-1 w-full sm:w-auto">
+              <button
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all ${
+                  filterStatus === 'all'
+                    ? 'bg-base-100 shadow-sm'
+                    : 'hover:bg-base-300/50'
+                }`}
+                onClick={() => setFilterStatus('all')}
+              >
+                All
+              </button>
+              <button
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all ${
+                  filterStatus === 'active'
+                    ? 'bg-base-100 shadow-sm'
+                    : 'hover:bg-base-300/50'
+                }`}
+                onClick={() => setFilterStatus('active')}
+              >
+                Active
+              </button>
+              <button
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all ${
+                  filterStatus === 'ended'
+                    ? 'bg-base-100 shadow-sm'
+                    : 'hover:bg-base-300/50'
+                }`}
+                onClick={() => setFilterStatus('ended')}
+              >
+                Ended
+              </button>
+              <button
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all ${
+                  filterStatus === 'resolved'
+                    ? 'bg-base-100 shadow-sm'
+                    : 'hover:bg-base-300/50'
+                }`}
+                onClick={() => setFilterStatus('resolved')}
+              >
+                Resolved
+              </button>
+            </div>
+          </div>
 
-          <select
-            className="select select-bordered select-sm w-full sm:w-auto"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
-          >
-            <option value="newest">Newest</option>
-            <option value="ending-soon">Ending Soon</option>
-            <option value="most-volume">Most Volume</option>
-          </select>
+          {/* Sort Filter */}
+          <div className="flex-1">
+            <div className="text-xs font-bold uppercase tracking-wider opacity-50 mb-2">Sort By</div>
+            <div className="inline-flex bg-base-200 rounded-lg p-1 w-full sm:w-auto">
+              <button
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all ${
+                  sortBy === 'newest'
+                    ? 'bg-base-100 shadow-sm'
+                    : 'hover:bg-base-300/50'
+                }`}
+                onClick={() => setSortBy('newest')}
+              >
+                Newest
+              </button>
+              <button
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all whitespace-nowrap ${
+                  sortBy === 'ending-soon'
+                    ? 'bg-base-100 shadow-sm'
+                    : 'hover:bg-base-300/50'
+                }`}
+                onClick={() => setSortBy('ending-soon')}
+              >
+                Ending Soon
+              </button>
+              <button
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all whitespace-nowrap ${
+                  sortBy === 'most-volume'
+                    ? 'bg-base-100 shadow-sm'
+                    : 'hover:bg-base-300/50'
+                }`}
+                onClick={() => setSortBy('most-volume')}
+              >
+                Volume
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Results Count */}
-      <div className="text-sm text-gray-600 dark:text-gray-400">
-        {filteredMarkets.length} {filteredMarkets.length === 1 ? 'market' : 'markets'} found
+      {/* Results Count - Better visibility */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-semibold opacity-70">
+          <span className="text-primary text-lg font-bold">{filteredMarkets.length}</span> {filteredMarkets.length === 1 ? 'market' : 'markets'}
+        </div>
       </div>
 
       {/* Market Grid */}
