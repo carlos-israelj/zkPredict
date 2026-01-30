@@ -107,51 +107,51 @@ const MarketsPage: NextPageWithLayout = () => {
         </button>
       </div>
 
-      {/* Statistics with enhanced design */}
+      {/* Simple stats cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="relative card bg-base-300 border border-cyan-500/20 overflow-hidden group hover:border-cyan-500/50 transition-all duration-300">
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="card-body relative z-10">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-xs font-mono uppercase tracking-wider text-base-content/50">Total Markets</div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="card bg-base-200 border-2 border-base-300">
+          <div className="card-body">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-bold opacity-60 uppercase mb-1">Total Markets</div>
+                <div className="text-4xl font-black text-primary tabular-nums">
+                  {loading ? '...' : combinedMarkets.length}
+                </div>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
-            <div className="font-display text-4xl font-bold gradient-text-cyan">
-              {loading ? '...' : combinedMarkets.length}
-            </div>
-            <div className="text-xs text-base-content/60 font-mono mt-1">Across all categories</div>
           </div>
         </div>
 
-        <div className="relative card bg-base-300 border border-emerald-500/20 overflow-hidden group hover:border-emerald-500/50 transition-all duration-300">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="card-body relative z-10">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-xs font-mono uppercase tracking-wider text-base-content/50">Active Markets</div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="card bg-base-200 border-2 border-base-300">
+          <div className="card-body">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-bold opacity-60 uppercase mb-1">Active</div>
+                <div className="text-4xl font-black text-success tabular-nums">
+                  {loading ? '...' : combinedMarkets.filter(m => !m.resolved && Math.floor(Date.now() / 1000) < m.endTime).length}
+                </div>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <div className="font-display text-4xl font-bold text-emerald-400">
-              {loading ? '...' : combinedMarkets.filter(m => !m.resolved && Math.floor(Date.now() / 1000) < m.endTime).length}
-            </div>
-            <div className="text-xs text-base-content/60 font-mono mt-1">Currently accepting bets</div>
           </div>
         </div>
 
-        <div className="relative card bg-base-300 border border-amber-500/20 overflow-hidden group hover:border-amber-500/50 transition-all duration-300">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="card-body relative z-10">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-xs font-mono uppercase tracking-wider text-base-content/50">Total Volume</div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="card bg-base-200 border-2 border-base-300">
+          <div className="card-body">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-bold opacity-60 uppercase mb-1">Volume</div>
+                <div className="text-4xl font-black text-secondary tabular-nums">0.0</div>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <div className="font-display text-4xl font-bold text-amber-400">0.00</div>
-            <div className="text-xs text-base-content/60 font-mono mt-1">Credits locked (Coming soon)</div>
           </div>
         </div>
       </div>
