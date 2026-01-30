@@ -58,14 +58,17 @@ export const useOnChainMarketPolling = (marketId?: string, intervalMs: number = 
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<number>(0);
 
-  const fetchData = async () => {
+  const fetchData = async (isInitial = false) => {
     if (!marketId) {
       setLoading(false);
       return;
     }
 
     try {
-      setLoading(true);
+      // Only show loading on initial fetch, not on polling updates
+      if (isInitial) {
+        setLoading(true);
+      }
       setError(null);
 
       const [marketData, poolData] = await Promise.all([
@@ -73,23 +76,38 @@ export const useOnChainMarketPolling = (marketId?: string, intervalMs: number = 
         fetchMarketPools(marketId),
       ]);
 
-      setMarket(marketData);
-      setPools(poolData);
+      // Only update state if data actually changed (prevents unnecessary re-renders)
+      setMarket(prev => {
+        if (JSON.stringify(prev) !== JSON.stringify(marketData)) {
+          return marketData;
+        }
+        return prev;
+      });
+
+      setPools(prev => {
+        if (JSON.stringify(prev) !== JSON.stringify(poolData)) {
+          return poolData;
+        }
+        return prev;
+      });
+
       setLastUpdate(Date.now());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
       console.error('Error fetching on-chain market:', err);
     } finally {
-      setLoading(false);
+      if (isInitial) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    // Initial fetch
-    fetchData();
+    // Initial fetch with loading indicator
+    fetchData(true);
 
-    // Set up polling
-    const interval = setInterval(fetchData, intervalMs);
+    // Set up polling (without loading indicator to prevent flashing)
+    const interval = setInterval(() => fetchData(false), intervalMs);
 
     return () => clearInterval(interval);
   }, [marketId, intervalMs]);

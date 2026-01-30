@@ -82,7 +82,7 @@ export default function CreateMarket() {
         'zkpredict.aleo', // Our deployed program
         'create_market',
         inputs,
-        10000000, // 10 credits fee (create_market is expensive)
+        1000000, // 1 credit fee (temporary - will increase later)
         false // Public fee
       );
 
@@ -349,10 +349,10 @@ export default function CreateMarket() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2">
             <div>
               <h4 className="font-bold">Transaction Fee</h4>
-              <div className="text-sm">Creating a market costs approximately <strong>10 credits</strong></div>
+              <div className="text-sm">Creating a market costs approximately <strong>1 credit</strong></div>
             </div>
             <div className="text-xs opacity-75">
-              Actual cost: 10-16 credits
+              Actual cost: 1-2 credits
             </div>
           </div>
         </div>

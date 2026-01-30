@@ -3,6 +3,13 @@ import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
 import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
 import { Market, OddsData } from '@/types';
 
+const QUICK_BET_PERCENTAGES = [
+  { label: '10%', value: 0.1 },
+  { label: '25%', value: 0.25 },
+  { label: '50%', value: 0.5 },
+  { label: 'MAX', value: 1.0 },
+];
+
 interface PlaceBetProps {
   market: Market;
   pools: number[]; // Current pool sizes for each outcome
@@ -15,6 +22,14 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   const [isPlacingBet, setIsPlacingBet] = useState(false);
   const [oddsData, setOddsData] = useState<OddsData[]>([]);
   const [successTxId, setSuccessTxId] = useState<string | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+
+  // Fetch wallet balance (simplified - in production use wallet adapter methods)
+  useEffect(() => {
+    // Mock balance for now - in production, get from wallet adapter
+    // publicKey?.getBalance() or similar
+    setWalletBalance(100); // Default 100 credits for demo
+  }, [publicKey]);
 
   // Calculate odds for all outcomes (Wave 3)
   useEffect(() => {
@@ -224,6 +239,11 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
     ? (parseFloat(betAmount) * currentOdds.odds).toFixed(2)
     : '0.00';
 
+  const handleQuickBet = (percentage: number) => {
+    const amount = (walletBalance * percentage).toFixed(2);
+    setBetAmount(amount);
+  };
+
   return (
     <div className="card bg-base-200 shadow-xl">
       <div className="card-body">
@@ -293,6 +313,9 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
             <div className="form-control w-full mt-4">
               <label className="label">
                 <span className="label-text">Bet Amount (credits)</span>
+                <span className="label-text-alt text-gray-500">
+                  Balance: {walletBalance.toFixed(2)} credits
+                </span>
               </label>
               <input
                 type="number"
@@ -303,6 +326,26 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                 min="0"
                 step="0.01"
               />
+            </div>
+
+            {/* Quick Bet Buttons */}
+            <div className="mt-3">
+              <label className="label">
+                <span className="label-text text-sm">Quick Bet</span>
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {QUICK_BET_PERCENTAGES.map(({ label, value }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    className="btn btn-sm btn-outline"
+                    onClick={() => handleQuickBet(value)}
+                    disabled={!publicKey || walletBalance === 0}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Potential Return */}
