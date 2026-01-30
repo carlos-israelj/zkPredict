@@ -45,11 +45,12 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
 
       // Prepare transaction inputs for claim_winnings
       // Signature: claim_winnings(bet: Bet)
+      // Note: Leo Wallet will automatically find and use the record from the user's wallet
       const inputs = [
-        betRecord, // bet: Bet record (encrypted or decrypted format)
+        betRecord, // bet: Bet record (encrypted format from wallet)
       ];
 
-      console.log('Claiming winnings with bet record');
+      console.log('Claiming winnings with bet record:', betRecord.substring(0, 50) + '...');
 
       // Create transaction using the Aleo wallet adapter
       const transaction = Transaction.createTransaction(
