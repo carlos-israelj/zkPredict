@@ -118,7 +118,7 @@ const MarketsPage: NextPageWithLayout = () => {
           <span>Error loading markets: {error}</span>
         </div>
       ) : (
-        <MarketList markets={combinedMarkets} poolsMap={MOCK_POOLS} />
+        <MarketList markets={combinedMarkets} />
       )}
 
       {/* Features Info */}
