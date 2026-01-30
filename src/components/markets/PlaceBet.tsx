@@ -150,7 +150,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
         'zkpredict.aleo', // Our deployed program
         'place_bet',
         inputs,
-        5000000, // 5 credits fee (place_bet updates mappings)
+        100000, // 0.1 credits fee (reduced for testing)
         false // Public fee
       );
 

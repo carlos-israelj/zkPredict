@@ -82,7 +82,7 @@ export default function CreateMarket() {
         'zkpredict.aleo', // Our deployed program
         'create_market',
         inputs,
-        1000000, // 1 credit fee (temporary - will increase later)
+        100000, // 0.1 credits fee (reduced for testing)
         false // Public fee
       );
 
