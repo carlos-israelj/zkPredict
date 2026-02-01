@@ -316,97 +316,155 @@ export default function CreateMarket() {
           </div>
         </div>
 
-        {/* INPUT ZONE 2: Category Selection - Elevated Card */}
-        <div className="bg-base-100 rounded-xl p-6 border-2 border-base-300 shadow-sm mt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="text-primary font-bold">2</span>
+        {/* INPUT ZONE 2: Category Selection - Enhanced with color coding */}
+        <div className="bg-base-100 rounded-xl p-6 sm:p-8 border-2 border-base-300 shadow-sm mt-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 flex items-center justify-center shrink-0">
+              <span className="text-primary font-bold text-lg">2</span>
             </div>
-            <div className="text-sm font-bold uppercase tracking-wider opacity-50">Category</div>
-          </div>
-
-          <div className="space-y-3">
-            <label className="label">
-              <span className="label-text font-semibold">Select a category *</span>
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all ${
-                    category === Number(key)
-                      ? 'bg-primary text-primary-content shadow-md scale-105'
-                      : 'bg-base-200 hover:bg-base-300 border-2 border-base-300 hover:border-primary/30'
-                  }`}
-                  onClick={() => setCategory(Number(key) as MarketCategory)}
-                >
-                  {label}
-                </button>
-              ))}
+            <div>
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-primary/60 mb-0.5">Step Two</div>
+              <div className="text-base font-bold tracking-wide">Market Category</div>
             </div>
-          </div>
-        </div>
-
-        {/* INPUT ZONE 3: Outcomes Section - Elevated Card */}
-        <div className="bg-base-100 rounded-xl p-6 border-2 border-base-300 shadow-sm mt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="text-primary font-bold">3</span>
-            </div>
-            <div className="text-sm font-bold uppercase tracking-wider opacity-50">Possible Outcomes</div>
           </div>
 
           <div className="space-y-4">
-            {/* Quick Presets for Binary */}
+            <label className="label">
+              <span className="label-text font-bold text-base flex items-center gap-2">
+                Select a category
+                <span className="text-error text-sm">*</span>
+              </span>
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {Object.entries(CATEGORY_LABELS).map(([key, label]) => {
+                const isSelected = category === Number(key);
+                const categoryColors = {
+                  '0': { bg: 'rgba(16, 185, 129, 0.15)', border: '#10b981', text: '#059669' }, // Sports - Emerald
+                  '1': { bg: 'rgba(59, 130, 246, 0.15)', border: '#3b82f6', text: '#2563eb' }, // Politics - Blue
+                  '2': { bg: 'rgba(245, 158, 11, 0.15)', border: '#f59e0b', text: '#d97706' }, // Crypto - Amber
+                  '3': { bg: 'rgba(139, 92, 246, 0.15)', border: '#8b5cf6', text: '#7c3aed' }, // Weather - Purple
+                  '4': { bg: 'rgba(236, 72, 153, 0.15)', border: '#ec4899', text: '#db2777' }, // Other - Pink
+                };
+                const colors = categoryColors[key as keyof typeof categoryColors];
+
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    className="relative px-4 py-3 rounded-lg font-bold text-sm transition-all transform hover:scale-105 hover:shadow-lg"
+                    style={{
+                      background: isSelected ? colors.bg : 'rgba(0, 0, 0, 0.04)',
+                      border: isSelected ? `2px solid ${colors.border}` : '2px solid rgba(0, 0, 0, 0.06)',
+                      color: isSelected ? colors.text : 'rgba(0, 0, 0, 0.7)'
+                    }}
+                    onClick={() => setCategory(Number(key) as MarketCategory)}
+                  >
+                    {isSelected && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: colors.border }}>
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <label className="label pt-1">
+              <span className="label-text-alt text-xs flex items-center gap-1.5 opacity-60">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                Choose the category that best describes your market
+              </span>
+            </label>
+          </div>
+        </div>
+
+        {/* INPUT ZONE 3: Outcomes Section - Enhanced with visual feedback */}
+        <div className="bg-base-100 rounded-xl p-6 sm:p-8 border-2 border-base-300 shadow-sm mt-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 flex items-center justify-center shrink-0">
+              <span className="text-primary font-bold text-lg">3</span>
+            </div>
             <div>
-              <label className="label">
-                <span className="label-text font-semibold">Quick setup</span>
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-primary/60 mb-0.5">Step Three</div>
+              <div className="text-base font-bold tracking-wide">Possible Outcomes</div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {/* Quick Presets for Binary - Enhanced buttons */}
+            <div>
+              <label className="label pb-3">
+                <span className="label-text font-bold text-base">Quick setup</span>
               </label>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-3 flex-wrap">
                 <button
                   type="button"
-                  className={`btn btn-sm ${numOutcomes === 2 ? 'btn-primary' : 'btn-ghost'}`}
+                  className={`px-6 py-3 rounded-lg font-bold text-sm transition-all transform hover:scale-105 ${
+                    numOutcomes === 2
+                      ? 'bg-indigo-600 text-white shadow-lg'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-2 border-gray-200'
+                  }`}
                   onClick={() => {
                     handleNumOutcomesChange(2);
                     setOutcomeLabels(['Yes', 'No']);
                   }}
                 >
-                  Yes/No
+                  <span className="flex items-center gap-2">
+                    {numOutcomes === 2 && <span>✓</span>}
+                    Yes/No
+                  </span>
                 </button>
                 <button
                   type="button"
-                  className={`btn btn-sm ${numOutcomes === 3 ? 'btn-primary' : 'btn-ghost'}`}
+                  className={`px-6 py-3 rounded-lg font-bold text-sm transition-all transform hover:scale-105 ${
+                    numOutcomes === 3
+                      ? 'bg-indigo-600 text-white shadow-lg'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-2 border-gray-200'
+                  }`}
                   onClick={() => {
                     handleNumOutcomesChange(3);
                     setOutcomeLabels(['Option A', 'Option B', 'Option C']);
                   }}
                 >
-                  3 Options
+                  <span className="flex items-center gap-2">
+                    {numOutcomes === 3 && <span>✓</span>}
+                    3 Options
+                  </span>
                 </button>
                 <button
                   type="button"
-                  className={`btn btn-sm ${numOutcomes === 4 ? 'btn-primary' : 'btn-ghost'}`}
+                  className={`px-6 py-3 rounded-lg font-bold text-sm transition-all transform hover:scale-105 ${
+                    numOutcomes === 4
+                      ? 'bg-indigo-600 text-white shadow-lg'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-2 border-gray-200'
+                  }`}
                   onClick={() => {
                     handleNumOutcomesChange(4);
                     setOutcomeLabels(['Option A', 'Option B', 'Option C', 'Option D']);
                   }}
                 >
-                  4 Options
+                  <span className="flex items-center gap-2">
+                    {numOutcomes === 4 && <span>✓</span>}
+                    4 Options
+                  </span>
                 </button>
               </div>
             </div>
 
-            {/* Custom Number Input */}
-            <div className="form-control">
-              <label className="label">
+            {/* Custom Number Input - More visible */}
+            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border-2 border-gray-100">
+              <label className="label flex-1">
                 <span className="label-text font-semibold">Or enter custom number (2-10)</span>
               </label>
               <input
                 type="number"
                 min="2"
                 max="10"
-                className="input input-bordered bg-base-200 focus:bg-base-100 focus:border-primary focus:outline-none transition-colors w-32"
+                className="input input-bordered bg-white focus:bg-white focus:border-indigo-500 focus:outline-none transition-colors w-24 text-center font-bold text-lg border-2"
                 value={numOutcomes}
                 onChange={(e) => handleNumOutcomesChange(Number(e.target.value))}
               />
@@ -435,62 +493,100 @@ export default function CreateMarket() {
           </div>
         </div>
 
-        {/* INPUT ZONE 4: Deadline Section - Elevated Card */}
-        <div className="bg-base-100 rounded-xl p-6 border-2 border-base-300 shadow-sm mt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="text-primary font-bold">4</span>
+        {/* INPUT ZONE 4: Deadline Section - Enhanced with visual feedback */}
+        <div className="bg-base-100 rounded-xl p-6 sm:p-8 border-2 border-base-300 shadow-sm mt-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 flex items-center justify-center shrink-0">
+              <span className="text-primary font-bold text-lg">4</span>
             </div>
-            <div className="text-sm font-bold uppercase tracking-wider opacity-50">Trading Deadline</div>
+            <div>
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-primary/60 mb-0.5">Step Four</div>
+              <div className="text-base font-bold tracking-wide">Trading Deadline</div>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="alert bg-base-200 border-2 border-base-300">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="space-y-6">
+            {/* Info Alert - More prominent */}
+            <div className="flex items-start gap-3 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-xs">After this time, no more bets can be placed</span>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-blue-900">When should betting close?</p>
+                <p className="text-xs text-blue-700 mt-1">
+                  After this time, no more bets can be placed. Choose a deadline that gives you time to resolve the market.
+                </p>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-semibold">Date *</span>
+                <label className="label pb-3">
+                  <span className="label-text font-bold text-base flex items-center gap-2">
+                    <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Date
+                    <span className="text-error text-sm">*</span>
+                  </span>
                 </label>
                 <input
                   type="date"
-                  className="input input-bordered bg-base-200 focus:bg-base-100 focus:border-primary focus:outline-none transition-colors font-mono"
+                  className="input input-bordered h-12 bg-white focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all font-mono text-base border-2"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
                 />
               </div>
               <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-semibold">Time (UTC) *</span>
+                <label className="label pb-3">
+                  <span className="label-text font-bold text-base flex items-center gap-2">
+                    <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Time (UTC)
+                    <span className="text-error text-sm">*</span>
+                  </span>
                 </label>
                 <input
                   type="time"
-                  className="input input-bordered bg-base-200 focus:bg-base-100 focus:border-primary focus:outline-none transition-colors font-mono"
+                  className="input input-bordered h-12 bg-white focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all font-mono text-base border-2"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
                 />
               </div>
             </div>
 
-            {/* Auto-Resolve (Wave 2) */}
-            <div className="form-control pt-2">
-              <label className="label cursor-pointer justify-start gap-3">
+            {/* Show selected deadline */}
+            {endDate && (
+              <div className="p-3 bg-green-50 border-2 border-green-200 rounded-lg">
+                <p className="text-xs font-semibold text-green-900 mb-1">Selected deadline:</p>
+                <p className="text-sm font-mono text-green-800">
+                  {new Date(`${endDate}T${endTime}`).toLocaleString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZoneName: 'short'
+                  })}
+                </p>
+              </div>
+            )}
+
+            {/* Auto-Resolve (Wave 2) - Enhanced checkbox */}
+            <div className="form-control">
+              <label className="label cursor-pointer justify-start gap-4 p-4 bg-gray-50 rounded-lg border-2 border-gray-100 hover:bg-gray-100 transition-colors">
                 <input
                   type="checkbox"
-                  className="checkbox checkbox-primary"
+                  className="checkbox checkbox-primary checkbox-lg"
                   checked={autoResolve}
                   onChange={(e) => setAutoResolve(e.target.checked)}
                 />
-                <span className="label-text">
-                  <span className="font-semibold">Enable auto-resolution after end time</span>
-                  <span className="text-xs opacity-60 block mt-0.5">
-                    Anyone can resolve the market after the end time
+                <span className="label-text flex-1">
+                  <span className="font-semibold text-base block mb-1">Enable auto-resolution</span>
+                  <span className="text-xs opacity-70 block">
+                    Allow anyone to resolve the market after the deadline expires
                   </span>
                 </span>
               </label>
