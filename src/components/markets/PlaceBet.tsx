@@ -479,7 +479,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
             </div>
 
             {/* Potential Winnings - Enhanced prominent section with full breakdown */}
-            {betAmount && currentOdds && parseFloat(betAmount) > 0 && (
+            {betAmount && parseFloat(betAmount) > 0 && (
               <div className="mt-6">
                 {/* Main Potential Return Card */}
                 <div className="p-6 bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 border-2 border-green-300 rounded-2xl shadow-sm">
@@ -493,7 +493,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                       <h4 className="text-base font-bold text-green-900 uppercase tracking-wide">Potential Winnings</h4>
                     </div>
                     <span className="text-xs font-bold text-green-700 bg-white px-3 py-1.5 rounded-full border border-green-200 shadow-sm">
-                      {currentOdds.odds}x odds
+                      {currentOdds?.odds || 0}x odds
                     </span>
                   </div>
 
@@ -509,7 +509,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                     <div className="flex items-center justify-between pb-2 border-b border-green-200">
                       <span className="text-sm font-semibold text-green-800">Potential Profit</span>
                       <span className="text-lg font-bold text-green-700 tabular-nums">
-                        +{(parseFloat(potentialReturn) - parseFloat(betAmount)).toFixed(2)} credits
+                        +{potentialReturn ? (parseFloat(potentialReturn) - parseFloat(betAmount)).toFixed(2) : '0.00'} credits
                       </span>
                     </div>
 
@@ -518,13 +518,15 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-bold text-green-900 uppercase">Total Return</span>
                         <div className="flex items-baseline gap-2">
-                          <span className="text-3xl font-black text-green-700 tabular-nums">{potentialReturn}</span>
+                          <span className="text-3xl font-black text-green-700 tabular-nums">{potentialReturn || '0.00'}</span>
                           <span className="text-sm font-bold text-green-600">credits</span>
                         </div>
                       </div>
                       <div className="mt-1 text-right">
                         <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded">
-                          {((parseFloat(potentialReturn) / parseFloat(betAmount) - 1) * 100).toFixed(1)}% ROI
+                          {potentialReturn && parseFloat(betAmount) > 0
+                            ? ((parseFloat(potentialReturn) / parseFloat(betAmount) - 1) * 100).toFixed(1)
+                            : '0.0'}% ROI
                         </span>
                       </div>
                     </div>
