@@ -355,47 +355,67 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
           </div>
         ) : (
           <>
-            {/* Outcome Selection (Wave 3: Multi-outcome support) */}
+            {/* Outcome Selection - Enhanced with better visual hierarchy */}
             <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Select Outcome</span>
+              <label className="label pb-3">
+                <span className="label-text font-bold text-base">Select Outcome</span>
+                <span className="label-text-alt text-xs opacity-60">Choose your prediction</span>
               </label>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {(market.outcomeLabels || Array(market.numOutcomes).fill(null)).map((label, index) => {
                   const outcomeOdds = oddsData[index];
+                  const isSelected = selectedOutcome === index;
                   return (
                     <label
                       key={index}
-                      className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        selectedOutcome === index
-                          ? 'border-primary bg-primary/10'
-                          : 'border-base-300 hover:border-primary/50'
+                      className={`relative flex items-center justify-between p-5 border-2 rounded-xl cursor-pointer transition-all transform ${
+                        isSelected
+                          ? 'border-indigo-500 bg-indigo-50 shadow-md scale-[1.02]'
+                          : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-sm'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      {/* Selection indicator */}
+                      {isSelected && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-4 flex-1">
                         <input
                           type="radio"
                           name="outcome"
-                          className="radio radio-primary"
-                          checked={selectedOutcome === index}
+                          className="radio radio-primary radio-lg"
+                          checked={isSelected}
                           onChange={() => setSelectedOutcome(index)}
                         />
-                        <div>
-                          <span className="font-semibold">
+                        <div className="flex-1">
+                          <span className={`font-bold text-lg block ${isSelected ? 'text-indigo-900' : 'text-gray-900'}`}>
                             {label || `Outcome ${index + 1}`}
                           </span>
                           {outcomeOdds && (
-                            <div className="text-xs text-gray-500">
-                              {(outcomeOdds.poolSize / 1_000_000).toFixed(2)} credits ({outcomeOdds.poolShare}% of pool)
+                            <div className="flex items-center gap-3 mt-1">
+                              <span className="text-xs text-gray-600 font-medium">
+                                {(outcomeOdds.poolSize / 1_000_000).toFixed(2)} credits
+                              </span>
+                              <span className="text-xs text-gray-400">•</span>
+                              <span className="text-xs text-gray-600 font-medium">
+                                {outcomeOdds.poolShare}% of pool
+                              </span>
                             </div>
                           )}
                         </div>
                       </div>
+
                       {outcomeOdds && (
-                        <div className="text-right">
-                          <div className="font-bold text-lg">{outcomeOdds.odds}x</div>
-                          <div className="text-xs text-gray-500">
-                            {outcomeOdds.probability}% probability
+                        <div className="text-right ml-4">
+                          <div className={`font-black text-2xl tabular-nums ${isSelected ? 'text-indigo-600' : 'text-gray-900'}`}>
+                            {outcomeOdds.odds}x
+                          </div>
+                          <div className="text-xs text-gray-500 font-semibold mt-0.5">
+                            {outcomeOdds.probability}%
                           </div>
                         </div>
                       )}
@@ -405,40 +425,50 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
               </div>
             </div>
 
-            {/* Bet Amount */}
-            <div className="form-control w-full mt-4">
-              <label className="label">
-                <span className="label-text">Bet Amount (credits)</span>
-                <span className="label-text-alt text-gray-500">
+            {/* Bet Amount - Enhanced with better visual feedback */}
+            <div className="form-control w-full mt-6">
+              <label className="label pb-3">
+                <span className="label-text font-bold text-base">Bet Amount</span>
+                <span className="label-text-alt font-semibold tabular-nums">
                   {isLoadingBalance ? (
-                    'Loading balance...'
+                    <span className="flex items-center gap-1 text-gray-400">
+                      <span className="loading loading-spinner loading-xs"></span>
+                      Loading...
+                    </span>
                   ) : (
-                    `Balance: ${walletBalance.toFixed(2)} credits`
+                    <span className="text-indigo-600">
+                      Balance: {walletBalance.toFixed(2)} credits
+                    </span>
                   )}
                 </span>
               </label>
-              <input
-                type="number"
-                placeholder="0.00"
-                className="input input-bordered w-full"
-                value={betAmount}
-                onChange={(e) => setBetAmount(e.target.value)}
-                min="0"
-                step="0.01"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  className="input input-bordered w-full h-14 text-lg font-bold tabular-nums border-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                  value={betAmount}
+                  onChange={(e) => setBetAmount(e.target.value)}
+                  min="0"
+                  step="0.01"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <span className="text-sm font-semibold text-gray-400">CREDITS</span>
+                </div>
+              </div>
             </div>
 
-            {/* Quick Bet Buttons */}
-            <div className="mt-3">
-              <label className="label">
-                <span className="label-text text-sm">Quick Bet</span>
+            {/* Quick Bet Buttons - Enhanced styling */}
+            <div className="mt-4">
+              <label className="label pb-2">
+                <span className="label-text font-semibold text-sm">Quick Amount</span>
               </label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-3">
                 {QUICK_BET_PERCENTAGES.map(({ label, value }) => (
                   <button
                     key={label}
                     type="button"
-                    className="btn btn-sm btn-outline"
+                    className="px-3 py-2.5 rounded-lg font-bold text-sm transition-all transform hover:scale-105 bg-gray-100 hover:bg-indigo-600 hover:text-white border-2 border-gray-200 hover:border-indigo-600 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-gray-100 disabled:hover:text-gray-900"
                     onClick={() => handleQuickBet(value)}
                     disabled={!publicKey || walletBalance === 0}
                   >
@@ -448,105 +478,103 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
               </div>
             </div>
 
-            {/* Potential Return */}
-            {betAmount && currentOdds && (
-              <div className="alert alert-info mt-4">
-                <div className="flex flex-col gap-1">
-                  <span className="font-semibold">Potential Return</span>
-                  <span className="text-2xl font-bold">{potentialReturn} credits</span>
-                  <span className="text-sm">
-                    Profit: {(parseFloat(potentialReturn) - parseFloat(betAmount)).toFixed(2)} credits
+            {/* Potential Return - Enhanced with better visual hierarchy */}
+            {betAmount && currentOdds && parseFloat(betAmount) > 0 && (
+              <div className="mt-6 p-5 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-bold text-green-900 uppercase tracking-wide">Potential Return</span>
+                  <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-full">
+                    {currentOdds.odds}x odds
                   </span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-green-700 tabular-nums">{potentialReturn}</span>
+                    <span className="text-sm font-bold text-green-600">credits</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="font-semibold text-green-800">Profit:</span>
+                    <span className="font-bold text-green-700 tabular-nums">
+                      +{(parseFloat(potentialReturn) - parseFloat(betAmount)).toFixed(2)} credits
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Privacy Information */}
-            <div className="bg-base-300 rounded-lg p-4 mt-6 border-l-4 border-primary">
-              <div className="flex items-start gap-3 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+            {/* Privacy Information - Enhanced compact design */}
+            <div className="mt-6 p-4 bg-indigo-50 border-2 border-indigo-200 rounded-xl">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold mb-1 text-sm">Your Bet is Completely Private</h4>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                    Zero-knowledge proofs protect your betting activity from public view
+                  <h4 className="font-bold mb-1 text-sm text-indigo-900">Zero-Knowledge Privacy</h4>
+                  <p className="text-xs text-indigo-700 mb-3">
+                    Your bet details are completely private. Only pool totals and odds are public.
                   </p>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="bg-white rounded-lg p-2 border border-indigo-100">
+                      <div className="font-semibold text-indigo-900 mb-1 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Public
+                      </div>
+                      <div className="text-gray-600 space-y-0.5">
+                        <div>Pool sizes</div>
+                        <div>Current odds</div>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg p-2 border border-indigo-100">
+                      <div className="font-semibold text-indigo-900 mb-1 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Private
+                      </div>
+                      <div className="text-gray-600 space-y-0.5">
+                        <div>Your bet amount</div>
+                        <div>Your choice</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-indigo-200 text-xs text-indigo-700">
+                    <strong>Fee:</strong> 0.1 credits
+                  </div>
                 </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h5 className="text-xs font-semibold mb-2 flex items-center gap-2">
-                    <span className="badge badge-xs gap-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      Publicly Visible
-                    </span>
-                  </h5>
-                  <ul className="text-xs space-y-1">
-                    <li className="flex items-start gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-success flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Total pool size updates</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-success flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Current odds changes</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h5 className="text-xs font-semibold mb-2 flex items-center gap-2">
-                    <span className="badge badge-xs gap-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      Always Hidden
-                    </span>
-                  </h5>
-                  <ul className="text-xs space-y-1">
-                    <li className="flex items-start gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      <span>Your bet amount ({betAmount} credits)</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      <span>Which outcome you chose</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      <span>Your wallet address</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-base-content/10 text-xs text-gray-600 dark:text-gray-400">
-                <strong>Transaction fee:</strong> 0.1 credits (reduced for testing)
               </div>
             </div>
 
-            {/* Place Bet Button */}
-            <div className="card-actions justify-end mt-2">
+            {/* Place Bet Button - Enhanced with larger size and better visual feedback */}
+            <div className="mt-6">
               <button
-                className={`btn btn-primary ${isPlacingBet ? 'loading' : ''}`}
+                className={`w-full h-14 rounded-xl font-bold text-lg transition-all transform ${
+                  isPlacingBet || !publicKey || !betAmount
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed border-2 border-gray-300'
+                    : 'bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white border-2 border-indigo-600 hover:border-indigo-700 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]'
+                }`}
                 onClick={handlePlaceBet}
                 disabled={isPlacingBet || !publicKey || !betAmount}
               >
-                {isPlacingBet ? 'Placing Bet...' : 'Place Bet'}
+                {isPlacingBet ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Placing Bet...
+                  </span>
+                ) : !publicKey ? (
+                  'Connect Wallet to Bet'
+                ) : !betAmount ? (
+                  'Enter Bet Amount'
+                ) : (
+                  `Place Bet - ${betAmount} Credits`
+                )}
               </button>
             </div>
           </>
