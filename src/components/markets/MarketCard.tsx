@@ -24,15 +24,15 @@ export default function MarketCard({ market, pools }: MarketCardProps) {
     return `${minutes}m`;
   };
 
-  const getCategoryBadgeColor = (category: number): string => {
-    const colors = {
-      0: 'badge-success', // Sports
-      1: 'badge-info', // Politics
-      2: 'badge-warning', // Crypto
-      3: 'badge-primary', // Weather
-      4: 'badge-secondary', // Other
+  const getCategoryBadgeStyle = (category: number) => {
+    const styles = {
+      0: { bg: 'rgba(16, 185, 129, 0.15)', border: '#10b981', text: '#059669' }, // Sports - Emerald
+      1: { bg: 'rgba(59, 130, 246, 0.15)', border: '#3b82f6', text: '#2563eb' }, // Politics - Blue
+      2: { bg: 'rgba(245, 158, 11, 0.15)', border: '#f59e0b', text: '#d97706' }, // Crypto - Amber
+      3: { bg: 'rgba(139, 92, 246, 0.15)', border: '#8b5cf6', text: '#7c3aed' }, // Weather - Purple
+      4: { bg: 'rgba(236, 72, 153, 0.15)', border: '#ec4899', text: '#db2777' }, // Other - Pink
     };
-    return colors[category as keyof typeof colors] || 'badge-secondary';
+    return styles[category as keyof typeof styles] || styles[4];
   };
 
   // Calculate distribution percentages for visual representation
@@ -40,15 +40,49 @@ export default function MarketCard({ market, pools }: MarketCardProps) {
     totalPool > 0 ? (pool / totalPool) * 100 : 0
   ) || [];
 
-  // Get status badge
+  // Get status badge with enhanced styling
   const getStatusBadge = () => {
     if (market.resolved) {
-      return <span className="badge badge-success badge-sm font-bold">✓ Resolved</span>;
+      return (
+        <span
+          className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wide"
+          style={{
+            background: 'rgba(16, 185, 129, 0.15)',
+            border: '1.5px solid #10b981',
+            color: '#059669'
+          }}
+        >
+          Resolved
+        </span>
+      );
     }
     if (isEnded) {
-      return <span className="badge badge-error badge-sm font-bold">Ended</span>;
+      return (
+        <span
+          className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wide"
+          style={{
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1.5px solid #ef4444',
+            color: '#dc2626'
+          }}
+        >
+          Ended
+        </span>
+      );
     }
-    return <span className="badge badge-primary badge-sm font-bold">● Live</span>;
+    return (
+      <span
+        className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wide flex items-center gap-1"
+        style={{
+          background: 'rgba(99, 102, 241, 0.15)',
+          border: '1.5px solid #6366f1',
+          color: '#4f46e5'
+        }}
+      >
+        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
+        Live
+      </span>
+    );
   };
 
   return (
@@ -56,9 +90,16 @@ export default function MarketCard({ market, pools }: MarketCardProps) {
       <div className="group card bg-base-200 hover:bg-base-300 border-2 border-base-300 hover:border-primary/50 hover:shadow-lg transition-all duration-200 cursor-pointer h-full">
         <div className="card-body p-5 gap-3">
           {/* Top meta row - status and time */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex gap-2">
-              <span className={`badge ${getCategoryBadgeColor(market.category)} badge-sm font-semibold text-[10px]`}>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex gap-2 items-center">
+              <span
+                className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wide"
+                style={{
+                  background: getCategoryBadgeStyle(market.category).bg,
+                  border: `1.5px solid ${getCategoryBadgeStyle(market.category).border}`,
+                  color: getCategoryBadgeStyle(market.category).text
+                }}
+              >
                 {CATEGORY_LABELS[market.category]}
               </span>
               {getStatusBadge()}

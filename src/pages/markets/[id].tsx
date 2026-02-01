@@ -155,21 +155,78 @@ const MarketDetailPage: NextPageWithLayout = () => {
           {/* Market Header */}
           <div className="card bg-base-200 shadow-xl">
             <div className="card-body">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <span className={`badge badge-lg ${
-                  market.category === MarketCategory.Crypto ? 'badge-warning' :
-                  market.category === MarketCategory.Sports ? 'badge-success' :
-                  market.category === MarketCategory.Politics ? 'badge-info' :
-                  'badge-secondary'
-                }`}>
+              <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
+                <span
+                  className="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide"
+                  style={{
+                    background: (() => {
+                      const styles = {
+                        [MarketCategory.Sports]: 'rgba(16, 185, 129, 0.15)',
+                        [MarketCategory.Politics]: 'rgba(59, 130, 246, 0.15)',
+                        [MarketCategory.Crypto]: 'rgba(245, 158, 11, 0.15)',
+                        [MarketCategory.Weather]: 'rgba(139, 92, 246, 0.15)',
+                        [MarketCategory.Other]: 'rgba(236, 72, 153, 0.15)',
+                      };
+                      return styles[market.category] || styles[MarketCategory.Other];
+                    })(),
+                    border: (() => {
+                      const borders = {
+                        [MarketCategory.Sports]: '2px solid #10b981',
+                        [MarketCategory.Politics]: '2px solid #3b82f6',
+                        [MarketCategory.Crypto]: '2px solid #f59e0b',
+                        [MarketCategory.Weather]: '2px solid #8b5cf6',
+                        [MarketCategory.Other]: '2px solid #ec4899',
+                      };
+                      return borders[market.category] || borders[MarketCategory.Other];
+                    })(),
+                    color: (() => {
+                      const colors = {
+                        [MarketCategory.Sports]: '#059669',
+                        [MarketCategory.Politics]: '#2563eb',
+                        [MarketCategory.Crypto]: '#d97706',
+                        [MarketCategory.Weather]: '#7c3aed',
+                        [MarketCategory.Other]: '#db2777',
+                      };
+                      return colors[market.category] || colors[MarketCategory.Other];
+                    })()
+                  }}
+                >
                   {CATEGORY_LABELS[market.category]}
                 </span>
                 {market.resolved ? (
-                  <span className="badge badge-accent badge-lg">Resolved</span>
+                  <span
+                    className="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide"
+                    style={{
+                      background: 'rgba(16, 185, 129, 0.15)',
+                      border: '2px solid #10b981',
+                      color: '#059669'
+                    }}
+                  >
+                    Resolved
+                  </span>
                 ) : isEnded ? (
-                  <span className="badge badge-warning badge-lg">Pending Resolution</span>
+                  <span
+                    className="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide"
+                    style={{
+                      background: 'rgba(245, 158, 11, 0.15)',
+                      border: '2px solid #f59e0b',
+                      color: '#d97706'
+                    }}
+                  >
+                    Pending Resolution
+                  </span>
                 ) : (
-                  <span className="badge badge-primary badge-lg">Active</span>
+                  <span
+                    className="px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide flex items-center gap-2"
+                    style={{
+                      background: 'rgba(99, 102, 241, 0.15)',
+                      border: '2px solid #6366f1',
+                      color: '#4f46e5'
+                    }}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+                    Active
+                  </span>
                 )}
               </div>
 
