@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Market, MarketCategory, CATEGORY_LABELS } from '@/types';
 import MarketCard from './MarketCard';
+import CategoryFilter from './CategoryFilter';
 
 interface MarketListProps {
   markets: Market[];
@@ -97,34 +98,13 @@ export default function MarketList({ markets, poolsMap }: MarketListProps) {
 
       {/* Filters - Modern Button Groups (Polymarket style) */}
       <div className="flex flex-col gap-4">
-        {/* Category Filter (Wave 4) */}
+        {/* Category Filter (Wave 4) - Enhanced Design */}
         <div>
-          <div className="text-xs font-bold uppercase tracking-wider opacity-50 mb-2">Category</div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                selectedCategory === 'all'
-                  ? 'bg-primary text-primary-content'
-                  : 'bg-base-200 hover:bg-base-300'
-              }`}
-              onClick={() => setSelectedCategory('all')}
-            >
-              All
-            </button>
-            {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-              <button
-                key={key}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                  selectedCategory === Number(key)
-                    ? 'bg-primary text-primary-content'
-                    : 'bg-base-200 hover:bg-base-300'
-                }`}
-                onClick={() => setSelectedCategory(Number(key) as MarketCategory)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <div className="text-xs font-bold uppercase tracking-wider opacity-50 mb-3">Category</div>
+          <CategoryFilter
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
         </div>
 
         {/* Status and Sort Filters - Segmented Button Groups */}
