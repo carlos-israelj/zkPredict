@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { Market, MarketCategory, CATEGORY_LABELS } from '@/types';
 import MarketCard from './MarketCard';
 import CategoryFilter from './CategoryFilter';
+import StatusFilter from './StatusFilter';
+import SortFilter from './SortFilter';
 
 interface MarketListProps {
   markets: Market[];
@@ -107,90 +109,24 @@ export default function MarketList({ markets, poolsMap }: MarketListProps) {
           />
         </div>
 
-        {/* Status and Sort Filters - Segmented Button Groups */}
+        {/* Status and Sort Filters - Enhanced with color-coded accents */}
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Status Filter */}
           <div className="flex-1">
             <div className="text-xs font-bold uppercase tracking-wider opacity-50 mb-2">Status</div>
-            <div className="inline-flex bg-base-200 rounded-lg p-1 w-full sm:w-auto">
-              <button
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all ${
-                  filterStatus === 'all'
-                    ? 'bg-base-100 shadow-sm'
-                    : 'hover:bg-base-300/50'
-                }`}
-                onClick={() => setFilterStatus('all')}
-              >
-                All
-              </button>
-              <button
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all ${
-                  filterStatus === 'active'
-                    ? 'bg-base-100 shadow-sm'
-                    : 'hover:bg-base-300/50'
-                }`}
-                onClick={() => setFilterStatus('active')}
-              >
-                Active
-              </button>
-              <button
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all ${
-                  filterStatus === 'ended'
-                    ? 'bg-base-100 shadow-sm'
-                    : 'hover:bg-base-300/50'
-                }`}
-                onClick={() => setFilterStatus('ended')}
-              >
-                Ended
-              </button>
-              <button
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all ${
-                  filterStatus === 'resolved'
-                    ? 'bg-base-100 shadow-sm'
-                    : 'hover:bg-base-300/50'
-                }`}
-                onClick={() => setFilterStatus('resolved')}
-              >
-                Resolved
-              </button>
-            </div>
+            <StatusFilter
+              filterStatus={filterStatus}
+              onStatusChange={setFilterStatus}
+            />
           </div>
 
           {/* Sort Filter */}
           <div className="flex-1">
             <div className="text-xs font-bold uppercase tracking-wider opacity-50 mb-2">Sort By</div>
-            <div className="inline-flex bg-base-200 rounded-lg p-1 w-full sm:w-auto">
-              <button
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all ${
-                  sortBy === 'newest'
-                    ? 'bg-base-100 shadow-sm'
-                    : 'hover:bg-base-300/50'
-                }`}
-                onClick={() => setSortBy('newest')}
-              >
-                Newest
-              </button>
-              <button
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all whitespace-nowrap ${
-                  sortBy === 'ending-soon'
-                    ? 'bg-base-100 shadow-sm'
-                    : 'hover:bg-base-300/50'
-                }`}
-                onClick={() => setSortBy('ending-soon')}
-              >
-                Ending Soon
-              </button>
-              <button
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-md font-semibold text-sm transition-all whitespace-nowrap ${
-                  sortBy === 'most-volume'
-                    ? 'bg-base-100 shadow-sm'
-                    : 'hover:bg-base-300/50'
-                }`}
-                onClick={() => setSortBy('most-volume')}
-              >
-                Volume
-              </button>
-            </div>
+            <SortFilter
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
           </div>
         </div>
       </div>
