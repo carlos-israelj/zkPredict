@@ -30,7 +30,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
       <style jsx>{`
         .category-filter-wrapper {
           display: inline-flex;
-          background: var(--bg-secondary);
+          background: rgba(0, 0, 0, 0.04);
           border-radius: 0.5rem;
           padding: 0.25rem;
           flex-wrap: wrap;
@@ -58,7 +58,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
           cursor: pointer;
           transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
           overflow: hidden;
-          color: var(--text-primary);
+          color: rgba(0, 0, 0, 0.9);
         }
 
         @media (min-width: 640px) {
@@ -81,11 +81,11 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
         }
 
         .category-btn:hover:not(.active) {
-          background: var(--bg-hover);
+          background: rgba(0, 0, 0, 0.06);
         }
 
         .category-btn.active {
-          background: var(--bg-active);
+          background: rgba(255, 255, 255, 0.9);
           box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
 
@@ -97,41 +97,6 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
           position: relative;
           z-index: 1;
           white-space: nowrap;
-        }
-
-        /* Dark mode variables */
-        @media (prefers-color-scheme: dark) {
-          .category-filter-wrapper {
-            --bg-secondary: rgba(255, 255, 255, 0.05);
-            --bg-hover: rgba(255, 255, 255, 0.08);
-            --bg-active: rgba(255, 255, 255, 0.1);
-            --text-primary: rgba(255, 255, 255, 0.9);
-          }
-        }
-
-        /* Light mode variables */
-        @media (prefers-color-scheme: light) {
-          .category-filter-wrapper {
-            --bg-secondary: rgba(0, 0, 0, 0.04);
-            --bg-hover: rgba(0, 0, 0, 0.06);
-            --bg-active: rgba(255, 255, 255, 0.9);
-            --text-primary: rgba(0, 0, 0, 0.9);
-          }
-        }
-
-        /* DaisyUI theme support (overrides prefers-color-scheme) */
-        [data-theme='dark'] .category-filter-wrapper {
-          --bg-secondary: rgba(255, 255, 255, 0.05);
-          --bg-hover: rgba(255, 255, 255, 0.08);
-          --bg-active: rgba(255, 255, 255, 0.1);
-          --text-primary: rgba(255, 255, 255, 0.9);
-        }
-
-        [data-theme='light'] .category-filter-wrapper {
-          --bg-secondary: rgba(0, 0, 0, 0.04);
-          --bg-hover: rgba(0, 0, 0, 0.06);
-          --bg-active: rgba(255, 255, 255, 0.9);
-          --text-primary: rgba(0, 0, 0, 0.9);
         }
       `}</style>
 
