@@ -478,25 +478,66 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
               </div>
             </div>
 
-            {/* Potential Return - Enhanced with better visual hierarchy */}
+            {/* Potential Winnings - Enhanced prominent section with full breakdown */}
             {betAmount && currentOdds && parseFloat(betAmount) > 0 && (
-              <div className="mt-6 p-5 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-bold text-green-900 uppercase tracking-wide">Potential Return</span>
-                  <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-full">
-                    {currentOdds.odds}x odds
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-black text-green-700 tabular-nums">{potentialReturn}</span>
-                    <span className="text-sm font-bold text-green-600">credits</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="font-semibold text-green-800">Profit:</span>
-                    <span className="font-bold text-green-700 tabular-nums">
-                      +{(parseFloat(potentialReturn) - parseFloat(betAmount)).toFixed(2)} credits
+              <div className="mt-6">
+                {/* Main Potential Return Card */}
+                <div className="p-6 bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 border-2 border-green-300 rounded-2xl shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <h4 className="text-base font-bold text-green-900 uppercase tracking-wide">Potential Winnings</h4>
+                    </div>
+                    <span className="text-xs font-bold text-green-700 bg-white px-3 py-1.5 rounded-full border border-green-200 shadow-sm">
+                      {currentOdds.odds}x odds
                     </span>
+                  </div>
+
+                  {/* Breakdown */}
+                  <div className="space-y-3">
+                    {/* Bet Amount */}
+                    <div className="flex items-center justify-between pb-2 border-b border-green-200">
+                      <span className="text-sm font-semibold text-green-800">Your Bet</span>
+                      <span className="text-lg font-bold text-green-900 tabular-nums">{betAmount} credits</span>
+                    </div>
+
+                    {/* Potential Profit */}
+                    <div className="flex items-center justify-between pb-2 border-b border-green-200">
+                      <span className="text-sm font-semibold text-green-800">Potential Profit</span>
+                      <span className="text-lg font-bold text-green-700 tabular-nums">
+                        +{(parseFloat(potentialReturn) - parseFloat(betAmount)).toFixed(2)} credits
+                      </span>
+                    </div>
+
+                    {/* Total Return - Most Prominent */}
+                    <div className="pt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-green-900 uppercase">Total Return</span>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-3xl font-black text-green-700 tabular-nums">{potentialReturn}</span>
+                          <span className="text-sm font-bold text-green-600">credits</span>
+                        </div>
+                      </div>
+                      <div className="mt-1 text-right">
+                        <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded">
+                          {((parseFloat(potentialReturn) / parseFloat(betAmount) - 1) * 100).toFixed(1)}% ROI
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Info Note */}
+                  <div className="mt-4 pt-3 border-t border-green-200">
+                    <p className="text-xs text-green-700 flex items-start gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>You will receive this amount if your prediction is correct and you claim your winnings after the market resolves.</span>
+                    </p>
                   </div>
                 </div>
               </div>
