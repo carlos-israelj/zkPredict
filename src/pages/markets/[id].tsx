@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
 import { useMarketMetadata } from '@/hooks/useMarketMetadata';
 import { useOnChainMarketPolling } from '@/hooks/useOnChainMarket';
+import { MarketDetailSkeleton } from '@/components/ui/SkeletonLoader';
 
 // Mock data - In production, fetch from blockchain + backend
 const MOCK_MARKETS: Record<string, Market> = {
@@ -96,13 +97,7 @@ const MarketDetailPage: NextPageWithLayout = () => {
     : (id ? MOCK_POOLS[id as string] || [] : []);
 
   if (metadataLoading || onChainLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center py-12">
-          <span className="loading loading-spinner loading-lg"></span>
-        </div>
-      </div>
-    );
+    return <MarketDetailSkeleton />;
   }
 
   if (!market) {

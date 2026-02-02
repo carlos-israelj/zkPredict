@@ -6,6 +6,7 @@ import { Market, MarketCategory } from '@/types';
 import { useAllMarketsMetadata } from '@/hooks/useMarketMetadata';
 import { fetchMarketOnChain } from '@/lib/aleo';
 import Link from 'next/link';
+import { MarketCardSkeleton, StatCardSkeleton } from '@/components/ui/SkeletonLoader';
 
 // No mock markets in production - only show real markets created by users
 
@@ -109,59 +110,71 @@ const MarketsPage: NextPageWithLayout = () => {
 
       {/* Simple stats cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="card bg-base-200 border-2 border-base-300">
-          <div className="card-body">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-bold opacity-60 uppercase mb-1">Total Markets</div>
-                <div className="text-4xl font-black text-primary tabular-nums">
-                  {loading ? '...' : combinedMarkets.length}
+        {loading ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
+            <div className="card bg-base-200 border-2 border-base-300">
+              <div className="card-body">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-bold opacity-60 uppercase mb-1">Total Markets</div>
+                    <div className="text-4xl font-black text-primary tabular-nums">
+                      {combinedMarkets.length}
+                    </div>
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
                 </div>
               </div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
             </div>
-          </div>
-        </div>
 
-        <div className="card bg-base-200 border-2 border-base-300">
-          <div className="card-body">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-bold opacity-60 uppercase mb-1">Active</div>
-                <div className="text-4xl font-black text-success tabular-nums">
-                  {loading ? '...' : combinedMarkets.filter(m => !m.resolved && Math.floor(Date.now() / 1000) < m.endTime).length}
+            <div className="card bg-base-200 border-2 border-base-300">
+              <div className="card-body">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-bold opacity-60 uppercase mb-1">Active</div>
+                    <div className="text-4xl font-black text-success tabular-nums">
+                      {combinedMarkets.filter(m => !m.resolved && Math.floor(Date.now() / 1000) < m.endTime).length}
+                    </div>
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
                 </div>
               </div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
             </div>
-          </div>
-        </div>
 
-        <div className="card bg-base-200 border-2 border-base-300">
-          <div className="card-body">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-bold opacity-60 uppercase mb-1">Volume</div>
-                <div className="text-4xl font-black text-secondary tabular-nums">0.0</div>
+            <div className="card bg-base-200 border-2 border-base-300">
+              <div className="card-body">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-bold opacity-60 uppercase mb-1">Volume</div>
+                    <div className="text-4xl font-black text-secondary tabular-nums">0.0</div>
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
               </div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* Main Content */}
       {showCreateMarket ? (
         <CreateMarket />
       ) : loading ? (
-        <div className="flex justify-center items-center py-12">
-          <span className="loading loading-spinner loading-lg"></span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <MarketCardSkeleton key={i} />
+          ))}
         </div>
       ) : error ? (
         <div className="alert alert-error">

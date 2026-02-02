@@ -6,12 +6,14 @@ import { HomeIcon } from '@/components/icons/home';
 import { Twitter } from '@/components/icons/twitter';
 import { Discord } from '@/components/icons/discord';
 import Footer from '@/components/ui/Footer';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 require('@demox-labs/aleo-wallet-adapter-reactui/dist/styles.css');
 
 function HeaderRightArea() {
   return (
     <div className="flex items-center gap-2 sm:gap-4">
+      <ThemeToggle />
       <div className="wallet-adapter-button-trigger-wrapper">
         <WalletMultiButton className="!h-10 !min-h-0 !px-4 !text-sm sm:!h-12 sm:!px-6 sm:!text-base" />
       </div>
