@@ -1,0 +1,72 @@
+📢 Loading environment variables from a `.env` file in the directory tree.
+  - NETWORK=testnet
+  - PRIVATE_KEY=APrivateKey1zkpB98A7HsGFRVintBKwNoJXVQRitHiCfsJDbVTXKAFWkR6
+  - ENDPOINT=https://api.explorer.provable.com/v1
+       Leo     253 statements before dead code elimination.
+       Leo     250 statements after dead code elimination.
+       Leo     The program checksum is: '[148u8, 122u8, 218u8, 247u8, 32u8, 221u8, 214u8, 225u8, 116u8, 37u8, 59u8, 162u8, 4u8, 146u8, 233u8, 184u8, 48u8, 250u8, 176u8, 150u8, 117u8, 98u8, 158u8, 80u8, 170u8, 156u8, 62u8, 136u8, 8u8, 137u8, 143u8, 100u8]'.
+       Leo ✅ Compiled 'zkpredict4.aleo' into Aleo instructions.
+
+📢 Using the following consensus heights: 0,2950000,4800000,6625000,6765000,7600000,8365000,9173000,9800000,10525000,11952000,12669000
+  To override, pass in `--consensus-heights` or override the environment variable `CONSENSUS_VERSION_HEIGHTS`.
+
+Attempting to determine the consensus version from the latest block height at https://api.explorer.provable.com/v1...
+
+🛠️  Deployment Plan Summary
+──────────────────────────────────────────────
+🔧 Configuration:
+  Private Key:        APrivateKey1zkpB98A7HsGF...
+  Address:            aleo1tgk48pzlz2xws2ed888...
+  Endpoint:           https://api.explorer.provable.com/v1
+  Network:            testnet
+  Consensus Version:  12
+
+📦 Deployment Tasks:
+  • zkpredict4.aleo  │ priority fee: 0  │ fee record: no (public fee)
+
+⚙️ Actions:
+  • Transaction(s) will NOT be printed to the console.
+  • Transaction(s) will NOT be saved to a file.
+  • Transaction(s) will be broadcast to https://api.explorer.provable.com/v1
+──────────────────────────────────────────────
+
+
+🔧 Your program 'zkpredict4.aleo' has the following constructor.
+──────────────────────────────────────────────
+constructor:
+    assert.eq edition 0u16;
+──────────────────────────────────────────────
+Once it is deployed, it CANNOT be changed.
+
+📦 Creating deployment transaction for 'zkpredict4.aleo'...
+
+
+📊 Deployment Summary for zkpredict4.aleo
+──────────────────────────────────────────────
+  Total Variables:      175,616
+  Total Constraints:    136,483
+  Max Variables:        2,097,152
+  Max Constraints:      2,097,152
+
+💰 Cost Breakdown (credits)
+  Transaction Storage:  8.223000
+  Program Synthesis:    0.312099
+  Namespace:            1.000000
+  Constructor:          0.002000
+  Priority Fee:         0.000000
+  Total Fee:            9.537099
+──────────────────────────────────────────────
+
+📡 Broadcasting deployment for zkpredict4.aleo...
+💰Your current public balance is 39.27551 credits.
+
+✉️ Broadcasted transaction with:
+  - transaction ID: 'at1yhatjncdrag3m4yk2fjf5a2s94hp2eddzmrwhpvsjrst33zr3uyqhdvmg8'
+  - fee ID: 'au1r3hpf7tccaet6pdy37ydj5x6lp8lnlhgax3ud49mq4ff03wf5szq8qajen'
+  - fee transaction ID: 'at1ynewe04f6qjme9dg48vpttuy8w6t7acck3gah39p2v68xl6wvyzsq8m0k3'
+    (use this to check for rejected transactions)
+
+🔄 Searching up to 12 blocks to confirm transaction (this may take several seconds)...
+Explored 2 blocks.
+Transaction accepted.
+✅ Deployment confirmed!
