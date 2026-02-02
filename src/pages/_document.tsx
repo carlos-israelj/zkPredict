@@ -48,21 +48,8 @@ class CustomDocument extends Document {
             dangerouslySetInnerHTML={{
               __html: `
                 (function() {
-                  try {
-                    var storedTheme = localStorage.getItem('theme');
-                    if (storedTheme) {
-                      document.documentElement.setAttribute('data-theme', storedTheme);
-                    } else {
-                      // Check system preference
-                      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                      var defaultTheme = prefersDark ? 'zkpredict-dark' : 'zkpredict-light';
-                      document.documentElement.setAttribute('data-theme', defaultTheme);
-                      localStorage.setItem('theme', defaultTheme);
-                    }
-                  } catch (e) {
-                    // On error, fall back to light theme:
-                    document.documentElement.setAttribute('data-theme', 'zkpredict-light');
-                  }
+                  // Always use light theme
+                  document.documentElement.setAttribute('data-theme', 'zkpredict-light');
                 })();
               `,
             }}
