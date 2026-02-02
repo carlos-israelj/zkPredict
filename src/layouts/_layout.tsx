@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { WalletMultiButton } from '@demox-labs/aleo-wallet-adapter-reactui';
+import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
 import { HomeIcon } from '@/components/icons/home';
 import { Twitter } from '@/components/icons/twitter';
 import { Discord } from '@/components/icons/discord';
@@ -12,8 +13,25 @@ import Footer from '@/components/ui/Footer';
 require('@demox-labs/aleo-wallet-adapter-reactui/dist/styles.css');
 
 function HeaderRightArea() {
+  const router = useRouter();
+  const { publicKey } = useWallet();
+  const isMarketsPage = router.pathname === '/markets';
+
   return (
-    <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+      {/* Create Market Button - Only on Markets page when wallet connected */}
+      {isMarketsPage && publicKey && (
+        <Link href="/markets/create" className="hidden sm:block">
+          <button className="btn btn-primary btn-sm gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5 active:translate-y-0">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+              <path d="M5 12h14"></path>
+              <path d="M12 5v14"></path>
+            </svg>
+            <span className="font-bold font-mono text-xs tracking-wider">CREATE</span>
+          </button>
+        </Link>
+      )}
+
       <div className="wallet-adapter-button-trigger-wrapper">
         <WalletMultiButton className="!h-10 !min-h-[44px] !px-3 !text-xs sm:!h-12 sm:!min-h-[48px] sm:!px-6 sm:!text-base touch-manipulation" />
       </div>
@@ -53,27 +71,44 @@ export function Header() {
               </span>
             </Link>
 
-            {/* Navigation Links */}
-            <div className="hidden md:flex items-center gap-1" role="group" aria-label="Main navigation">
+            {/* Navigation Links - Modern Polymarket style */}
+            <div className="hidden md:flex items-center gap-0.5" role="group" aria-label="Main navigation">
               <Link
                 href="/markets"
-                className={`px-3 py-2 rounded-lg text-sm font-bold font-mono uppercase tracking-wider transition-all ${
+                className={`relative px-4 py-2.5 text-sm font-bold font-mono uppercase tracking-wider transition-all group ${
                   isActive('/markets')
-                    ? 'bg-primary/10 text-primary border border-primary/30'
-                    : 'text-base-content/60 hover:text-base-content hover:bg-base-300/50'
+                    ? 'text-primary'
+                    : 'text-base-content/60 hover:text-base-content'
                 }`}
               >
-                Markets
+                <span className="relative z-10">Markets</span>
+                {isActive('/markets') && (
+                  <div className="absolute inset-0 bg-primary/10 rounded-lg border border-primary/30 animate-fade-in" />
+                )}
+                {!isActive('/markets') && (
+                  <div className="absolute inset-0 bg-base-300/0 group-hover:bg-base-300/50 rounded-lg transition-all duration-200" />
+                )}
               </Link>
               <Link
                 href="/portfolio"
-                className={`px-3 py-2 rounded-lg text-sm font-bold font-mono uppercase tracking-wider transition-all ${
+                className={`relative px-4 py-2.5 text-sm font-bold font-mono uppercase tracking-wider transition-all group ${
                   isActive('/portfolio')
-                    ? 'bg-primary/10 text-primary border border-primary/30'
-                    : 'text-base-content/60 hover:text-base-content hover:bg-base-300/50'
+                    ? 'text-primary'
+                    : 'text-base-content/60 hover:text-base-content'
                 }`}
               >
-                Portfolio
+                <span className="relative z-10 flex items-center gap-1.5">
+                  Portfolio
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path>
+                  </svg>
+                </span>
+                {isActive('/portfolio') && (
+                  <div className="absolute inset-0 bg-primary/10 rounded-lg border border-primary/30 animate-fade-in" />
+                )}
+                {!isActive('/portfolio') && (
+                  <div className="absolute inset-0 bg-base-300/0 group-hover:bg-base-300/50 rounded-lg transition-all duration-200" />
+                )}
               </Link>
             </div>
 
