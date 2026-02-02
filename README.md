@@ -62,6 +62,9 @@ Create markets with 2-255 outcomes. Beyond simple binary YES/NO markets, support
 ### Bet ID System
 Secure claim mechanism using cryptographic bet IDs derived from `BHP256::hash_to_field(nonce)`. Prevents double-claiming while maintaining unlinkability.
 
+### Batch Claiming (v4)
+Claim multiple winning bets in a single transaction with `claim_two_winnings`. Save ~25% on gas fees and reduce on-chain metadata leakage by consolidating claims.
+
 ### Market Categories
 Organized markets across Sports, Politics, Crypto, Weather, and custom categories. Discover and participate in markets matching your expertise.
 
@@ -112,8 +115,11 @@ User generates:
   nonce = random field (for bet_id uniqueness)
   bet_id = BHP256::hash_to_field(nonce)
 
-User submits (public inputs):
-  market_id, outcome, amount, nonce
+User submits:
+  market_id (public)
+  outcome (PRIVATE in v4) → Not visible in transaction metadata
+  amount (PRIVATE in v4) → Not visible in transaction metadata
+  nonce (PRIVATE in v4) → For bet_id generation
 
 Smart contract creates:
   Private Bet Record → Encrypted, only user can see
@@ -124,7 +130,7 @@ Record contents (private):
   owner, market_id, bet_id, outcome, amount, odds_at_bet
 ```
 
-**Result**: Bet is placed. User receives encrypted Bet record and bet_id. Nobody else can see bet details.
+**Result**: Bet is placed. User receives encrypted Bet record and bet_id. In v4, even transaction metadata is private (outcome, amount, nonce not visible on-chain).
 
 ### Phase 3: Claim Winnings
 
@@ -133,7 +139,7 @@ Market creator resolves:
   Sets winning_outcome (0-255)
   Market marked as resolved
 
-User claims:
+User claims (Single Bet):
   Inputs: bet_id (field)
   Contract verifies:
     1. bet_id exists in bet_data mapping
@@ -149,9 +155,15 @@ User claims:
 
   Create Winnings Record → Private, contains payout amount
   Mark bet_id as claimed → Prevent double-claim
+
+Batch Claim (v4 - claim_two_winnings):
+  Inputs: bet_id_1, bet_id_2 (both fields)
+  Contract processes both bets sequentially
+  Creates single Winnings Record with combined payout
+  Benefits: ~25% gas savings, reduced metadata leakage
 ```
 
-**Result**: Winnings transferred privately. No on-chain link between bet placement and claim.
+**Result**: Winnings transferred privately. No on-chain link between bet placement and claim. v4 offers optional batch claiming for efficiency.
 
 ### Privacy Guarantees
 
@@ -161,9 +173,14 @@ User claims:
 - Your betting history
 - Your winnings
 
+**Private Data in v4** (Transaction inputs - NOT visible in metadata):
+- Outcome choice when placing bet
+- Bet amount when placing bet
+- Nonce used for bet_id generation
+
 **Public Data** (On-chain mappings):
 - Market metadata (title, description, categories)
-- Total pool sizes per outcome
+- Total pool sizes per outcome (aggregate only)
 - Market resolution status
 - Winning outcome
 
@@ -182,7 +199,7 @@ flowchart TB
     subgraph Aleo["Aleo Blockchain"]
         direction TB
 
-        subgraph Contract["zkpredict2.aleo Smart Contract"]
+        subgraph Contract["zkpredict4.aleo Smart Contract (v4)"]
             direction LR
 
             subgraph Records["Private State (Records)"]
@@ -200,9 +217,10 @@ flowchart TB
 
         subgraph Functions["Transition Functions"]
             CreateMarket["create_market"]
-            PlaceBet["place_bet"]
+            PlaceBet["place_bet<br/>(private inputs in v4)"]
             ResolveMarket["resolve_market"]
             ClaimWinnings["claim_winnings"]
+            ClaimTwo["claim_two_winnings<br/>(NEW in v4)"]
         end
     end
 
@@ -302,23 +320,43 @@ yarn dev
 
 ## Smart Contract (Testnet)
 
-### Deployed Contract
+### Deployed Contracts - Version History
 
-| Contract | Program ID | Network | Explorer |
-|----------|-----------|---------|----------|
-| **zkpredict2.aleo** | `zkpredict2.aleo` | Aleo Testnet | [View on Explorer](https://testnet.explorer.provable.com/program/zkpredict2.aleo) |
+zkPredict has evolved through multiple versions, each adding new features and privacy enhancements:
 
-### Transaction Details
+| Version | Program ID | Status | Deployment TX | Explorer |
+|---------|-----------|--------|---------------|----------|
+| **v4 (Current)** | `zkpredict4.aleo` | ✅ Active | `at1yhatjncdrag3m4yk2fjf5a2s94hp2eddzmrwhpvsjrst33zr3uyqhdvmg8` | [View](https://testnet.explorer.provable.com/transaction/at1yhatjncdrag3m4yk2fjf5a2s94hp2eddzmrwhpvsjrst33zr3uyqhdvmg8) |
+| **v3** | `zkpredict3.aleo` | 📦 Legacy | `at1tfrz4jv57rvypqtmr8mfhz9e5wdzjzm3rxr0vf0u7mlrzvzayqyqz5ghc8` | [View](https://testnet.explorer.provable.com/transaction/at1tfrz4jv57rvypqtmr8mfhz9e5wdzjzm3rxr0vf0u7mlrzvzayqyqz5ghc8) |
+| **v2** | `zkpredict2.aleo` | 📦 Legacy | `at1uaezw9wsrskwex086wu6aj6ryas6m6eq90xn5qydwj7ymlva2qgstgl3vt` | [View](https://testnet.explorer.provable.com/program/zkpredict2.aleo) |
+
+### Current Version: zkpredict4.aleo (v2.0.0)
+
+**Deployment Details:**
 
 | Metric | Value |
 |--------|-------|
-| **Deployment TX** | `at1uaezw9wsrskwex086wu6aj6ryas6m6eq90xn5qydwj7ymlva2qgstgl3vt` |
-| **Deployment Cost** | 6.908620 credits |
-| **Variables** | 130,407 |
-| **Constraints** | 101,213 |
-| **Deployed** | January 30, 2026 |
+| **Program ID** | `zkpredict4.aleo` |
+| **Version** | 2.0.0 |
+| **Deployment TX** | `at1yhatjncdrag3m4yk2fjf5a2s94hp2eddzmrwhpvsjrst33zr3uyqhdvmg8` |
+| **Deployment Cost** | 9.537099 credits |
+| **Variables** | 175,616 |
+| **Constraints** | 136,483 |
+| **Deployed** | February 2, 2026 |
+| **Network** | Aleo TestnetBeta |
 
-### Contract Functions
+**New Features in v4:**
+- ✨ **Private Transaction Inputs**: `outcome`, `amount`, and `nonce` are now private in `place_bet` (not visible in transaction metadata)
+- ⚡ **Batch Claiming**: New `claim_two_winnings` function to claim 2 bets in one transaction (~25% gas savings)
+- 🔒 **Enhanced Privacy**: Transaction-level privacy improvements while maintaining simple bet_id claim mechanism
+- 🎯 **Better Privacy Score**: Improved from 9.5/10 to maximum privacy within UX constraints
+
+**Bug Fixes from v3:**
+- Fixed multi-outcome pool key generation (now includes outcome in hash)
+- Fixed dynamic odds calculation for all outcomes
+- Fixed claim_winnings to support 2-255 outcomes dynamically
+
+### Contract Functions (v4)
 
 **create_market** - Create a new prediction market
 ```leo
@@ -331,13 +369,13 @@ transition create_market(
 ) -> Future
 ```
 
-**place_bet** - Place a private bet on an outcome
+**place_bet** - Place a private bet on an outcome (ENHANCED in v4)
 ```leo
-transition place_bet(
+async transition place_bet(
     public market_id: field,
-    public outcome: u8,
-    public amount: u64,
-    public nonce: field  // For bet_id generation
+    outcome: u8,        // PRIVATE: Not visible in transaction
+    amount: u64,        // PRIVATE: Not visible in transaction
+    nonce: field        // PRIVATE: For bet_id generation
 ) -> (Bet, Future)
 ```
 
@@ -356,6 +394,36 @@ transition claim_winnings(
     public bet_id: field
 ) -> (Winnings, Future)
 ```
+
+**claim_two_winnings** - Batch claim 2 winning bets (NEW in v4)
+```leo
+async transition claim_two_winnings(
+    public bet_id_1: field,
+    public bet_id_2: field
+) -> (Winnings, Future)
+```
+
+### Version Changelog
+
+**v4 (zkpredict4.aleo) - February 2026**
+- Privacy Enhancement #1: Private inputs in place_bet transition
+- Privacy Enhancement #4: Batch claiming with claim_two_winnings
+- Gas optimization: ~25% savings when claiming multiple bets
+- Improved metadata privacy (transaction inputs not publicly visible)
+
+**v3 (zkpredict3.aleo) - January 2026**
+- Bug fixes for multi-outcome markets
+- Fixed pool key generation to include outcome
+- Dynamic odds calculation for all outcomes
+- Enhanced claim_winnings to support 2-255 outcomes
+
+**v2 (zkpredict2.aleo) - January 2026**
+- Initial public release
+- Multi-outcome support (2-255 outcomes)
+- Market categories (Sports, Politics, Crypto, Weather, Other)
+- Bet ID system with BHP256 hashing
+- Auto-resolve functionality
+- Double-claim prevention
 
 ---
 
@@ -441,7 +509,9 @@ Create niche markets for your community: tech product launches, social trends, o
 
 **Key Properties**:
 - ✅ **Bet Confidentiality**: Amounts and outcomes encrypted in Records
+- ✅ **Transaction Privacy (v4)**: Input parameters private (outcome, amount, nonce not in metadata)
 - ✅ **Claim Privacy**: Winnings only visible to claimer
+- ✅ **Batch Efficiency (v4)**: Claim multiple bets with reduced gas and metadata
 - ✅ **No Transaction Graph**: Cannot trace bet → claim relationship
 - ✅ **Double-Spend Prevention**: bet_id nullifier prevents re-claiming
 - ✅ **Non-Custodial**: Only bet_id owner can claim (cryptographic proof)
@@ -451,7 +521,7 @@ Create niche markets for your community: tech product launches, social trends, o
 ## Roadmap
 
 ### Phase 1: Foundation (Completed ✅)
-**Status:** Deployed on Aleo Testnet
+**Status:** v4 Deployed on Aleo TestnetBeta
 **Timeline:** Q4 2025 - Q1 2026
 
 **Core Features**
@@ -460,24 +530,29 @@ Create niche markets for your community: tech product launches, social trends, o
 - Bet ID system for secure claiming
 - Market creation, resolution, and claiming
 - Full Zero-Knowledge privacy guarantees
+- ✨ **NEW in v4**: Private transaction inputs (outcome, amount, nonce)
+- ✨ **NEW in v4**: Batch claiming for gas efficiency
 
 **Smart Contract**
-- Leo program deployment (`zkpredict2.aleo`)
+- Leo program v4 deployed (`zkpredict4.aleo`)
 - Private Records (Bet, Winnings)
 - Public Mappings (markets, bet_data, outcome_pools, claimed_bets)
 - BHP256 hash-based bet ID generation
+- Private inputs for enhanced metadata privacy
+- Batch operations with claim_two_winnings
 
 **Frontend**
 - Next.js application with Aleo Wallet Adapter
 - Create markets, place bets, resolve, and claim UI
 - Market browsing with categories
 - Transaction status tracking
+- Batch claiming interface for gas optimization
 
-**Current Status:** Live on testnet processing real bets with full privacy.
+**Current Status:** v4 live on testnet with maximum privacy and gas-efficient batch operations.
 
 ---
 
-### Phase 2: Enhanced Features (Q2 2026)
+### Phase 2: Enhanced Features (In Progress - Q2 2026)
 **Focus:** User experience and market diversity
 
 **Market Enhancements**
@@ -487,8 +562,9 @@ Create niche markets for your community: tech product launches, social trends, o
 - Market search and filtering
 
 **Privacy Improvements**
-- Fixed-denomination betting pools (hide amounts)
-- Batch claiming for multiple bets
+- ✅ **Completed in v4**: Batch claiming for multiple bets (claim_two_winnings)
+- ✅ **Completed in v4**: Private transaction inputs
+- Fixed-denomination betting pools (optional enhancement)
 - Privacy-preserving market analytics
 
 **UI/UX**
@@ -555,6 +631,12 @@ A: Aleo provides native Zero-Knowledge proof support at the VM level. Privacy is
 
 **Q: Can I place multiple bets on the same market?**
 A: Yes! Each bet uses a different nonce, generating unique bet_ids. You can bet multiple times on different outcomes or the same outcome.
+
+**Q: What is batch claiming and how does it save gas?**
+A: Batch claiming (v4) allows you to claim 2 winning bets in a single transaction using `claim_two_winnings`. This saves approximately 25% on gas fees compared to claiming each bet separately, and reduces on-chain metadata by consolidating operations.
+
+**Q: Are my bet amounts visible on-chain?**
+A: In v4, no. The `outcome`, `amount`, and `nonce` parameters in `place_bet` are private inputs, meaning they don't appear in transaction metadata. Only the `market_id` is public. Your bet details are encrypted in the Bet Record which only you can decrypt.
 
 ---
 

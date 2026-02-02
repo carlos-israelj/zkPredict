@@ -1,6 +1,8 @@
 import { useWindowScroll } from '@/hooks/use-window-scroll';
 import { useIsMounted } from '@/hooks/use-is-mounted';
 import React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { WalletMultiButton } from '@demox-labs/aleo-wallet-adapter-reactui';
 import { HomeIcon } from '@/components/icons/home';
 import { Twitter } from '@/components/icons/twitter';
@@ -22,6 +24,9 @@ function HeaderRightArea() {
 export function Header() {
   const windowScroll = useWindowScroll();
   const isMounted = useIsMounted();
+  const router = useRouter();
+
+  const isActive = (path: string) => router.pathname === path;
 
   return (
     <nav
@@ -35,23 +40,49 @@ export function Header() {
     >
       <div className="container mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
-          {/* Left side - Logo and Social links - Mobile optimized */}
-          <div className="flex items-center gap-2 sm:gap-3 md:gap-4 min-w-0 flex-1">
-            <a
+          {/* Left side - Logo and Nav Links - Mobile optimized */}
+          <div className="flex items-center gap-3 sm:gap-4 md:gap-6 min-w-0 flex-1">
+            <Link
               href="/"
-              className="flex items-center gap-2 sm:gap-3 hover:scale-105 transition-transform group touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg"
+              className="flex items-center gap-2 sm:gap-3 hover:scale-105 transition-transform group touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg flex-shrink-0"
               aria-label="Go to zkPredict home page"
             >
               <img src="/logo.svg" alt="" className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 flex-shrink-0" aria-hidden="true" loading="eager" />
-              <span className="font-display text-lg sm:text-xl md:text-2xl font-bold gradient-text-cyan truncate">
+              <span className="font-display text-lg sm:text-xl md:text-2xl font-bold gradient-text-cyan hidden xs:inline truncate">
                 zkPredict
               </span>
-            </a>
-            <div className="h-5 sm:h-6 w-px bg-base-content/20 hidden xs:block" aria-hidden="true" />
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0" role="group" aria-label="Social media links">
+            </Link>
+
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center gap-1" role="group" aria-label="Main navigation">
+              <Link
+                href="/markets"
+                className={`px-3 py-2 rounded-lg text-sm font-bold font-mono uppercase tracking-wider transition-all ${
+                  isActive('/markets')
+                    ? 'bg-primary/10 text-primary border border-primary/30'
+                    : 'text-base-content/60 hover:text-base-content hover:bg-base-300/50'
+                }`}
+              >
+                Markets
+              </Link>
+              <Link
+                href="/portfolio"
+                className={`px-3 py-2 rounded-lg text-sm font-bold font-mono uppercase tracking-wider transition-all ${
+                  isActive('/portfolio')
+                    ? 'bg-primary/10 text-primary border border-primary/30'
+                    : 'text-base-content/60 hover:text-base-content hover:bg-base-300/50'
+                }`}
+              >
+                Portfolio
+              </Link>
+            </div>
+
+            {/* Social Links */}
+            <div className="h-5 sm:h-6 w-px bg-base-content/20 hidden md:block" aria-hidden="true" />
+            <div className="hidden md:flex items-center gap-1 sm:gap-2 flex-shrink-0" role="group" aria-label="Social media links">
               {process.env.URL && (
                 <a
-                  className="btn btn-ghost btn-circle btn-xs sm:btn-sm hover:bg-cyan-500/20 hover:border-cyan-500/50 border border-transparent transition-all duration-300 touch-manipulation min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="btn btn-ghost btn-circle btn-xs sm:btn-sm hover:bg-cyan-500/20 hover:border-cyan-500/50 border border-transparent transition-all duration-300 touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary"
                   href={`${process.env.URL}`}
                   aria-label="Visit zkPredict website"
                 >
@@ -60,7 +91,7 @@ export function Header() {
               )}
               {process.env.TWITTER && (
                 <a
-                  className="btn btn-ghost btn-circle btn-xs sm:btn-sm hover:bg-cyan-500/20 hover:border-cyan-500/50 border border-transparent transition-all duration-300 touch-manipulation min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="btn btn-ghost btn-circle btn-xs sm:btn-sm hover:bg-cyan-500/20 hover:border-cyan-500/50 border border-transparent transition-all duration-300 touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary"
                   href={`${process.env.TWITTER}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -71,7 +102,7 @@ export function Header() {
               )}
               {process.env.DISCORD && (
                 <a
-                  className="btn btn-ghost btn-circle btn-xs sm:btn-sm hover:bg-cyan-500/20 hover:border-cyan-500/50 border border-transparent transition-all duration-300 touch-manipulation min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="btn btn-ghost btn-circle btn-xs sm:btn-sm hover:bg-cyan-500/20 hover:border-cyan-500/50 border border-transparent transition-all duration-300 touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary"
                   href={`${process.env.DISCORD}`}
                   target="_blank"
                   rel="noopener noreferrer"
