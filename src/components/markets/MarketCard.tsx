@@ -87,13 +87,13 @@ export default function MarketCard({ market, pools }: MarketCardProps) {
 
   return (
     <Link href={`/markets/${market.marketId}`}>
-      <div className="group card bg-base-200 hover:bg-base-300 border-2 border-base-300 hover:border-primary/50 hover:shadow-lg transition-all duration-200 cursor-pointer h-full">
-        <div className="card-body p-5 gap-3">
-          {/* Top meta row - status and time */}
+      <div className="group card bg-base-200 hover:bg-base-300 border-2 border-base-300 hover:border-primary/50 card-hover cursor-pointer h-full touch-manipulation animate-fade-in">
+        <div className="card-body p-4 sm:p-5 gap-3">
+          {/* Top meta row - status and time - Responsive stacking */}
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center flex-wrap">
               <span
-                className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wide"
+                className="px-3 py-1.5 sm:px-2.5 sm:py-1 rounded-md text-xs font-bold uppercase tracking-wide min-h-[32px] sm:min-h-0 flex items-center"
                 style={{
                   background: getCategoryBadgeStyle(market.category).bg,
                   border: `1.5px solid ${getCategoryBadgeStyle(market.category).border}`,
@@ -104,39 +104,39 @@ export default function MarketCard({ market, pools }: MarketCardProps) {
               </span>
               {getStatusBadge()}
             </div>
-            <span className="text-xs font-bold opacity-60 tabular-nums">
+            <span className="text-xs sm:text-xs font-bold opacity-60 tabular-nums">
               {formatTimeRemaining(timeRemaining)}
             </span>
           </div>
 
-          {/* Title - big and bold like Polymarket */}
-          <h3 className="font-display text-lg font-bold line-clamp-2 leading-tight min-h-[3rem]">
+          {/* Title - big and bold like Polymarket - Responsive sizing */}
+          <h3 className="font-display text-base sm:text-lg font-bold line-clamp-2 leading-tight min-h-[2.5rem] sm:min-h-[3rem]">
             {market.title || `Market ${market.marketId.substring(0, 8)}...`}
           </h3>
 
-          {/* Description - subtle */}
+          {/* Description - subtle - Hidden on smallest screens */}
           {market.description && (
-            <p className="text-xs opacity-60 line-clamp-2 leading-relaxed">
+            <p className="text-xs opacity-60 line-clamp-2 leading-relaxed hidden xs:block">
               {market.description}
             </p>
           )}
 
-          {/* Outcomes - MAIN FOCUS like Polymarket */}
+          {/* Outcomes - MAIN FOCUS like Polymarket - Touch-friendly sizing */}
           {market.outcomeLabels && distribution.length > 0 && (
-            <div className="space-y-2 my-2">
+            <div className="space-y-2 sm:space-y-2 my-2">
               {market.outcomeLabels.map((label, index) => (
                 <div
                   key={index}
-                  className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
+                  className={`flex items-center justify-between p-3 sm:p-3 rounded-lg border-2 transition-all min-h-[52px] sm:min-h-0 hover-lift ${
                     market.resolved && market.winningOutcome === index
                       ? 'bg-success/10 border-success'
-                      : 'bg-base-100 border-base-content/10 hover:border-primary/30'
+                      : 'bg-base-100 border-base-content/10 hover:border-primary/30 hover:bg-base-50'
                   }`}
                 >
-                  <span className="font-semibold text-sm">{label}</span>
+                  <span className="font-semibold text-sm sm:text-sm truncate max-w-[60%]">{label}</span>
                   <div className="flex items-center gap-2">
                     <div className="text-right">
-                      <div className={`text-2xl font-black tabular-nums ${
+                      <div className={`text-xl sm:text-2xl font-black tabular-nums ${
                         market.resolved && market.winningOutcome === index
                           ? 'text-success'
                           : 'text-primary'

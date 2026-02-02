@@ -72,45 +72,48 @@ export default function MarketList({ markets, poolsMap }: MarketListProps) {
   }, [markets, selectedCategory, filterStatus, sortBy, searchQuery, poolsMap]);
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Search Bar - Modern with icon */}
-      <div className="relative">
-        <svg xmlns="http://www.w3.org/2000/svg" className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6">
+      {/* Search Bar - Modern with icon - Mobile optimized */}
+      <div className="relative" role="search">
+        <svg xmlns="http://www.w3.org/2000/svg" className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 opacity-50 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <input
-          type="text"
-          placeholder="Search markets by title, description, or outcome..."
-          className="input input-bordered w-full pl-12 bg-base-200 border-2 border-base-300 focus:border-primary focus:bg-base-100"
+          type="search"
+          placeholder="Search markets..."
+          className="input input-bordered w-full pl-10 sm:pl-12 pr-10 sm:pr-12 bg-base-200 border-2 border-base-300 focus:border-primary focus:bg-base-100 focus:outline-none focus:ring-2 focus:ring-primary/20 h-12 sm:h-14 text-sm sm:text-base touch-manipulation"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          aria-label="Search markets by title, description, or outcome"
+          aria-describedby="search-results-count"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
-            className="absolute right-4 top-1/2 -translate-y-1/2 hover:opacity-70 transition-opacity"
-            aria-label="Clear search"
+            className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 hover:opacity-70 transition-opacity p-1 touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary rounded"
+            aria-label="Clear search query"
+            type="button"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
       </div>
 
-      {/* Filters - Modern Button Groups (Polymarket style) */}
-      <div className="flex flex-col gap-4">
+      {/* Filters - Modern Button Groups (Polymarket style) - Mobile optimized */}
+      <div className="flex flex-col gap-3 sm:gap-4">
         {/* Category Filter (Wave 4) - Enhanced Design */}
         <div>
-          <div className="text-xs font-bold uppercase tracking-wider opacity-50 mb-3">Category</div>
+          <div className="text-xs font-bold uppercase tracking-wider opacity-50 mb-2 sm:mb-3">Category</div>
           <CategoryFilter
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
           />
         </div>
 
-        {/* Status and Sort Filters - Enhanced with color-coded accents */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        {/* Status and Sort Filters - Enhanced with color-coded accents - Stacked on mobile */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           {/* Status Filter */}
           <div className="flex-1">
             <div className="text-xs font-bold uppercase tracking-wider opacity-50 mb-2">Status</div>
@@ -131,28 +134,29 @@ export default function MarketList({ markets, poolsMap }: MarketListProps) {
         </div>
       </div>
 
-      {/* Results Count - Better visibility */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm font-semibold opacity-70">
-          <span className="text-primary text-lg font-bold">{filteredMarkets.length}</span> {filteredMarkets.length === 1 ? 'market' : 'markets'}
+      {/* Results Count - Better visibility - Mobile optimized */}
+      <div className="flex items-center justify-between px-1">
+        <div className="text-xs sm:text-sm font-semibold opacity-70" id="search-results-count" role="status" aria-live="polite">
+          <span className="text-primary text-base sm:text-lg font-bold">{filteredMarkets.length}</span> {filteredMarkets.length === 1 ? 'market' : 'markets'}
         </div>
       </div>
 
-      {/* Market Grid */}
+      {/* Market Grid - Mobile optimized */}
       {filteredMarkets.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6" role="list" aria-label="Filtered prediction markets">
           {filteredMarkets.map(market => (
-            <MarketCard
-              key={market.marketId}
-              market={market}
-              pools={poolsMap?.get(market.marketId)}
-            />
+            <div key={market.marketId} role="listitem">
+              <MarketCard
+                market={market}
+                pools={poolsMap?.get(market.marketId)}
+              />
+            </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-gray-500 dark:text-gray-400">No markets found</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+        <div className="text-center py-10 sm:py-12" role="status">
+          <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">No markets found</p>
+          <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-500 mt-2">
             Try adjusting your filters or search query
           </p>
         </div>

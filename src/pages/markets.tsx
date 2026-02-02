@@ -69,25 +69,25 @@ const MarketsPage: NextPageWithLayout = () => {
   }, [metadataMarkets, loading]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Breadcrumb */}
-      <div className="text-sm breadcrumbs mb-6 font-mono">
+    <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
+      {/* Breadcrumb - Mobile optimized */}
+      <div className="text-xs sm:text-sm breadcrumbs mb-4 sm:mb-6 font-mono">
         <ul className="text-base-content/60">
-          <li><Link href="/" className="hover:text-cyan-400 transition-colors">Home</Link></li>
+          <li><Link href="/" className="hover:text-cyan-400 transition-colors touch-manipulation">Home</Link></li>
           <li className="text-cyan-400">Markets</li>
         </ul>
       </div>
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
-        <div>
-          <h1 className="font-display text-5xl font-bold mb-2 gradient-text-cyan">Prediction Markets</h1>
-          <p className="text-base-content/70 text-lg">
+      {/* Header - Mobile optimized */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4 mb-6 sm:mb-10">
+        <div className="w-full md:w-auto">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 gradient-text-cyan">Prediction Markets</h1>
+          <p className="text-base-content/70 text-sm sm:text-base md:text-lg">
             Discover and bet on outcomes with complete privacy powered by Aleo
           </p>
         </div>
         <button
-          className="btn btn-primary border-0 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 font-bold transition-all duration-300 shadow-lg hover:shadow-cyan-500/50"
+          className="btn btn-primary border-0 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 active:from-cyan-600 active:to-cyan-700 font-bold transition-all duration-300 shadow-lg hover:shadow-cyan-500/50 w-full md:w-auto min-h-[48px] touch-manipulation"
           onClick={() => setShowCreateMarket(!showCreateMarket)}
         >
           {showCreateMarket ? (
@@ -108,8 +108,8 @@ const MarketsPage: NextPageWithLayout = () => {
         </button>
       </div>
 
-      {/* Simple stats cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      {/* Simple stats cards - Mobile optimized grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-10">
         {loading ? (
           <>
             <StatCardSkeleton />
@@ -118,46 +118,46 @@ const MarketsPage: NextPageWithLayout = () => {
           </>
         ) : (
           <>
-            <div className="card bg-base-200 border-2 border-base-300">
-              <div className="card-body">
+            <div className="card bg-base-200 border-2 border-base-300 hover:border-primary/30 touch-manipulation hover-lift stagger-item">
+              <div className="card-body p-4 sm:p-5 md:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-bold opacity-60 uppercase mb-1">Total Markets</div>
-                    <div className="text-4xl font-black text-primary tabular-nums">
+                    <div className="text-xs sm:text-sm font-bold opacity-60 uppercase mb-1">Total Markets</div>
+                    <div className="text-3xl sm:text-4xl font-black text-primary tabular-nums">
                       {combinedMarkets.length}
                     </div>
                   </div>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 sm:h-10 sm:w-10 opacity-30 transition-transform hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
               </div>
             </div>
 
-            <div className="card bg-base-200 border-2 border-base-300">
-              <div className="card-body">
+            <div className="card bg-base-200 border-2 border-base-300 hover:border-success/30 touch-manipulation hover-lift stagger-item">
+              <div className="card-body p-4 sm:p-5 md:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-bold opacity-60 uppercase mb-1">Active</div>
-                    <div className="text-4xl font-black text-success tabular-nums">
+                    <div className="text-xs sm:text-sm font-bold opacity-60 uppercase mb-1">Active</div>
+                    <div className="text-3xl sm:text-4xl font-black text-success tabular-nums">
                       {combinedMarkets.filter(m => !m.resolved && Math.floor(Date.now() / 1000) < m.endTime).length}
                     </div>
                   </div>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 sm:h-10 sm:w-10 opacity-30 transition-transform hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
               </div>
             </div>
 
-            <div className="card bg-base-200 border-2 border-base-300">
-              <div className="card-body">
+            <div className="card bg-base-200 border-2 border-base-300 hover:border-secondary/30 touch-manipulation hover-lift stagger-item">
+              <div className="card-body p-4 sm:p-5 md:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-bold opacity-60 uppercase mb-1">Volume</div>
-                    <div className="text-4xl font-black text-secondary tabular-nums">0.0</div>
+                    <div className="text-xs sm:text-sm font-bold opacity-60 uppercase mb-1">Volume</div>
+                    <div className="text-3xl sm:text-4xl font-black text-secondary tabular-nums">0.0</div>
                   </div>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 sm:h-10 sm:w-10 opacity-30 transition-transform hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
@@ -167,25 +167,25 @@ const MarketsPage: NextPageWithLayout = () => {
         )}
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - Mobile optimized */}
       {showCreateMarket ? (
         <CreateMarket />
       ) : loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <MarketCardSkeleton key={i} />
           ))}
         </div>
       ) : error ? (
-        <div className="alert alert-error">
+        <div className="alert alert-error text-sm sm:text-base">
           <span>Error loading markets: {error}</span>
         </div>
       ) : (
         <MarketList markets={combinedMarkets} />
       )}
 
-      {/* Features Info with enhanced design */}
-      <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Features Info with enhanced design - Mobile optimized */}
+      <div className="mt-10 sm:mt-12 md:mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         <div className="relative card bg-base-300 border border-cyan-500/20 overflow-hidden group hover:border-cyan-500/50 transition-all duration-300">
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="card-body relative z-10">

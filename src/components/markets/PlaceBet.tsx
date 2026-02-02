@@ -355,53 +355,54 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
           </div>
         ) : (
           <>
-            {/* Outcome Selection - Enhanced with better visual hierarchy */}
+            {/* Outcome Selection - Enhanced with better visual hierarchy - Touch-optimized */}
             <div className="form-control w-full">
-              <label className="label pb-3">
-                <span className="label-text font-bold text-base">Select Outcome</span>
-                <span className="label-text-alt text-xs opacity-60">Choose your prediction</span>
+              <label className="label pb-3" id="outcome-selection-label">
+                <span className="label-text font-bold text-base sm:text-base">Select Outcome</span>
+                <span className="label-text-alt text-xs opacity-60 hidden sm:inline">Choose your prediction</span>
               </label>
-              <div className="space-y-3">
+              <div className="space-y-3 sm:space-y-3" role="radiogroup" aria-labelledby="outcome-selection-label">
                 {(market.outcomeLabels || Array(market.numOutcomes).fill(null)).map((label, index) => {
                   const outcomeOdds = oddsData[index];
                   const isSelected = selectedOutcome === index;
                   return (
                     <label
                       key={index}
-                      className={`relative flex items-center justify-between p-5 border-2 rounded-xl cursor-pointer transition-all transform ${
+                      className={`relative flex items-center justify-between p-4 sm:p-5 border-2 rounded-xl cursor-pointer transition-all transform touch-manipulation min-h-[68px] focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${
                         isSelected
                           ? 'border-indigo-500 bg-indigo-50 shadow-md scale-[1.02]'
-                          : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-sm'
+                          : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-sm active:bg-gray-50'
                       }`}
                     >
                       {/* Selection indicator */}
                       {isSelected && (
-                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                        <div className="absolute -top-2 -right-2 w-7 h-7 sm:w-6 sm:h-6 bg-indigo-600 rounded-full flex items-center justify-center shadow-md">
                           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
                       )}
 
-                      <div className="flex items-center gap-4 flex-1">
+                      <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                         <input
                           type="radio"
                           name="outcome"
-                          className="radio radio-primary radio-lg"
+                          className="radio radio-primary w-6 h-6 sm:radio-lg flex-shrink-0"
                           checked={isSelected}
                           onChange={() => setSelectedOutcome(index)}
+                          aria-label={`Select ${label || `Outcome ${index + 1}`} with ${outcomeOdds?.odds || 0}x odds`}
                         />
-                        <div className="flex-1">
-                          <span className={`font-bold text-lg block ${isSelected ? 'text-indigo-900' : 'text-gray-900'}`}>
+                        <div className="flex-1 min-w-0">
+                          <span className={`font-bold text-base sm:text-lg block truncate ${isSelected ? 'text-indigo-900' : 'text-gray-900'}`}>
                             {label || `Outcome ${index + 1}`}
                           </span>
                           {outcomeOdds && (
-                            <div className="flex items-center gap-3 mt-1">
+                            <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
                               <span className="text-xs text-gray-600 font-medium">
                                 {(outcomeOdds.poolSize / 1_000_000).toFixed(2)} credits
                               </span>
-                              <span className="text-xs text-gray-400">•</span>
-                              <span className="text-xs text-gray-600 font-medium">
+                              <span className="text-xs text-gray-400 hidden sm:inline">•</span>
+                              <span className="text-xs text-gray-600 font-medium hidden sm:inline">
                                 {outcomeOdds.poolShare}% of pool
                               </span>
                             </div>
@@ -410,8 +411,8 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                       </div>
 
                       {outcomeOdds && (
-                        <div className="text-right ml-4">
-                          <div className={`font-black text-2xl tabular-nums ${isSelected ? 'text-indigo-600' : 'text-gray-900'}`}>
+                        <div className="text-right ml-2 sm:ml-4 flex-shrink-0">
+                          <div className={`font-black text-xl sm:text-2xl tabular-nums ${isSelected ? 'text-indigo-600' : 'text-gray-900'}`}>
                             {outcomeOdds.odds}x
                           </div>
                           <div className="text-xs text-gray-500 font-semibold mt-0.5">
@@ -425,18 +426,18 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
               </div>
             </div>
 
-            {/* Bet Amount - Enhanced with better visual feedback */}
+            {/* Bet Amount - Enhanced with better visual feedback - Touch-optimized */}
             <div className="form-control w-full mt-6">
-              <label className="label pb-3">
+              <label className="label pb-3 flex-col sm:flex-row gap-1 sm:gap-0 items-start sm:items-center">
                 <span className="label-text font-bold text-base">Bet Amount</span>
-                <span className="label-text-alt font-semibold tabular-nums">
+                <span className="label-text-alt font-semibold tabular-nums" id="balance-display">
                   {isLoadingBalance ? (
-                    <span className="flex items-center gap-1 text-gray-400">
-                      <span className="loading loading-spinner loading-xs"></span>
+                    <span className="flex items-center gap-1 text-gray-400 text-xs sm:text-sm">
+                      <span className="loading loading-spinner loading-xs" aria-label="Loading balance"></span>
                       Loading...
                     </span>
                   ) : (
-                    <span className="text-indigo-600">
+                    <span className="text-indigo-600 text-xs sm:text-sm">
                       Balance: {walletBalance.toFixed(2)} credits
                     </span>
                   )}
@@ -446,31 +447,34 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                 <input
                   type="number"
                   placeholder="0.00"
-                  className="input input-bordered w-full h-14 text-lg font-bold tabular-nums border-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                  className="input input-bordered w-full h-14 sm:h-14 text-lg font-bold tabular-nums border-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all touch-manipulation"
                   value={betAmount}
                   onChange={(e) => setBetAmount(e.target.value)}
                   min="0"
                   step="0.01"
+                  aria-label="Enter bet amount in credits"
+                  aria-describedby="balance-display"
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <span className="text-sm font-semibold text-gray-400">CREDITS</span>
+                <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <span className="text-xs sm:text-sm font-semibold text-gray-400">CREDITS</span>
                 </div>
               </div>
             </div>
 
-            {/* Quick Bet Buttons - Enhanced styling */}
+            {/* Quick Bet Buttons - Enhanced styling - Touch-optimized */}
             <div className="mt-4">
-              <label className="label pb-2">
+              <label className="label pb-2" id="quick-bet-label">
                 <span className="label-text font-semibold text-sm">Quick Amount</span>
               </label>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-2 sm:gap-3" role="group" aria-labelledby="quick-bet-label">
                 {QUICK_BET_PERCENTAGES.map(({ label, value }) => (
                   <button
                     key={label}
                     type="button"
-                    className="px-3 py-2.5 rounded-lg font-bold text-sm transition-all transform hover:scale-105 bg-gray-100 hover:bg-indigo-600 hover:text-white border-2 border-gray-200 hover:border-indigo-600 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-gray-100 disabled:hover:text-gray-900"
+                    className="px-2 sm:px-3 py-3 sm:py-2.5 rounded-lg font-bold text-sm transition-all transform hover:scale-105 active:scale-95 bg-gray-100 hover:bg-indigo-600 hover:text-white border-2 border-gray-200 hover:border-indigo-600 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-gray-100 disabled:hover:text-gray-900 touch-manipulation min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                     onClick={() => handleQuickBet(value)}
                     disabled={!publicKey || walletBalance === 0}
+                    aria-label={`Set bet amount to ${label} of balance (${(walletBalance * value).toFixed(2)} credits)`}
                   >
                     {label}
                   </button>
@@ -592,16 +596,24 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
               </div>
             </div>
 
-            {/* Place Bet Button - Enhanced with larger size and better visual feedback */}
+            {/* Place Bet Button - Enhanced with larger size and better visual feedback - Touch-optimized */}
             <div className="mt-6">
               <button
-                className={`w-full h-14 rounded-xl font-bold text-lg transition-all transform ${
+                className={`w-full h-14 sm:h-14 rounded-xl font-bold text-base sm:text-lg transition-all transform touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                   isPlacingBet || !publicKey || !betAmount
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed border-2 border-gray-300'
-                    : 'bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white border-2 border-indigo-600 hover:border-indigo-700 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]'
+                    : 'bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 active:from-indigo-800 active:to-indigo-900 text-white border-2 border-indigo-600 hover:border-indigo-700 shadow-lg hover:shadow-xl active:shadow-md hover:scale-[1.02] active:scale-[0.98]'
                 }`}
                 onClick={handlePlaceBet}
                 disabled={isPlacingBet || !publicKey || !betAmount}
+                aria-label={
+                  !publicKey
+                    ? 'Connect wallet to place bet'
+                    : !betAmount
+                    ? 'Enter bet amount to continue'
+                    : `Place bet of ${betAmount} credits on ${market.outcomeLabels?.[selectedOutcome] || `Outcome ${selectedOutcome + 1}`}`
+                }
+                aria-busy={isPlacingBet}
               >
                 {isPlacingBet ? (
                   <span className="flex items-center justify-center gap-2">
