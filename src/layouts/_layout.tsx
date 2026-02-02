@@ -74,6 +74,28 @@ export function Header() {
             {/* Navigation Links - Modern Polymarket style */}
             <div className="hidden md:flex items-center gap-0.5" role="group" aria-label="Main navigation">
               <Link
+                href="/"
+                className={`relative px-4 py-2.5 text-sm font-bold font-mono uppercase tracking-wider transition-all group ${
+                  isActive('/')
+                    ? 'text-primary'
+                    : 'text-base-content/60 hover:text-base-content'
+                }`}
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                  </svg>
+                  Home
+                </span>
+                {isActive('/') && (
+                  <div className="absolute inset-0 bg-primary/10 rounded-lg border border-primary/30 animate-fade-in" />
+                )}
+                {!isActive('/') && (
+                  <div className="absolute inset-0 bg-base-300/0 group-hover:bg-base-300/50 rounded-lg transition-all duration-200" />
+                )}
+              </Link>
+              <Link
                 href="/markets"
                 className={`relative px-4 py-2.5 text-sm font-bold font-mono uppercase tracking-wider transition-all group ${
                   isActive('/markets')
