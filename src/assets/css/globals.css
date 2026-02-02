@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: zkpredict-dark --default, zkpredict-light --prefersdark;
+  themes: zkpredict-light --default;
 }
 @plugin "@tailwindcss/typography";
 @plugin "@tailwindcss/forms";
@@ -181,6 +181,13 @@
   body {
     @apply antialiased bg-base-100 text-base-content;
     font-family: 'JetBrains Mono', monospace, ui-monospace, monospace;
+  }
+
+  /* Force light theme colors */
+  html[data-theme="zkpredict-light"],
+  html[data-theme="zkpredict-light"] body {
+    background-color: rgb(249, 250, 251) !important;
+    color: rgb(17, 24, 39) !important;
   }
 
   h1, h2, h3, h4, h5, h6,

@@ -3,21 +3,15 @@ module.exports = {
   // Tailwind v4 uses CSS-first config, but DaisyUI may still need this
   daisyui: {
     themes: [
+      'zkpredict-light', // Custom light theme (default)
       'light',
-      'dark',
       'cupcake',
-      'bumblebee',
-      'emerald',
-      'forest',
-      'aqua',
-      'lofi',
-      'pastel',
-      'fantasy',
       'wireframe',
-      'black',
-      'luxury',
-      'dracula',
-      'synthwave',
     ],
+    base: true,
+    styled: true,
+    utils: true,
+    logs: false,
+    themeRoot: ':root',
   },
 };

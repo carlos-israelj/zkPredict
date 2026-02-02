@@ -13,7 +13,7 @@ class CustomDocument extends Document {
   
   render() {
     return (
-      <Html lang="en-US" dir="ltr">
+      <Html lang="en-US" dir="ltr" data-theme="zkpredict-light">
         <Head>
           {/* PWA Meta Tags */}
           <meta name="application-name" content="zkPredict" />
