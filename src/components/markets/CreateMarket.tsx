@@ -79,7 +79,7 @@ export default function CreateMarket() {
       const transaction = Transaction.createTransaction(
         publicKey || '',
         'testnetbeta', // Use testnetbeta network
-        'zkpredict2.aleo', // Our deployed program
+        'zkpredict3.aleo', // Our deployed program
         'create_market',
         inputs,
         100000, // 0.1 credits fee (reduced for testing)

@@ -52,7 +52,7 @@ export const BOUNTY_PROGRAM_ID = 'zkontract.aleo';
 // zkPredict Types (Wave 1-4)
 // ============================================
 
-export const ZKPREDICT_PROGRAM_ID = 'zkpredict2.aleo';
+export const ZKPREDICT_PROGRAM_ID = 'zkpredict3.aleo';
 
 // Wave 4: Market Categories
 export enum MarketCategory {
