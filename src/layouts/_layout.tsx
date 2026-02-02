@@ -13,25 +13,8 @@ import Footer from '@/components/ui/Footer';
 require('@demox-labs/aleo-wallet-adapter-reactui/dist/styles.css');
 
 function HeaderRightArea() {
-  const router = useRouter();
-  const { publicKey } = useWallet();
-  const isMarketsPage = router.pathname === '/markets';
-
   return (
     <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-      {/* Create Market Button - Only on Markets page when wallet connected */}
-      {isMarketsPage && publicKey && (
-        <Link href="/markets/create" className="hidden sm:block">
-          <button className="btn btn-primary btn-sm gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5 active:translate-y-0">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-              <path d="M5 12h14"></path>
-              <path d="M12 5v14"></path>
-            </svg>
-            <span className="font-bold font-mono text-xs tracking-wider">CREATE</span>
-          </button>
-        </Link>
-      )}
-
       <div className="wallet-adapter-button-trigger-wrapper">
         <WalletMultiButton className="!h-10 !min-h-[44px] !px-3 !text-xs sm:!h-12 sm:!min-h-[48px] sm:!px-6 sm:!text-base touch-manipulation" />
       </div>
@@ -43,8 +26,10 @@ export function Header() {
   const windowScroll = useWindowScroll();
   const isMounted = useIsMounted();
   const router = useRouter();
+  const { publicKey } = useWallet();
 
   const isActive = (path: string) => router.pathname === path;
+  const isMarketsPage = router.pathname === '/markets';
 
   return (
     <nav
@@ -132,6 +117,22 @@ export function Header() {
                   <div className="absolute inset-0 bg-base-300/0 group-hover:bg-base-300/50 rounded-lg transition-all duration-200" />
                 )}
               </Link>
+
+              {/* Create Market Button - Only on Markets page when wallet connected */}
+              {isMarketsPage && publicKey && (
+                <Link
+                  href="/markets/create"
+                  className="relative ml-2 px-4 py-2.5 text-sm font-bold font-mono uppercase tracking-wider transition-all group bg-primary/10 text-primary border border-primary/30 rounded-lg hover:bg-primary/20 hover:border-primary/50 hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                      <path d="M5 12h14"></path>
+                      <path d="M12 5v14"></path>
+                    </svg>
+                    Create
+                  </span>
+                </Link>
+              )}
             </div>
 
             {/* Social Links */}
