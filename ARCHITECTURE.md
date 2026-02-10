@@ -1,5 +1,8 @@
-# zkPredict Architecture
+# zkPredict Architecture (v4)
 
+> **⚠️ DEPRECATED:** This document describes v4 (zkpredict4.aleo)
+> **For v5.0 documentation, see [ARCHITECTURE_V5.md](./ARCHITECTURE_V5.md)**
+>
 > **Last Updated:** 2026-02-10
 > **Version:** 0.1.0 (Wave 1-4 Implementation + Privacy Enhancements)
 
