@@ -50,7 +50,7 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
       const transaction = Transaction.createTransaction(
         publicKey,
         WalletAdapterNetwork.TestnetBeta,
-        'zkpredict4.aleo', // Our deployed program
+        'zkpredict_v5.aleo', // v5 program with reputation, parlays, and time-weighted betting
         'claim_winnings',
         inputs,
         100000, // 0.1 credits fee (reduced for testing)
