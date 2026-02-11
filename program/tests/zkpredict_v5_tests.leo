@@ -89,7 +89,7 @@ program zkpredict_v5_tests.aleo {
     }
 
     @test
-    transition test_tier_wins_without_accuracy() {
+    transition test_tier_wins_no_accuracy() {
         // High wins but low accuracy stays at appropriate tier
         let tier: u8 = zkpredict_v5.aleo/calculate_tier_from_stats(35u32, 100u32);  // 35%
         assert_eq(tier, 1u8);  // Still Novice (accuracy too low)
@@ -226,7 +226,7 @@ program zkpredict_v5_tests.aleo {
     }
 
     @test
-    transition test_parlay_5_legs_oracle_payout() {
+    transition test_parlay_5leg_oracle_payout() {
         // 5-leg parlay with Oracle tier (1.3x bonus)
         let bet_amount: u64 = 100000000u64;     // 100 credits
         let combined_odds: u64 = 280000u64;     // 28x

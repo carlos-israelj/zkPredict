@@ -176,8 +176,9 @@ export type Parlay = {
   placedAt: number; // u32 - Block height when placed
 };
 
-// v5: ReputationProof data structure matching Leo record
-export type ReputationProof = {
+// v5: RepProof data structure matching Leo record
+// Note: Renamed from ReputationProof to RepProof to avoid Leo record name prefix conflict
+export type RepProof = {
   owner: string;
   proofId: string;
   tierProven: number;

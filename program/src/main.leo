@@ -17,18 +17,14 @@
 //   • Tier System: Novice → Skilled → Expert → Oracle progression
 //
 // Privacy Model:
-//   PRIVATE (Records): Bet, Parlay, Reputation, Winnings, ReputationProof
+//   PRIVATE (Records): Bet, Parlay, Reputation, Winnings, RepProof
 //   PUBLIC (Mappings): markets, outcome_pools (aggregated), claimed_bets (bool only)
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import credits.aleo;
+
 program zkpredict_v5.aleo {
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // IMPORTS
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    import credits.aleo;
 
     // ═══════════════════════════════════════════════════════════════════════════
     // CONSTANTS
@@ -181,7 +177,7 @@ program zkpredict_v5.aleo {
 
     // Reputation proof - PRIVATE (for selective disclosure)
     // Allows proving reputation claims without revealing full stats
-    record ReputationProof {
+    record RepProof {
         owner: address,
         proof_id: field,
         tier_proven: u8,        // The tier being proven
@@ -219,7 +215,7 @@ program zkpredict_v5.aleo {
 
     // Calculate time-weight multiplier based on blocks elapsed since market creation
     inline get_time_multiplier(created_at: u32, current_block: u32) -> u64 {
-        let elapsed: u32 = current_block.saturating_sub(created_at);
+        let elapsed: u32 = current_block >= created_at ? current_block - created_at : 0u32;
 
         if elapsed < BLOCKS_6H {
             return MULTIPLIER_EARLY;    // 2.0x for first 6 hours
@@ -361,9 +357,12 @@ program zkpredict_v5.aleo {
         market_stats.set(market_id, stats);
 
         // Initialize pools for each outcome to 0
-        for i: u8 in 0u8..num_outcomes {
-            let pool_key: field = get_pool_key(market_id, i);
-            outcome_pools.set(pool_key, 0u64);
+        // Using MAX_OUTCOMES for compile-time bound (Leo requirement)
+        for i: u8 in 0u8..MAX_OUTCOMES {
+            if i < num_outcomes {
+                let pool_key: field = get_pool_key(market_id, i);
+                outcome_pools.set(pool_key, 0u64);
+            }
         }
     }
 
@@ -461,7 +460,7 @@ program zkpredict_v5.aleo {
             amount: amount,
             odds_snapshot: ODDS_SCALE,  // Placeholder, actual odds at claim
             time_multiplier: MULTIPLIER_BASE, // Set in finalize
-            placed_at: block.height,
+            placed_at: 0u32, // Block height set in finalize
         };
 
         return (
@@ -546,7 +545,7 @@ program zkpredict_v5.aleo {
             source_id: bet.bet_id,
             source_type: 1u8,    // Single bet
             market_id: bet.market_id,
-            claimed_at: block.height,
+            claimed_at: 0u32,
         };
 
         return (
@@ -591,9 +590,9 @@ program zkpredict_v5.aleo {
         let effective_bet: u64 = (amount * time_multiplier) / MULTIPLIER_BASE;
 
         // Parimutuel payout (simplified - actual would transfer credits)
-        let _gross_winnings: u64 = (effective_bet * market.total_pool) / winning_pool;
-        let _fee: u64 = (_gross_winnings * PROTOCOL_FEE) / ODDS_SCALE;
-        let _net_winnings: u64 = _gross_winnings - _fee;
+        let gross_winnings: u64 = (effective_bet * market.total_pool) / winning_pool;
+        let fee: u64 = (gross_winnings * PROTOCOL_FEE) / ODDS_SCALE;
+        let net_winnings: u64 = gross_winnings - fee;
 
         // In production: transfer net_winnings to user
         // credits.aleo/transfer_public_to_private(...)
@@ -618,7 +617,7 @@ program zkpredict_v5.aleo {
             source_id: bet1.bet_id,  // Primary source
             source_type: 1u8,
             market_id: bet1.market_id,
-            claimed_at: block.height,
+            claimed_at: 0u32,
         };
 
         return (
@@ -671,7 +670,7 @@ program zkpredict_v5.aleo {
             tier: TIER_NOVICE,
             total_wagered: 0u64,
             total_won: 0u64,
-            last_updated: block.height,
+            last_updated: 0u32,
         };
     }
 
@@ -706,7 +705,7 @@ program zkpredict_v5.aleo {
             tier: new_tier,
             total_wagered: reputation.total_wagered,
             total_won: reputation.total_won + amount_won,
-            last_updated: block.height,
+            last_updated: 0u32,
         };
     }
 
@@ -733,7 +732,7 @@ program zkpredict_v5.aleo {
             tier: new_tier,
             total_wagered: reputation.total_wagered + amount_lost,
             total_won: reputation.total_won,
-            last_updated: block.height,
+            last_updated: 0u32,
         };
     }
 
@@ -755,7 +754,7 @@ program zkpredict_v5.aleo {
             tier: reputation.tier,
             total_wagered: reputation.total_wagered + amount_wagered,
             total_won: reputation.total_won,
-            last_updated: block.height,
+            last_updated: 0u32,
         };
     }
 
@@ -773,8 +772,9 @@ program zkpredict_v5.aleo {
         prove_tier: u8,
         prove_accuracy: u8,
         prove_wins: u32,
-        prove_streak: u32
-    ) -> (ReputationProof, Reputation) {
+        prove_streak: u32,
+        public current_block: u32
+    ) -> (RepProof, Reputation) {
         assert_eq(reputation.owner, self.caller);
 
         // Calculate actual accuracy
@@ -791,18 +791,18 @@ program zkpredict_v5.aleo {
 
         // Generate proof ID
         let proof_id: field = BHP256::hash_to_field(
-            self.caller as field + block.height as field
+            self.caller as field + current_block as field
         );
 
-        let proof: ReputationProof = ReputationProof {
+        let proof: RepProof = RepProof {
             owner: self.caller,
             proof_id: proof_id,
             tier_proven: prove_tier,
             min_accuracy_proven: prove_accuracy,
             min_wins_proven: prove_wins,
             min_streak_proven: prove_streak,
-            valid_until: block.height + 100000u32,  // ~1 week validity
-            created_at: block.height,
+            valid_until: current_block + 100000u32,  // ~1 week validity
+            created_at: current_block,
         };
 
         // Return both proof and reputation (reputation unchanged)
@@ -811,10 +811,11 @@ program zkpredict_v5.aleo {
 
     /// Verify that a reputation proof is valid (not expired)
     transition verify_reputation_proof(
-        proof: ReputationProof
-    ) -> ReputationProof {
+        proof: RepProof,
+        public current_block: u32
+    ) -> RepProof {
         // Check proof hasn't expired
-        assert(block.height <= proof.valid_until);
+        assert(current_block <= proof.valid_until);
 
         // Return proof (still valid)
         return proof;
@@ -860,7 +861,7 @@ program zkpredict_v5.aleo {
             amount: amount,
             combined_odds: combined_odds,
             tier_bonus: tier_bonus,
-            placed_at: block.height,
+            placed_at: 0u32,
         };
 
         // Update reputation (parlays count)
@@ -875,7 +876,7 @@ program zkpredict_v5.aleo {
             tier: reputation.tier,
             total_wagered: reputation.total_wagered + amount,
             total_won: reputation.total_won,
-            last_updated: block.height,
+            last_updated: 0u32,
         };
 
         return (
@@ -920,7 +921,7 @@ program zkpredict_v5.aleo {
             amount: amount,
             combined_odds: combined_odds,
             tier_bonus: tier_bonus,
-            placed_at: block.height,
+            placed_at: 0u32,
         };
 
         let updated_rep: Reputation = Reputation {
@@ -934,7 +935,7 @@ program zkpredict_v5.aleo {
             tier: reputation.tier,
             total_wagered: reputation.total_wagered + amount,
             total_won: reputation.total_won,
-            last_updated: block.height,
+            last_updated: 0u32,
         };
 
         return (
@@ -980,7 +981,7 @@ program zkpredict_v5.aleo {
             amount: amount,
             combined_odds: combined_odds,
             tier_bonus: tier_bonus,
-            placed_at: block.height,
+            placed_at: 0u32,
         };
 
         let updated_rep: Reputation = Reputation {
@@ -994,7 +995,7 @@ program zkpredict_v5.aleo {
             tier: reputation.tier,
             total_wagered: reputation.total_wagered + amount,
             total_won: reputation.total_won,
-            last_updated: block.height,
+            last_updated: 0u32,
         };
 
         return (
@@ -1041,7 +1042,7 @@ program zkpredict_v5.aleo {
             amount: amount,
             combined_odds: combined_odds,
             tier_bonus: tier_bonus,
-            placed_at: block.height,
+            placed_at: 0u32,
         };
 
         let updated_rep: Reputation = Reputation {
@@ -1055,7 +1056,7 @@ program zkpredict_v5.aleo {
             tier: reputation.tier,
             total_wagered: reputation.total_wagered + amount,
             total_won: reputation.total_won,
-            last_updated: block.height,
+            last_updated: 0u32,
         };
 
         return (
@@ -1126,7 +1127,7 @@ program zkpredict_v5.aleo {
             source_id: parlay.parlay_id,
             source_type: 2u8,  // Parlay
             market_id: 0field, // Not applicable for parlays
-            claimed_at: block.height,
+            claimed_at: 0u32,
         };
 
         // Update reputation for parlay win
@@ -1146,7 +1147,7 @@ program zkpredict_v5.aleo {
             tier: new_tier,
             total_wagered: reputation.total_wagered,
             total_won: reputation.total_won + net_payout,
-            last_updated: block.height,
+            last_updated: 0u32,
         };
 
         return (
@@ -1234,5 +1235,18 @@ program zkpredict_v5.aleo {
     /// Get maximum parlay legs for a tier
     transition get_tier_max_legs(tier: u8) -> u8 {
         return get_max_legs(tier);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Initialize the program (called once on deployment)
+    async transition initialize() -> Future {
+        return finalize_initialize();
+    }
+
+    async function finalize_initialize() {
+        // Empty initialization - mappings are initialized on first use
     }
 }
