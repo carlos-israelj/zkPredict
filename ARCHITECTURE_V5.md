@@ -1,7 +1,8 @@
 # zkPredict Architecture v5.0
 
-> **Last Updated:** 2026-02-10
+> **Last Updated:** 2026-02-13
 > **Version:** 5.0.0 (Reputation, Parlays, Time-Weighted Betting + Enhanced Privacy)
+> **Deployment Status:** ✅ Live on Aleo Testnet
 
 ## Table of Contents
 
@@ -689,7 +690,38 @@ leo execute place_parlay \
 
 ## Deployment
 
-### Smart Contract Deployment
+### Smart Contract Deployment ✅ COMPLETED
+
+**Program ID**: `zkpredict_v5.aleo`
+
+**Deployment Transaction**:
+- **Transaction ID**: `at1j6fcl5u5ra8p4ltr4l60xyuycx55dul5ts2mzamd6s6aae0n3qzqs8m5gu`
+- **Network**: Aleo TestnetBeta
+- **Deployed**: February 13, 2026
+- **Explorer**: https://testnet.explorer.provable.com/transaction/at1j6fcl5u5ra8p4ltr4l60xyuycx55dul5ts2mzamd6s6aae0n3qzqs8m5gu
+
+**Deployment Statistics**:
+- **Total Variables**: 1,800,512 (86% of network limit)
+- **Total Constraints**: 1,401,568
+- **Statements**: 1,160 (after optimization)
+- **Synthesis Time**: ~8 minutes
+- **Total Cost**: 37.957080 credits
+  - Transaction Storage: 34.632287 credits
+  - Program Synthesis: 2.322793 credits
+  - Namespace: 1.000000 credits
+  - Constructor: 0.002000 credits
+
+**Constructor Implementation**:
+```leo
+@noupgrade
+async constructor() {
+    // The Leo compiler automatically generates the constructor logic.
+}
+```
+
+**Critical**: The `@noupgrade` annotation is REQUIRED for deployment. Without it, deployment fails with HTTP 500 error.
+
+### Deployment Commands
 
 ```bash
 cd zkPredict/program
@@ -697,16 +729,22 @@ cd zkPredict/program
 # Build
 leo build
 
-# Deploy to testnet
-leo deploy --network testnet --program zkpredict_v5.aleo
+# Deploy to testnet (non-interactive)
+leo deploy --network testnet -y --broadcast
 
 # Verify deployment
 leo query markets "1field" --network testnet
 ```
 
-### Frontend Deployment
+**See**: `/program/DEPLOYMENT.md` for complete deployment troubleshooting and best practices.
 
-**Vercel**:
+### Frontend Deployment (Pending)
+
+**Required Updates**:
+1. Update `ZKPREDICT_PROGRAM_ID` in `src/types/index.ts` to `zkpredict_v5.aleo`
+2. Test all components with deployed contract
+
+**Vercel Deployment**:
 1. Push to GitHub
 2. Import project in Vercel
 3. Set environment variables:
@@ -714,10 +752,12 @@ leo query markets "1field" --network testnet
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 4. Deploy
 
-**Verify**:
+**Verification**:
 - Check wallet connects
 - Test market creation
 - Test bet placement with v5 program
+- Test parlay creation
+- Test reputation initialization
 
 ---
 

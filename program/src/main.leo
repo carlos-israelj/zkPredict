@@ -1238,15 +1238,12 @@ program zkpredict_v5.aleo {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // INITIALIZATION
+    // CONSTRUCTOR - REQUIRED FOR DEPLOYMENT
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Initialize the program (called once on deployment)
-    async transition initialize() -> Future {
-        return finalize_initialize();
-    }
-
-    async function finalize_initialize() {
-        // Empty initialization - mappings are initialized on first use
+    /// Constructor for deployment - prevents future upgrades
+    @noupgrade
+    async constructor() {
+        // The Leo compiler automatically generates the constructor logic.
     }
 }
