@@ -7,12 +7,14 @@ const PROGRAM_ID = 'zkpredict_v5.aleo';
 
 export interface OnChainMarket {
   creator: string;
+  created_at: number;   // v5: Block height when created (for time-weighting)
   end_time: number;
   resolved: boolean;
   winning_outcome: number;
   num_outcomes: number;
   category: number;
   auto_resolve: boolean;
+  total_pool: number;   // v5: Total microcredits in all pools
 }
 
 export interface MarketPools {
@@ -162,24 +164,28 @@ function parseAleoMarketStruct(data: any): OnChainMarket {
 
     return {
       creator: parsed.creator,
+      created_at: parseAleoU32(parsed.created_at),
       end_time: parseAleoU32(parsed.end_time),
       resolved: parseAleoBool(parsed.resolved),
       winning_outcome: parseAleoU8(parsed.winning_outcome),
       num_outcomes: parseAleoU8(parsed.num_outcomes),
       category: parseAleoU8(parsed.category),
       auto_resolve: parseAleoBool(parsed.auto_resolve),
+      total_pool: parseAleoU64(parsed.total_pool),
     };
   }
 
   // If data is already an object (some APIs return parsed JSON)
   return {
     creator: data.creator,
+    created_at: parseAleoU32(data.created_at),
     end_time: parseAleoU32(data.end_time),
     resolved: parseAleoBool(data.resolved),
     winning_outcome: parseAleoU8(data.winning_outcome),
     num_outcomes: parseAleoU8(data.num_outcomes),
     category: parseAleoU8(data.category),
     auto_resolve: parseAleoBool(data.auto_resolve),
+    total_pool: parseAleoU64(data.total_pool),
   };
 }
 

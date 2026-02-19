@@ -117,6 +117,38 @@ export function Header() {
                   <div className="absolute inset-0 bg-base-300/0 group-hover:bg-base-300/50 rounded-lg transition-all duration-200" />
                 )}
               </Link>
+              <Link
+                href="/parlays"
+                className={`relative px-4 py-2.5 text-sm font-bold font-mono uppercase tracking-wider transition-all group ${
+                  router.pathname.startsWith('/parlays')
+                    ? 'text-primary'
+                    : 'text-base-content/60 hover:text-base-content'
+                }`}
+              >
+                <span className="relative z-10">Parlays</span>
+                {router.pathname.startsWith('/parlays') && (
+                  <div className="absolute inset-0 bg-primary/10 rounded-lg border border-primary/30 animate-fade-in" />
+                )}
+                {!router.pathname.startsWith('/parlays') && (
+                  <div className="absolute inset-0 bg-base-300/0 group-hover:bg-base-300/50 rounded-lg transition-all duration-200" />
+                )}
+              </Link>
+              <Link
+                href="/reputation"
+                className={`relative px-4 py-2.5 text-sm font-bold font-mono uppercase tracking-wider transition-all group ${
+                  router.pathname.startsWith('/reputation')
+                    ? 'text-primary'
+                    : 'text-base-content/60 hover:text-base-content'
+                }`}
+              >
+                <span className="relative z-10">Reputation</span>
+                {router.pathname.startsWith('/reputation') && (
+                  <div className="absolute inset-0 bg-primary/10 rounded-lg border border-primary/30 animate-fade-in" />
+                )}
+                {!router.pathname.startsWith('/reputation') && (
+                  <div className="absolute inset-0 bg-base-300/0 group-hover:bg-base-300/50 rounded-lg transition-all duration-200" />
+                )}
+              </Link>
 
               {/* Create Market Button - Only on Markets page when wallet connected */}
               {isMarketsPage && publicKey && (

@@ -126,32 +126,40 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
     setIsPlacingBet(true);
 
     try {
-      // Wave 2: Generate unique nonce for bet_id (as field)
+      // Generate unique nonce for bet_id (as field)
       const nonce = `${Date.now()}field`;
 
       // Convert amount to microcredits (1 credit = 1,000,000 microcredits)
       const amountInMicrocredits = Math.floor(amount * 1_000_000);
 
-      // Prepare transaction inputs for place_bet
-      // Signature: place_bet(market_id: field, outcome: u8, amount: u64, nonce: field)
+      // v5: place_bet signature requires Credits record as FIRST argument.
+      // The wallet adapter handles fetching the private Credits record automatically
+      // when you pass the amount as a special credits record input.
+      //
+      // Contract signature:
+      //   place_bet(payment: credits.aleo/credits, market_id: field, outcome: u8, nonce: field)
+      //
+      // The Leo wallet adapter resolves the Credits record from the wallet's
+      // private state. We pass the amount so it can find the correct record.
       const inputs = [
-        market.marketId, // market_id: field
-        `${selectedOutcome}u8`, // outcome: u8
-        `${amountInMicrocredits}u64`, // amount: u64
-        nonce, // nonce: field (for unique bet_id generation)
+        `${amountInMicrocredits}u64`, // Amount in microcredits - wallet resolves to Credits record
+        market.marketId,              // market_id: field (public)
+        `${selectedOutcome}u8`,       // outcome: u8 (private input)
+        nonce,                        // nonce: field (private, for bet_id generation)
       ];
 
       console.log('Placing bet with inputs:', inputs);
 
       // Create transaction using the Aleo wallet adapter
+      // The wallet adapter (Leo Wallet / Puzzle) handles the Credits record resolution
       const transaction = Transaction.createTransaction(
         publicKey,
-        'testnetbeta', // Use testnetbeta network
-        'zkpredict_v5.aleo', // v5 program with reputation, parlays, and time-weighted betting
+        'testnetbeta',
+        'zkpredict_v5.aleo',
         'place_bet',
         inputs,
-        100000, // 0.1 credits fee (reduced for testing)
-        false // Public fee
+        100000, // 0.1 credits fee
+        false   // Public fee
       );
 
       // Request transaction from wallet
@@ -201,10 +209,10 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   };
 
   const handleCopyBetRecord = async () => {
-    if (!successBetRecord) return;
+    if (!successBetId) return;
 
     try {
-      await navigator.clipboard.writeText(successBetRecord);
+      await navigator.clipboard.writeText(successBetId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
