@@ -162,7 +162,7 @@ export default function ParlayBuilder({ availableMarkets, reputation }: ParlayBu
       const transaction = Transaction.createTransaction(
         publicKey,
         'testnetbeta',
-        'zkpredict_v5.aleo',
+        'zkpredict_v6.aleo',
         'place_parlay',
         inputs,
         100000, // 0.1 credits fee

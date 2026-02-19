@@ -54,7 +54,7 @@ export default function ClaimTwoWinnings({ market, onClaimed }: ClaimTwoWinnings
       const transaction = Transaction.createTransaction(
         publicKey,
         WalletAdapterNetwork.TestnetBeta,
-        'zkpredict_v5.aleo', // v5 program with reputation, parlays, and time-weighted betting
+        'zkpredict_v6.aleo', // v5 program with reputation, parlays, and time-weighted betting
         'claim_two_winnings',
         inputs,
         150000, // Slightly higher fee for batch operation

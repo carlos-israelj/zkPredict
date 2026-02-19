@@ -41,7 +41,7 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
     setIsClaiming(true);
 
     try {
-      // v5 contract signature: claim_winnings(bet: Bet) -> (Winnings, Future)
+      // v6 contract signature: claim_winnings(bet: Bet) -> (Winnings, credits, Future)
       // The Bet record is consumed by the transition. We pass the full record JSON.
       const inputs = [
         recordTrimmed, // bet: Bet (the full private record JSON from the wallet)
@@ -52,7 +52,7 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
       const transaction = Transaction.createTransaction(
         publicKey,
         WalletAdapterNetwork.TestnetBeta,
-        'zkpredict_v5.aleo',
+        'zkpredict_v6.aleo',
         'claim_winnings',
         inputs,
         100000, // 0.1 credits fee

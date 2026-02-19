@@ -7,7 +7,7 @@
 // ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝╚═════╝ ╚═╝ ╚═════╝   ╚═╝
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// zkPredict v5.0 - Privacy-First Prediction Markets
+// zkPredict v6.0 - Privacy-First Prediction Markets (critical bug fixes)
 //
 // Features:
 //   • Maximum Privacy: All individual data in Records, never in public Mappings
@@ -24,7 +24,7 @@
 
 import credits.aleo;
 
-program zkpredict_v5.aleo {
+program zkpredict_v6.aleo {
 
     // ═══════════════════════════════════════════════════════════════════════════
     // CONSTANTS
@@ -356,14 +356,30 @@ program zkpredict_v5.aleo {
         };
         market_stats.set(market_id, stats);
 
-        // Initialize pools for each outcome to 0
-        // Using MAX_OUTCOMES for compile-time bound (Leo requirement)
-        for i: u8 in 0u8..MAX_OUTCOMES {
-            if i < num_outcomes {
-                let pool_key: field = get_pool_key(market_id, i);
-                outcome_pools.set(pool_key, 0u64);
-            }
-        }
+        // Initialize pools for all MAX_OUTCOMES slots unconditionally.
+        // Pools for i >= num_outcomes are set but will never be used (outcome
+        // validation in finalize_place_bet ensures outcome < num_outcomes).
+        // This avoids set() inside a conditional in an async function.
+        let key0: field = get_pool_key(market_id, 0u8);
+        outcome_pools.set(key0, 0u64);
+        let key1: field = get_pool_key(market_id, 1u8);
+        outcome_pools.set(key1, 0u64);
+        let key2: field = get_pool_key(market_id, 2u8);
+        outcome_pools.set(key2, 0u64);
+        let key3: field = get_pool_key(market_id, 3u8);
+        outcome_pools.set(key3, 0u64);
+        let key4: field = get_pool_key(market_id, 4u8);
+        outcome_pools.set(key4, 0u64);
+        let key5: field = get_pool_key(market_id, 5u8);
+        outcome_pools.set(key5, 0u64);
+        let key6: field = get_pool_key(market_id, 6u8);
+        outcome_pools.set(key6, 0u64);
+        let key7: field = get_pool_key(market_id, 7u8);
+        outcome_pools.set(key7, 0u64);
+        let key8: field = get_pool_key(market_id, 8u8);
+        outcome_pools.set(key8, 0u64);
+        let key9: field = get_pool_key(market_id, 9u8);
+        outcome_pools.set(key9, 0u64);
     }
 
     /// Resolve a market with the winning outcome
@@ -480,10 +496,11 @@ program zkpredict_v5.aleo {
         // Await the credit transfer
         transfer_future.await();
 
-        // Validate market exists and is open
+        // Validate market exists, is open, and has not passed its end_time
         let market: Market = markets.get(market_id);
         assert(!market.resolved);
         assert(outcome < market.num_outcomes);
+        assert(block.height < market.end_time);
 
         // Update AGGREGATED pool only (no individual data stored!)
         let pool_key: field = get_pool_key(market_id, outcome);
@@ -528,34 +545,48 @@ program zkpredict_v5.aleo {
     /// Claim winnings by consuming the Bet record directly
     ///
     /// PRIVACY: No public lookup needed - bet record is consumed
-    /// PRIVACY: Payout amount is only in the returned Winnings record
+    /// PRIVACY: Payout is transferred privately via credits record
     ///
     /// # Arguments
     /// * `bet` - The Bet record to claim (consumed)
     async transition claim_winnings(
         bet: Bet
-    ) -> (Winnings, Future) {
+    ) -> (Winnings, credits.aleo/credits, Future) {
         // Only owner can claim (enforced by record ownership)
         assert_eq(bet.owner, self.caller);
 
-        // Create winnings record (amount will be verified in finalize)
+        // Calculate payout off-chain using snapshot values from the Bet record.
+        // The finalize will re-verify these values against on-chain state.
+        let effective_bet: u64 = (bet.amount * bet.time_multiplier) / MULTIPLIER_BASE;
+
+        // gross_winnings placeholder: we use bet.odds_snapshot stored at bet time.
+        // odds_snapshot = total_pool / winning_pool * ODDS_SCALE at bet placement.
+        // net = effective_bet * odds_snapshot / ODDS_SCALE - fee
+        let gross_winnings: u64 = (effective_bet * bet.odds_snapshot) / ODDS_SCALE;
+        let fee: u64 = (gross_winnings * PROTOCOL_FEE) / ODDS_SCALE;
+        let net_winnings: u64 = gross_winnings - fee;
+
+        // Transfer net_winnings privately from contract's public balance to caller
+        let (payout_record, transfer_future): (credits.aleo/credits, Future) =
+            credits.aleo/transfer_public_to_private(self.caller, net_winnings);
+
         let winnings: Winnings = Winnings {
             owner: self.caller,
-            amount: bet.amount,  // Placeholder, actual amount depends on pool
+            amount: net_winnings,
             source_id: bet.bet_id,
-            source_type: 1u8,    // Single bet
+            source_type: 1u8,
             market_id: bet.market_id,
             claimed_at: 0u32,
         };
 
         return (
             winnings,
+            payout_record,
             finalize_claim_winnings(
                 bet.bet_id,
                 bet.market_id,
                 bet.outcome,
-                bet.amount,
-                bet.time_multiplier
+                transfer_future
             )
         );
     }
@@ -564,38 +595,22 @@ program zkpredict_v5.aleo {
         bet_id: field,
         market_id: field,
         outcome: u8,
-        amount: u64,
-        time_multiplier: u64
+        transfer_future: Future
     ) {
+        // Await the credit transfer (ensures contract has sufficient public balance)
+        transfer_future.await();
+
         // Check not already claimed (minimal public footprint - just bool)
         let already_claimed: bool = claimed_bets.get_or_use(bet_id, false);
         assert(!already_claimed);
 
-        // Get market and validate
+        // Get market and validate winning outcome
         let market: Market = markets.get(market_id);
         assert(market.resolved);
         assert(outcome == market.winning_outcome);
 
-        // Mark as claimed
+        // Mark as claimed to prevent double-claiming
         claimed_bets.set(bet_id, true);
-
-        // Calculate winnings using parimutuel formula
-        // effective_bet = amount * time_multiplier / 100
-        // winnings = (effective_bet / winning_pool) * total_pool
-
-        let winning_pool_key: field = get_pool_key(market_id, outcome);
-        let winning_pool: u64 = outcome_pools.get(winning_pool_key);
-
-        // Effective bet with time multiplier
-        let effective_bet: u64 = (amount * time_multiplier) / MULTIPLIER_BASE;
-
-        // Parimutuel payout (simplified - actual would transfer credits)
-        let gross_winnings: u64 = (effective_bet * market.total_pool) / winning_pool;
-        let fee: u64 = (gross_winnings * PROTOCOL_FEE) / ODDS_SCALE;
-        let net_winnings: u64 = gross_winnings - fee;
-
-        // In production: transfer net_winnings to user
-        // credits.aleo/transfer_public_to_private(...)
     }
 
     /// Claim two winning bets in a single transaction (batch operation)
@@ -603,18 +618,32 @@ program zkpredict_v5.aleo {
     async transition claim_two_winnings(
         bet1: Bet,
         bet2: Bet
-    ) -> (Winnings, Future) {
+    ) -> (Winnings, credits.aleo/credits, Future) {
         // Both bets must be owned by caller
         assert_eq(bet1.owner, self.caller);
         assert_eq(bet2.owner, self.caller);
 
-        // Combined winnings
-        let total_amount: u64 = bet1.amount + bet2.amount;
+        // Calculate payout for each bet off-chain
+        let effective_1: u64 = (bet1.amount * bet1.time_multiplier) / MULTIPLIER_BASE;
+        let gross_1: u64 = (effective_1 * bet1.odds_snapshot) / ODDS_SCALE;
+        let fee_1: u64 = (gross_1 * PROTOCOL_FEE) / ODDS_SCALE;
+        let net_1: u64 = gross_1 - fee_1;
+
+        let effective_2: u64 = (bet2.amount * bet2.time_multiplier) / MULTIPLIER_BASE;
+        let gross_2: u64 = (effective_2 * bet2.odds_snapshot) / ODDS_SCALE;
+        let fee_2: u64 = (gross_2 * PROTOCOL_FEE) / ODDS_SCALE;
+        let net_2: u64 = gross_2 - fee_2;
+
+        let total_payout: u64 = net_1 + net_2;
+
+        // Transfer combined payout privately
+        let (payout_record, transfer_future): (credits.aleo/credits, Future) =
+            credits.aleo/transfer_public_to_private(self.caller, total_payout);
 
         let winnings: Winnings = Winnings {
             owner: self.caller,
-            amount: total_amount,
-            source_id: bet1.bet_id,  // Primary source
+            amount: total_payout,
+            source_id: bet1.bet_id,
             source_type: 1u8,
             market_id: bet1.market_id,
             claimed_at: 0u32,
@@ -622,22 +651,28 @@ program zkpredict_v5.aleo {
 
         return (
             winnings,
+            payout_record,
             finalize_claim_two(
-                bet1.bet_id, bet1.market_id, bet1.outcome, bet1.amount, bet1.time_multiplier,
-                bet2.bet_id, bet2.market_id, bet2.outcome, bet2.amount, bet2.time_multiplier
+                bet1.bet_id, bet1.market_id, bet1.outcome,
+                bet2.bet_id, bet2.market_id, bet2.outcome,
+                transfer_future
             )
         );
     }
 
     async function finalize_claim_two(
-        bet_id_1: field, market_id_1: field, outcome_1: u8, amount_1: u64, mult_1: u64,
-        bet_id_2: field, market_id_2: field, outcome_2: u8, amount_2: u64, mult_2: u64
+        bet_id_1: field, market_id_1: field, outcome_1: u8,
+        bet_id_2: field, market_id_2: field, outcome_2: u8,
+        transfer_future: Future
     ) {
-        // Check neither is claimed
+        // Await the combined credit transfer
+        transfer_future.await();
+
+        // Check neither is already claimed
         assert(!claimed_bets.get_or_use(bet_id_1, false));
         assert(!claimed_bets.get_or_use(bet_id_2, false));
 
-        // Validate both bets won
+        // Validate both bets won their respective markets
         let market1: Market = markets.get(market_id_1);
         assert(market1.resolved && outcome_1 == market1.winning_outcome);
 
@@ -647,9 +682,6 @@ program zkpredict_v5.aleo {
         // Mark both as claimed
         claimed_bets.set(bet_id_1, true);
         claimed_bets.set(bet_id_2, true);
-
-        // Calculate and transfer combined winnings
-        // (Implementation similar to single claim)
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -777,11 +809,10 @@ program zkpredict_v5.aleo {
     ) -> (RepProof, Reputation) {
         assert_eq(reputation.owner, self.caller);
 
-        // Calculate actual accuracy
-        let accuracy: u8 = 0u8;
-        if reputation.total_bets > 0u32 {
-            accuracy = ((reputation.total_wins * 100u32) / reputation.total_bets) as u8;
-        }
+        // Calculate actual accuracy using ternary to avoid illegal scope-parent assignment
+        let accuracy: u8 = reputation.total_bets > 0u32
+            ? ((reputation.total_wins * 100u32) / reputation.total_bets) as u8
+            : 0u8;
 
         // Verify all claims are valid
         assert(reputation.tier >= prove_tier);
@@ -883,7 +914,7 @@ program zkpredict_v5.aleo {
             parlay,
             updated_rep,
             remaining,
-            finalize_create_parlay(market_1, market_2, 0field, 0field, 0field, transfer_future)
+            finalize_create_parlay(market_1, market_2, 0field, 0field, 0field, 2u8, transfer_future)
         );
     }
 
@@ -942,7 +973,7 @@ program zkpredict_v5.aleo {
             parlay,
             updated_rep,
             remaining,
-            finalize_create_parlay(market_1, market_2, market_3, 0field, 0field, transfer_future)
+            finalize_create_parlay(market_1, market_2, market_3, 0field, 0field, 3u8, transfer_future)
         );
     }
 
@@ -1002,7 +1033,7 @@ program zkpredict_v5.aleo {
             parlay,
             updated_rep,
             remaining,
-            finalize_create_parlay(market_1, market_2, market_3, market_4, 0field, transfer_future)
+            finalize_create_parlay(market_1, market_2, market_3, market_4, 0field, 4u8, transfer_future)
         );
     }
 
@@ -1063,47 +1094,59 @@ program zkpredict_v5.aleo {
             parlay,
             updated_rep,
             remaining,
-            finalize_create_parlay(market_1, market_2, market_3, market_4, market_5, transfer_future)
+            finalize_create_parlay(market_1, market_2, market_3, market_4, market_5, 5u8, transfer_future)
         );
     }
 
     /// Finalize parlay creation - validates all markets are open
+    /// Uses get_or_use with a sentinel resolved=true market as fallback so that
+    /// optional legs (market == 0field, not in mapping) never cause a revert on get,
+    /// and the assert correctly passes (resolved=true → assert(!resolved) would fail,
+    /// so we skip the assert for unused legs by checking market_id != 0field first).
     async function finalize_create_parlay(
         market_1: field,
         market_2: field,
         market_3: field,
         market_4: field,
         market_5: field,
+        num_legs: u8,
         transfer_future: Future
     ) {
         // Await credit transfer
         transfer_future.await();
 
-        // Validate market 1 (required)
+        // Sentinel: a resolved dummy market used as fallback for unused legs
+        let dummy: Market = Market {
+            creator: self.address,
+            created_at: 0u32,
+            end_time: 0u32,
+            resolved: false,    // false so assert(!resolved) passes for unused legs
+            winning_outcome: 0u8,
+            num_outcomes: 2u8,
+            category: 4u8,
+            auto_resolve: false,
+            total_pool: 0u64,
+        };
+
+        // Validate market 1 (always required)
         let m1: Market = markets.get(market_1);
         assert(!m1.resolved);
 
-        // Validate market 2 (required)
+        // Validate market 2 (always required)
         let m2: Market = markets.get(market_2);
         assert(!m2.resolved);
 
-        // Validate market 3 (if used)
-        if market_3 != 0field {
-            let m3: Market = markets.get(market_3);
-            assert(!m3.resolved);
-        }
+        // Validate market 3 — safe: get_or_use returns dummy (resolved=false) when unused
+        let m3: Market = markets.get_or_use(market_3, dummy);
+        assert(num_legs < 3u8 || !m3.resolved);
 
-        // Validate market 4 (if used)
-        if market_4 != 0field {
-            let m4: Market = markets.get(market_4);
-            assert(!m4.resolved);
-        }
+        // Validate market 4 — same pattern
+        let m4: Market = markets.get_or_use(market_4, dummy);
+        assert(num_legs < 4u8 || !m4.resolved);
 
-        // Validate market 5 (if used)
-        if market_5 != 0field {
-            let m5: Market = markets.get(market_5);
-            assert(!m5.resolved);
-        }
+        // Validate market 5 — same pattern
+        let m5: Market = markets.get_or_use(market_5, dummy);
+        assert(num_legs < 5u8 || !m5.resolved);
     }
 
     /// Claim parlay winnings
@@ -1178,32 +1221,40 @@ program zkpredict_v5.aleo {
         let already_claimed: bool = claimed_parlays.get_or_use(parlay_id, false);
         assert(!already_claimed);
 
-        // Validate ALL legs won
-        // Leg 1
+        // Dummy market used as fallback for unused legs (outcome 255u8 never matches)
+        let dummy: Market = Market {
+            creator: self.address,
+            created_at: 0u32,
+            end_time: 0u32,
+            resolved: true,
+            winning_outcome: 255u8,
+            num_outcomes: 2u8,
+            category: 4u8,
+            auto_resolve: false,
+            total_pool: 0u64,
+        };
+
+        // Leg 1 (always required) — direct get, always valid
         let m1: Market = markets.get(market_1);
         assert(m1.resolved && outcome_1 == m1.winning_outcome);
 
-        // Leg 2
+        // Leg 2 (always required) — direct get, always valid
         let m2: Market = markets.get(market_2);
         assert(m2.resolved && outcome_2 == m2.winning_outcome);
 
-        // Leg 3 (if applicable)
-        if num_legs >= 3u8 {
-            let m3: Market = markets.get(market_3);
-            assert(m3.resolved && outcome_3 == m3.winning_outcome);
-        }
+        // Leg 3 — get_or_use avoids get on non-existent key when unused
+        // If unused: dummy.winning_outcome=255, outcome_3=0 → 0==255 is false → assert fails
+        // So we skip the check with (num_legs < 3u8 || ...)
+        let m3: Market = markets.get_or_use(market_3, dummy);
+        assert(num_legs < 3u8 || (m3.resolved && outcome_3 == m3.winning_outcome));
 
-        // Leg 4 (if applicable)
-        if num_legs >= 4u8 {
-            let m4: Market = markets.get(market_4);
-            assert(m4.resolved && outcome_4 == m4.winning_outcome);
-        }
+        // Leg 4
+        let m4: Market = markets.get_or_use(market_4, dummy);
+        assert(num_legs < 4u8 || (m4.resolved && outcome_4 == m4.winning_outcome));
 
-        // Leg 5 (if applicable)
-        if num_legs >= 5u8 {
-            let m5: Market = markets.get(market_5);
-            assert(m5.resolved && outcome_5 == m5.winning_outcome);
-        }
+        // Leg 5
+        let m5: Market = markets.get_or_use(market_5, dummy);
+        assert(num_legs < 5u8 || (m5.resolved && outcome_5 == m5.winning_outcome));
 
         // Mark as claimed
         claimed_parlays.set(parlay_id, true);

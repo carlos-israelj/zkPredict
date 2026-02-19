@@ -155,7 +155,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
       const transaction = Transaction.createTransaction(
         publicKey,
         'testnetbeta',
-        'zkpredict_v5.aleo',
+        'zkpredict_v6.aleo',
         'place_bet',
         inputs,
         100000, // 0.1 credits fee
