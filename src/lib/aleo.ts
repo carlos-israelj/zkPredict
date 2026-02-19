@@ -29,7 +29,9 @@ export interface MarketPools {
  */
 export async function fetchMarketOnChain(marketId: string): Promise<OnChainMarket | null> {
   try {
-    const response = await fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/markets/${marketId}`);
+    // Ensure marketId has "field" suffix for Aleo API
+    const marketIdField = marketId.endsWith('field') ? marketId : `${marketId}field`;
+    const response = await fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/markets/${marketIdField}`);
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -57,9 +59,11 @@ export async function fetchMarketOnChain(marketId: string): Promise<OnChainMarke
  */
 export async function fetchMarketPools(marketId: string): Promise<MarketPools> {
   try {
+    // Ensure marketId has "field" suffix for Aleo API
+    const marketIdField = marketId.endsWith('field') ? marketId : `${marketId}field`;
     const [yesPoolRes, noPoolRes] = await Promise.all([
-      fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/yes_pool/${marketId}`),
-      fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/no_pool/${marketId}`),
+      fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/yes_pool/${marketIdField}`),
+      fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/no_pool/${marketIdField}`),
     ]);
 
     const yesPool = yesPoolRes.ok ? await yesPoolRes.json() : 0;
@@ -108,7 +112,9 @@ export async function fetchOutcomePool(marketId: string, outcomeIndex: number): 
  */
 export async function isBetClaimed(betId: string): Promise<boolean> {
   try {
-    const response = await fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/claimed_bets/${betId}`);
+    // Ensure betId has "field" suffix for Aleo API
+    const betIdField = betId.endsWith('field') ? betId : `${betId}field`;
+    const response = await fetch(`${NETWORK_URL}/program/${PROGRAM_ID}/mapping/claimed_bets/${betIdField}`);
 
     if (!response.ok) {
       return false; // Not claimed (or doesn't exist in mapping)
