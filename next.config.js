@@ -16,10 +16,9 @@ const nextConfig = {
     RPC_URL: process.env.RPC_URL,
   },
   reactStrictMode: true,
-  // Disable Turbopack and use Webpack (required for WASM modules)
-  experimental: {
-    turbo: undefined,
-  },
+  // Force Webpack via --webpack CLI flag (see package.json build/dev scripts)
+  // Required for WASM modules — Turbopack does not support asyncWebAssembly.
+  // turbopack config intentionally omitted to ensure webpack is used exclusively.
   ...(process.env.NODE_ENV === 'production' && {
     typescript: {
       ignoreBuildErrors: true,
