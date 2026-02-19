@@ -25,11 +25,14 @@ export default async function handler(
 
     if (req.method === 'PUT') {
       // PUT /api/markets/[id] - Update market metadata
-      const { title, description, outcomeLabels, imageUrl } = req.body;
+      const { title, description, outcomeLabels, category, numOutcomes, imageUrl, creatorAddress } = req.body;
 
       const updates: Partial<MarketMetadata> = {};
       if (title !== undefined) updates.title = title;
       if (description !== undefined) updates.description = description;
+      if (category !== undefined) updates.category = category;
+      if (numOutcomes !== undefined) updates.numOutcomes = numOutcomes;
+      if (creatorAddress !== undefined) updates.creatorAddress = creatorAddress;
       if (outcomeLabels !== undefined) {
         if (!Array.isArray(outcomeLabels) || outcomeLabels.length < 2) {
           return res.status(400).json({ error: 'outcomeLabels must be an array with at least 2 items' });

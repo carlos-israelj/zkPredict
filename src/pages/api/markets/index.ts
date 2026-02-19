@@ -21,11 +21,11 @@ export default async function handler(
 
     if (req.method === 'POST') {
       // POST /api/markets - Create new market metadata
-      const { marketId, title, description, outcomeLabels, imageUrl } = req.body;
+      const { marketId, title, description, outcomeLabels, category, numOutcomes, imageUrl, creatorAddress } = req.body;
 
       // Validate required fields
-      if (!marketId || !title || !description || !outcomeLabels) {
-        return res.status(400).json({ error: 'Missing required fields' });
+      if (!marketId || !title || !outcomeLabels) {
+        return res.status(400).json({ error: 'Missing required fields: marketId, title, outcomeLabels' });
       }
 
       if (!Array.isArray(outcomeLabels) || outcomeLabels.length < 2) {
@@ -35,12 +35,23 @@ export default async function handler(
       const market = await db.createMarket({
         marketId,
         title,
-        description,
+        description: description || '',
+        category: typeof category === 'number' ? category : 4,
+        numOutcomes: typeof numOutcomes === 'number' ? numOutcomes : outcomeLabels.length,
         outcomeLabels,
         imageUrl,
+        creatorAddress,
       });
 
       return res.status(201).json(market);
+    }
+
+    if (req.method === 'GET' && req.query.category !== undefined) {
+      const categoryNum = parseInt(req.query.category as string);
+      if (!isNaN(categoryNum)) {
+        const markets = await db.getMarketsByCategory(categoryNum);
+        return res.status(200).json(markets);
+      }
     }
 
     // Method not allowed

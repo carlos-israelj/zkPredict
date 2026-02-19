@@ -97,7 +97,10 @@ export default function CreateMarket() {
           marketId,
           title,
           description,
+          category: category as number,
+          numOutcomes,
           outcomeLabels,
+          creatorAddress: publicKey ?? undefined,
         });
         console.log('Market metadata saved successfully');
       } catch (metadataError) {
