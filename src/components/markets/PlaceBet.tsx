@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
 import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
 import { Market, OddsData, getTransactionExplorerUrl } from '@/types';
+import { generateCreditsRecord, waitForTransactionConfirmation, getEstimatedConfirmationTime } from '@/utils/creditsHelper';
 
 const QUICK_BET_PERCENTAGES = [
   { label: '10%', value: 0.1 },
@@ -28,6 +29,8 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [creditsRecord, setCreditsRecord] = useState('');
   const [showInstructions, setShowInstructions] = useState(false);
+  const [isGeneratingRecord, setIsGeneratingRecord] = useState(false);
+  const [recordGenerationTxId, setRecordGenerationTxId] = useState<string | null>(null);
 
   // Fetch wallet balance from Aleo blockchain
   useEffect(() => {
@@ -233,6 +236,56 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
     setSuccessBetId(null);
     setCopied(false);
     setCreditsRecord('');
+  };
+
+  const handleGenerateCreditsRecord = async () => {
+    if (!publicKey || !requestTransaction) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    const amount = parseFloat(betAmount);
+    if (!amount || amount <= 0) {
+      alert('Please enter a bet amount first');
+      return;
+    }
+
+    // Add 0.1 credits for transaction fee to ensure record has enough
+    const amountInMicrocredits = Math.ceil((amount + 0.15) * 1_000_000); // Extra buffer for fees
+
+    setIsGeneratingRecord(true);
+    setRecordGenerationTxId(null);
+
+    try {
+      // Step 1: Generate credits record via transfer_public_to_private
+      const txId = await generateCreditsRecord(
+        publicKey,
+        amountInMicrocredits,
+        requestTransaction
+      );
+
+      setRecordGenerationTxId(txId);
+
+      // Show alert with instructions
+      alert(
+        `Credits record generation started!\n\n` +
+        `Transaction ID: ${txId}\n\n` +
+        `The transaction will confirm in ${getEstimatedConfirmationTime()}.\n\n` +
+        `After confirmation:\n` +
+        `1. Open your wallet\n` +
+        `2. Go to Records/Private Records\n` +
+        `3. Find the new Credits record\n` +
+        `4. Copy the full JSON\n` +
+        `5. Paste it in the field below`
+      );
+
+    } catch (error) {
+      console.error('Error generating credits record:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert(`Failed to generate credits record: ${errorMessage}`);
+    } finally {
+      setIsGeneratingRecord(false);
+    }
   };
 
   // Show success screen if transaction succeeded
@@ -497,14 +550,46 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
               </div>
             </div>
 
-            {/* Credits Record Input */}
+            {/* Get Credits Record Button - Semi-Automated */}
             <div className="mt-6">
+              <div className="mb-4">
+                <button
+                  className={`btn btn-primary w-full ${isGeneratingRecord ? 'loading' : ''}`}
+                  onClick={handleGenerateCreditsRecord}
+                  disabled={isGeneratingRecord || !publicKey || !betAmount}
+                  type="button"
+                >
+                  {isGeneratingRecord ? 'Generating Record...' : 'Step 1: Get Credits Record'}
+                </button>
+                {recordGenerationTxId && (
+                  <div className="alert alert-success mt-2 text-xs">
+                    <div>
+                      <p className="font-bold">Record generation started!</p>
+                      <p>Wait {getEstimatedConfirmationTime()}, then check your wallet for the new Credits record.</p>
+                      <a
+                        href={getTransactionExplorerUrl(recordGenerationTxId)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="link link-primary"
+                      >
+                        View Transaction
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="divider text-xs text-base-content/50">OR use existing record</div>
+            </div>
+
+            {/* Manual Credits Record Input */}
+            <div className="mt-4">
               <button
                 className="btn btn-sm btn-ghost mb-2"
                 onClick={() => setShowInstructions(!showInstructions)}
                 type="button"
               >
-                {showInstructions ? '▼' : '▶'} How to get your Credits record
+                {showInstructions ? '▼' : '▶'} How to find your Credits record
               </button>
 
               {showInstructions && (
@@ -694,7 +779,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                 ) : !creditsRecord.trim() ? (
                   'Paste Credits Record'
                 ) : (
-                  `Place Bet - ${betAmount} Credits`
+                  `Step 2: Place Bet - ${betAmount} Credits`
                 )}
               </button>
             </div>
