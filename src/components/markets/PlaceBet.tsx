@@ -41,7 +41,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
         // Query balance from Aleo testnet
         // Credits are stored in the credits.aleo program
         const response = await fetch(
-          `https://api.provable.com/v2/testnet/program/credits.aleo/mapping/account/${publicKey}`
+          `https://api.explorer.provable.com/v1/testnet/program/credits.aleo/mapping/account/${publicKey}`
         );
 
         if (response.ok) {
@@ -132,17 +132,50 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
       // Convert amount to microcredits (1 credit = 1,000,000 microcredits)
       const amountInMicrocredits = Math.floor(amount * 1_000_000);
 
-      // v5: place_bet signature requires Credits record as FIRST argument.
-      // The wallet adapter handles fetching the private Credits record automatically
-      // when you pass the amount as a special credits record input.
+      // v6: place_bet signature requires Credits record as FIRST argument.
+      // We need to fetch an actual credits record from the wallet that has enough balance.
       //
       // Contract signature:
       //   place_bet(payment: credits.aleo/credits, market_id: field, outcome: u8, nonce: field)
-      //
-      // The Leo wallet adapter resolves the Credits record from the wallet's
-      // private state. We pass the amount so it can find the correct record.
+
+      // Fetch all credits records from the wallet
+      const allRecords = await wallet.requestRecords('credits.aleo');
+      if (!allRecords || allRecords.length === 0) {
+        throw new Error('No credits records found in wallet. Please ensure you have private credits.');
+      }
+
+      // Filter for private unspent records
+      const privateRecords = allRecords.filter(
+        (record: any) => record.data?.microcredits && record.data.microcredits.endsWith('u64.private')
+      );
+      const unspentRecords = privateRecords.filter((record: any) => record.spent === false);
+
+      if (unspentRecords.length === 0) {
+        throw new Error('No unspent private records available. Please convert some public credits to private.');
+      }
+
+      // Find a record with enough balance for the bet
+      const extractValue = (valueStr: string): number => {
+        const match = valueStr.match(/^(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+      };
+
+      const suitableRecords = unspentRecords.filter((record: any) => {
+        const recordValue = extractValue(record.data.microcredits);
+        return recordValue >= amountInMicrocredits;
+      });
+
+      if (suitableRecords.length === 0) {
+        throw new Error(
+          `No single record has enough balance. Need ${(amountInMicrocredits / 1_000_000).toFixed(6)} credits.`
+        );
+      }
+
+      const chosenRecord = suitableRecords[0];
+      console.log('Using credits record:', chosenRecord);
+
       const inputs = [
-        `${amountInMicrocredits}u64`, // Amount in microcredits - wallet resolves to Credits record
+        chosenRecord,                 // payment: credits.aleo/credits (the actual record)
         market.marketId,              // market_id: field (public)
         `${selectedOutcome}u8`,       // outcome: u8 (private input)
         nonce,                        // nonce: field (private, for bet_id generation)
