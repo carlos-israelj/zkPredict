@@ -26,6 +26,8 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   const [copied, setCopied] = useState(false);
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const [creditsRecord, setCreditsRecord] = useState('');
+  const [showInstructions, setShowInstructions] = useState(false);
 
   // Fetch wallet balance from Aleo blockchain
   useEffect(() => {
@@ -106,6 +108,18 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
       return;
     }
 
+    const recordTrimmed = creditsRecord.trim();
+    if (!recordTrimmed) {
+      alert('Please paste your Credits record');
+      return;
+    }
+
+    // Basic validation: must look like a credits record JSON object
+    if (!recordTrimmed.startsWith('{')) {
+      alert('Invalid Credits record format. It should be a JSON object starting with "{"');
+      return;
+    }
+
     const amount = parseFloat(betAmount);
     if (!amount || amount <= 0) {
       alert('Please enter a valid bet amount');
@@ -129,21 +143,18 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
       // Generate unique nonce for bet_id (as field)
       const nonce = `${Date.now()}field`;
 
-      // Convert amount to microcredits (1 credit = 1,000,000 microcredits)
-      const amountInMicrocredits = Math.floor(amount * 1_000_000);
-
       // v6: place_bet signature:
       //   place_bet(payment: credits.aleo/credits, market_id: field, outcome: u8, nonce: field)
       //
-      // The wallet will prompt the user to select a credits record with sufficient balance
+      // We pass the full credits record JSON from the user
       const inputs = [
-        `${amountInMicrocredits}u64`, // Amount - wallet will prompt for record selection
+        recordTrimmed,                // payment: credits.aleo/credits (the full private record JSON)
         market.marketId,              // market_id: field (public)
         `${selectedOutcome}u8`,       // outcome: u8 (private input)
         nonce,                        // nonce: field (private, for bet_id generation)
       ];
 
-      console.log('Placing bet with inputs:', inputs);
+      console.log('Placing bet with credits record');
 
       // Create transaction using the Aleo wallet adapter
       // The wallet adapter (Leo Wallet / Puzzle) handles the Credits record resolution
@@ -221,6 +232,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
     setSuccessTxId(null);
     setSuccessBetId(null);
     setCopied(false);
+    setCreditsRecord('');
   };
 
   // Show success screen if transaction succeeded
@@ -485,6 +497,53 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
               </div>
             </div>
 
+            {/* Credits Record Input */}
+            <div className="mt-6">
+              <button
+                className="btn btn-sm btn-ghost mb-2"
+                onClick={() => setShowInstructions(!showInstructions)}
+                type="button"
+              >
+                {showInstructions ? '▼' : '▶'} How to get your Credits record
+              </button>
+
+              {showInstructions && (
+                <div className="alert alert-info mb-4">
+                  <div className="text-sm space-y-2">
+                    <p><strong>To place a bet, you need a Credits record with enough balance:</strong></p>
+                    <ol className="list-decimal list-inside space-y-1 ml-2">
+                      <li>Open your Leo Wallet (or Puzzle Wallet)</li>
+                      <li>Go to Records / Private Records</li>
+                      <li>Find a Credits record (credits.aleo/credits) with enough microcredits</li>
+                      <li>Copy the full JSON (starts with <code className="bg-base-300 px-1 rounded">{'{'}</code>)</li>
+                      <li>Paste it below</li>
+                    </ol>
+                    <p className="text-xs mt-2 opacity-70">
+                      <strong>Note:</strong> 1 credit = 1,000,000 microcredits. Make sure your record has at least {betAmount ? Math.ceil(parseFloat(betAmount) * 1_000_000) : '0'} microcredits plus fees.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="form-control w-full">
+                <label className="label">
+                  <span className="label-text font-medium">Paste Your Credits Record (JSON)</span>
+                  <span className="label-text-alt opacity-60">From your wallet</span>
+                </label>
+                <textarea
+                  placeholder={'{\n  "owner": "aleo1...",\n  "microcredits": "1000000u64",\n  ...\n}'}
+                  className="textarea textarea-bordered font-mono text-xs h-32 w-full"
+                  value={creditsRecord}
+                  onChange={(e) => setCreditsRecord(e.target.value)}
+                />
+                {creditsRecord && !creditsRecord.trim().startsWith('{') && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">Invalid format - must be a JSON object starting with {'{'}</span>
+                  </label>
+                )}
+              </div>
+            </div>
+
             {/* Potential Winnings - Enhanced prominent section with full breakdown */}
             {betAmount && parseFloat(betAmount) > 0 && (
               <div className="mt-6">
@@ -603,17 +662,19 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
             <div className="mt-6">
               <button
                 className={`w-full h-14 sm:h-14 rounded-xl font-bold text-base sm:text-lg transition-all transform touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                  isPlacingBet || !publicKey || !betAmount
+                  isPlacingBet || !publicKey || !betAmount || !creditsRecord.trim()
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed border-2 border-gray-300'
                     : 'bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 active:from-indigo-800 active:to-indigo-900 text-white border-2 border-indigo-600 hover:border-indigo-700 shadow-lg hover:shadow-xl active:shadow-md hover:scale-[1.02] active:scale-[0.98]'
                 }`}
                 onClick={handlePlaceBet}
-                disabled={isPlacingBet || !publicKey || !betAmount}
+                disabled={isPlacingBet || !publicKey || !betAmount || !creditsRecord.trim()}
                 aria-label={
                   !publicKey
                     ? 'Connect wallet to place bet'
                     : !betAmount
                     ? 'Enter bet amount to continue'
+                    : !creditsRecord.trim()
+                    ? 'Paste your credits record to continue'
                     : `Place bet of ${betAmount} credits on ${market.outcomeLabels?.[selectedOutcome] || `Outcome ${selectedOutcome + 1}`}`
                 }
                 aria-busy={isPlacingBet}
@@ -630,6 +691,8 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                   'Connect Wallet to Bet'
                 ) : !betAmount ? (
                   'Enter Bet Amount'
+                ) : !creditsRecord.trim() ? (
+                  'Paste Credits Record'
                 ) : (
                   `Place Bet - ${betAmount} Credits`
                 )}
