@@ -3,7 +3,6 @@ import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
 import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
 import { Market, OddsData, getTransactionExplorerUrl } from '@/types';
 import { generateCreditsRecord, waitForTransactionConfirmation, getEstimatedConfirmationTime } from '@/utils/creditsHelper';
-import { decryptRecord, isValidViewKey, isValidRecordCiphertext } from '@/utils/recordDecryption';
 
 const QUICK_BET_PERCENTAGES = [
   { label: '10%', value: 0.1 },

@@ -1,8 +1,6 @@
 // Record Decryption Utility using snarkVM WASM
 // This utility allows decrypting Aleo record ciphertexts using a view key
 
-import { Account, ViewKey, RecordCiphertext, RecordPlaintext } from '@provablehq/sdk';
-
 /**
  * Decrypts an encrypted Aleo record using a view key
  *
@@ -23,6 +21,9 @@ export async function decryptRecord(
     if (!viewKeyString || !viewKeyString.startsWith('AViewKey1')) {
       throw new Error('Invalid view key format. Must start with "AViewKey1"');
     }
+
+    // Dynamically import the SDK only when needed (client-side only)
+    const { ViewKey, RecordCiphertext } = await import('@provablehq/sdk');
 
     // Create ViewKey instance from string
     const viewKey = ViewKey.from_string(viewKeyString);
