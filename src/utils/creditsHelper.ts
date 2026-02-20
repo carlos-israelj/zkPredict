@@ -1,35 +1,36 @@
-import { Transaction, WalletAdapterNetwork } from '@demox-labs/aleo-wallet-adapter-base';
+
 
 /**
  * Helper to generate a credits record by calling transfer_public_to_private
  * This creates a private credits record from the user's public balance
  *
- * @param publicKey User's Aleo address
+ * @param address User's Aleo address
  * @param amountInMicrocredits Amount to convert to private credits
- * @param requestTransaction Function to request transaction from wallet
+ * @param executeTransaction Function to request transaction from wallet
  * @returns Transaction ID
  */
 export async function generateCreditsRecord(
-  publicKey: string,
+  address: string,
   amountInMicrocredits: number,
-  requestTransaction: (transaction: Transaction) => Promise<string>
+  executeTransaction: (options: { program: string; function: string; inputs: string[]; fee?: number }) => Promise<{ transactionId: string } | undefined>
 ): Promise<string> {
   console.log(`Generating credits record for ${amountInMicrocredits} microcredits...`);
 
-  const transaction = Transaction.createTransaction(
-    publicKey,
-    WalletAdapterNetwork.TestnetBeta,
-    'credits.aleo',
-    'transfer_public_to_private',
-    [
-      publicKey,                        // receiver: address (send to self)
+  const result = await executeTransaction({
+    program: 'credits.aleo',
+    function: 'transfer_public_to_private',
+    inputs: [
+      address,                        // receiver: address (send to self)
       `${amountInMicrocredits}u64`,    // amount: u64
     ],
-    100000, // 0.1 credits fee
-    false   // public fee
-  );
+    fee: 100000, // 0.1 credits fee
+  });
 
-  const txId = await requestTransaction(transaction);
+  const txId = result?.transactionId;
+  if (!txId) {
+    throw new Error('Transaction failed: No transaction ID returned');
+  }
+
   console.log(`Credits record generation transaction submitted: ${txId}`);
 
   return txId;

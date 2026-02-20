@@ -1,7 +1,7 @@
 // privateTransfer.ts
 
-import { Transaction, WalletAdapterNetwork } from '@demox-labs/aleo-wallet-adapter-base';
-import { LeoWalletAdapter } from '@demox-labs/aleo-wallet-adapter-leo';
+
+import { LeoWalletAdapter } from '@provablehq/aleo-wallet-adaptor-leo';
 import { CURRENT_NETWORK } from '@/types';
 
 export const CREDITS_PROGRAM_ID = 'credits.aleo';
@@ -14,7 +14,7 @@ import { getFeeForFunction } from '@/utils/feeCalculator';
  * Executes a private transfer of credits to a target address, then updates the reward state via the API.
  *
  * @param wallet - The wallet adapter instance.
- * @param publicKey - The public key of the user performing the transfer.
+ * @param address - The public key of the user performing the transfer.
  * @param proposerAddress - The address to receive the funds.
  * @param bountyReward - The reward amount (in microcredits) to be transferred.
  * @param setTxStatus - Function to update the transaction status in the UI.
@@ -25,7 +25,7 @@ import { getFeeForFunction } from '@/utils/feeCalculator';
  */
 export async function privateTransfer(
   wallet: LeoWalletAdapter,
-  publicKey: string,
+  address: string,
   proposerAddress: string,
   bountyReward: number,
   setTxStatus: (status: string | null) => void,
@@ -37,7 +37,7 @@ export async function privateTransfer(
   const rewardAmountforTransfer = `${bountyReward}000000u64`; 
 
   // 1. Fetch all records for credits program
-  const allRecords = await wallet.requestRecords(CREDITS_PROGRAM_ID);
+  const allRecords = await wallet.requestRecords(CREDITS_PROGRAM_ID, true);
   if (!allRecords || allRecords.length === 0) {
     throw new Error('No credits records found.');
   }
@@ -74,7 +74,7 @@ export async function privateTransfer(
 
   // 4. Create transaction inputs
   const txInputs = [
-    chosenRecord,      // The record we’ll spend
+    JSON.stringify(chosenRecord),      // The record we'll spend
     proposerAddress,   // The address receiving the funds
     rewardAmountforTransfer,
   ];
@@ -84,29 +84,28 @@ export async function privateTransfer(
   const fee = getFeeForFunction(TRANSFER_PRIVATE_FUNCTION);
   console.log('Calculated fee (in micro credits):', fee);
 
-  // 5. Build the transaction
-  //    Replaced the 'false' with our `payFeesPrivately` param.
-  const transaction = Transaction.createTransaction(
-    publicKey,
-    CURRENT_NETWORK,
-    CREDITS_PROGRAM_ID,
-    TRANSFER_PRIVATE_FUNCTION,
-    txInputs,
+  // 5. Execute the transaction
+  const result = await wallet.executeTransaction({
+    program: CREDITS_PROGRAM_ID,
+    function: TRANSFER_PRIVATE_FUNCTION,
+    inputs: txInputs,
     fee,
-    true   
-  );
+  });
 
-  // 6. Submit the transaction
-  const txId = await wallet.requestTransaction(transaction);
+  const txId = result?.transactionId;
+  if (!txId) {
+    throw new Error('Transaction failed: No transaction ID returned');
+  }
   setTxStatus(`Private transfer submitted: ${txId}`);
 
   // 7. Poll for completion/finalization
   let finalized = false;
   for (let attempt = 0; attempt < 60; attempt++) {
-    const status = await wallet.transactionStatus(txId);
+    const statusResponse = await wallet.transactionStatus(txId);
+    const status = statusResponse?.status || 'Unknown';
     setTxStatus(`Attempt ${attempt + 1}: ${status}`);
 
-    if (status === 'Finalized') {
+    if (status === 'Finalized' || status === 'Confirmed') {
       finalized = true;
       break;
     }

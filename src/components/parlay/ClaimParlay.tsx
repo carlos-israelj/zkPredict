@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParlays } from '@/hooks/useParlays';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 
 /**
  * ClaimParlay - UI to claim winnings from a winning parlay.
@@ -13,7 +13,7 @@ import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
  * The Reputation record is CONSUMED and a new updated one is returned.
  */
 export default function ClaimParlay() {
-  const { publicKey } = useWallet();
+  const { address } = useWallet();
   const { claimParlay, isClaiming, error } = useParlays();
 
   const [parlayRecord, setParlayRecord] = useState('');
@@ -22,7 +22,7 @@ export default function ClaimParlay() {
   const [claimedTxId, setClaimedTxId] = useState<string | null>(null);
 
   const handleClaim = async () => {
-    if (!publicKey) {
+    if (!address) {
       alert('Please connect your wallet first');
       return;
     }
@@ -145,7 +145,7 @@ export default function ClaimParlay() {
           <button
             className={`btn btn-success ${isClaiming ? 'loading' : ''}`}
             onClick={handleClaim}
-            disabled={isClaiming || !publicKey || !parlayRecord.trim() || !reputationRecord.trim()}
+            disabled={isClaiming || !address || !parlayRecord.trim() || !reputationRecord.trim()}
           >
             {isClaiming ? 'Claiming...' : 'Claim Parlay'}
           </button>

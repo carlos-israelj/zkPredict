@@ -62,6 +62,65 @@ El contrato zkPredict **v6.0** está deployado exitosamente en Aleo testnet.
 
 ---
 
+## 🐛 Bugs Nuevos Detectados (Frontend)
+
+### PlaceBet.tsx - Errores en tiempo de ejecución
+
+**Fecha detectada**: 2026-02-20
+
+#### Error 1: Funciones de validación no definidas
+```
+ReferenceError: isValidRecordCiphertext is not defined
+```
+- **Ubicación**: `src/components/markets/PlaceBet.tsx` líneas ~128, ~367
+- **Causa**: Se llaman funciones `isValidRecordCiphertext()` e `isValidViewKey()` pero nunca fueron definidas
+- **Impacto**: La funcionalidad de decriptación de records falla completamente
+
+#### Error 2: Función de decriptación no implementada
+```
+decryptRecord is not defined
+```
+- **Ubicación**: `src/components/markets/PlaceBet.tsx` línea ~142
+- **Causa**: Se llama `decryptRecord()` pero la implementación no existe
+- **Impacto**: No se pueden decriptar records encriptados
+
+#### Error 3: Filtrado de records del wallet falla
+```
+Records received from wallet: 9 records
+Filtered credits records: []  ← VACÍO
+```
+- **Ubicación**: `src/components/markets/PlaceBet.tsx` líneas 331-338
+- **Causa**: El código busca `record.microcredits || record.amount` pero los records del wallet tienen estructura:
+  ```json
+  {
+    "id": "...",
+    "owner": "aleo1...",
+    "program_id": "credits.aleo",
+    "spent": false,
+    "recordName": "credits",
+    "data": {                    ← LOS DATOS ESTÁN AQUÍ
+      "microcredits": "1000000u64"
+    }
+  }
+  ```
+- **Impacto**: La funcionalidad "Fetch Records from Wallet" no muestra ningún record aunque existan
+
+#### Error 4: Selección de record con formato incorrecto
+- **Ubicación**: `src/components/markets/PlaceBet.tsx` líneas 362-375
+- **Causa**: Cuando se selecciona un record, se busca `record.ciphertext` o se serializa como JSON, pero el formato esperado por `place_bet` es diferente
+- **Impacto**: Records seleccionados no funcionan en la transacción
+
+### Archivos Afectados
+- ❌ `src/components/markets/PlaceBet.tsx` — 4 errores críticos
+
+### Funcionalidades Rotas
+- ❌ Decriptación de records encriptados
+- ❌ Fetch de records desde el wallet
+- ❌ Validación de View Keys
+- ❌ Validación de record ciphertexts
+
+---
+
 ## Tareas Pendientes
 
 ### A. Testing End-to-End (Prioritario)

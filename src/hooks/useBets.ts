@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
-import { Transaction, WalletAdapterNetwork } from '@demox-labs/aleo-wallet-adapter-base';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
+
 import { ZKPREDICT_PROGRAM_ID } from '@/types';
 
 interface PlaceBetResult {
@@ -27,7 +27,7 @@ interface UseBetsReturn {
  * - Bet record is returned to the user (they must save it to claim later)
  */
 export function useBets(): UseBetsReturn {
-  const { publicKey, requestTransaction } = useWallet();
+  const { address, executeTransaction } = useWallet();
   const [isPlacing, setIsPlacing] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +44,7 @@ export function useBets(): UseBetsReturn {
     outcome: number,
     amountCredits: number
   ): Promise<PlaceBetResult | null> => {
-    if (!publicKey || !requestTransaction) return null;
+    if (!address || !executeTransaction) return null;
 
     if (amountCredits < 1) {
       setError('Minimum bet is 1 credit');
@@ -70,18 +70,18 @@ export function useBets(): UseBetsReturn {
         nonce,
       ];
 
-      const transaction = Transaction.createTransaction(
-        publicKey,
-        WalletAdapterNetwork.TestnetBeta,
-        ZKPREDICT_PROGRAM_ID,
-        'place_bet',
+      const result = await executeTransaction({
+        program: ZKPREDICT_PROGRAM_ID,
+        function: 'place_bet',
         inputs,
-        100000,
-        false
-      );
+        fee: 100000,
+      });
 
-      const txId = await requestTransaction(transaction);
-      return { txId: txId as string, nonce };
+      const txId = result?.transactionId;
+      if (!txId) {
+        throw new Error('Transaction failed: No transaction ID returned');
+      }
+      return { txId, nonce };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
@@ -89,7 +89,7 @@ export function useBets(): UseBetsReturn {
     } finally {
       setIsPlacing(false);
     }
-  }, [publicKey, requestTransaction]);
+  }, [address, executeTransaction]);
 
   /**
    * Claim winnings for a single winning bet.
@@ -98,7 +98,7 @@ export function useBets(): UseBetsReturn {
    * The user must provide the full Bet record JSON from their wallet.
    */
   const claimWinnings = useCallback(async (betRecord: string): Promise<string | null> => {
-    if (!publicKey || !requestTransaction) return null;
+    if (!address || !executeTransaction) return null;
 
     if (!betRecord.trim().startsWith('{')) {
       setError('Invalid Bet record format - must be JSON object');
@@ -111,18 +111,18 @@ export function useBets(): UseBetsReturn {
     try {
       const inputs = [betRecord.trim()];
 
-      const transaction = Transaction.createTransaction(
-        publicKey,
-        WalletAdapterNetwork.TestnetBeta,
-        ZKPREDICT_PROGRAM_ID,
-        'claim_winnings',
+      const result = await executeTransaction({
+        program: ZKPREDICT_PROGRAM_ID,
+        function: 'claim_winnings',
         inputs,
-        100000,
-        false
-      );
+        fee: 100000,
+      });
 
-      const txId = await requestTransaction(transaction);
-      return txId as string;
+      const txId = result?.transactionId;
+      if (!txId) {
+        throw new Error('Transaction failed: No transaction ID returned');
+      }
+      return txId;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
@@ -130,7 +130,7 @@ export function useBets(): UseBetsReturn {
     } finally {
       setIsClaiming(false);
     }
-  }, [publicKey, requestTransaction]);
+  }, [address, executeTransaction]);
 
   /**
    * Batch claim two winning bets in one transaction.
@@ -142,7 +142,7 @@ export function useBets(): UseBetsReturn {
     betRecord1: string,
     betRecord2: string
   ): Promise<string | null> => {
-    if (!publicKey || !requestTransaction) return null;
+    if (!address || !executeTransaction) return null;
 
     if (!betRecord1.trim().startsWith('{') || !betRecord2.trim().startsWith('{')) {
       setError('Invalid Bet record format - both must be JSON objects');
@@ -155,18 +155,18 @@ export function useBets(): UseBetsReturn {
     try {
       const inputs = [betRecord1.trim(), betRecord2.trim()];
 
-      const transaction = Transaction.createTransaction(
-        publicKey,
-        WalletAdapterNetwork.TestnetBeta,
-        ZKPREDICT_PROGRAM_ID,
-        'claim_two_winnings',
+      const result = await executeTransaction({
+        program: ZKPREDICT_PROGRAM_ID,
+        function: 'claim_two_winnings',
         inputs,
-        150000, // Slightly higher fee for batch
-        false
-      );
+        fee: 150000, // Slightly higher fee for batch
+      });
 
-      const txId = await requestTransaction(transaction);
-      return txId as string;
+      const txId = result?.transactionId;
+      if (!txId) {
+        throw new Error('Transaction failed: No transaction ID returned');
+      }
+      return txId;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
@@ -174,7 +174,7 @@ export function useBets(): UseBetsReturn {
     } finally {
       setIsClaiming(false);
     }
-  }, [publicKey, requestTransaction]);
+  }, [address, executeTransaction]);
 
   return {
     placeBet,

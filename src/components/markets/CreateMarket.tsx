@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
-import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
+
 import { MarketCategory, CATEGORY_LABELS, getTransactionExplorerUrl } from '@/types';
 import { createMarketMetadata } from '@/hooks/useMarketMetadata';
 
 export default function CreateMarket() {
-  const { publicKey, requestTransaction } = useWallet();
+  const { address, executeTransaction } = useWallet();
   const [isCreating, setIsCreating] = useState(false);
 
   // Form state
@@ -37,7 +37,7 @@ export default function CreateMarket() {
   };
 
   const handleCreateMarket = async () => {
-    if (!publicKey) {
+    if (!address) {
       alert('Please connect your wallet first');
       return;
     }
@@ -58,7 +58,7 @@ export default function CreateMarket() {
       // In production, you should use proper field hashing
       const marketId = `${Date.now()}field`;
 
-      if (!requestTransaction) {
+      if (!executeTransaction) {
         alert('Wallet does not support transactions');
         return;
       }
@@ -75,21 +75,18 @@ export default function CreateMarket() {
 
       console.log('Creating market with inputs:', inputs);
 
-      // Create transaction object using the Aleo wallet adapter
-      const transaction = Transaction.createTransaction(
-        publicKey || '',
-        'testnetbeta', // Use testnetbeta network
-        'zkpredict_v6.aleo', // v5 program with reputation, parlays, and time-weighted betting
-        'create_market',
+      // Create transaction using the Aleo wallet adapter
+      const result = await executeTransaction({
+        program: 'zkpredict_v6.aleo',
+        function: 'create_market',
         inputs,
-        100000, // 0.1 credits fee (reduced for testing)
-        false // Public fee
-      );
+        fee: 500000,
+      });
 
-      // Request transaction from wallet
-      const txResponse = await requestTransaction(transaction);
-
-      console.log('Market created:', txResponse);
+      const txId = result?.transactionId;
+      if (!txId) {
+        throw new Error('Transaction failed: No transaction ID returned');
+      }
 
       // Store off-chain metadata to backend
       try {
@@ -100,7 +97,7 @@ export default function CreateMarket() {
           category: category as number,
           numOutcomes,
           outcomeLabels,
-          creatorAddress: publicKey ?? undefined,
+          creatorAddress: address ?? undefined,
         });
         console.log('Market metadata saved successfully');
       } catch (metadataError) {
@@ -109,7 +106,7 @@ export default function CreateMarket() {
       }
 
       // Show success message with transaction ID
-      setSuccessTxId(txResponse as string);
+      setSuccessTxId(txId);
 
     } catch (error) {
       console.error('Error creating market:', error);
@@ -716,7 +713,7 @@ export default function CreateMarket() {
           <button
             className={`btn btn-primary ${isCreating ? 'loading' : ''}`}
             onClick={handleCreateMarket}
-            disabled={isCreating || !publicKey}
+            disabled={isCreating || !address}
           >
             {isCreating ? 'Creating...' : 'Create Market'}
           </button>

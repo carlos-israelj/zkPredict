@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
-import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
+
 import { Market } from '@/types';
 
 interface ResolveMarketProps {
@@ -9,12 +9,12 @@ interface ResolveMarketProps {
 }
 
 export default function ResolveMarket({ market, onResolved }: ResolveMarketProps) {
-  const { publicKey, requestTransaction } = useWallet();
+  const { address, executeTransaction } = useWallet();
   const [selectedWinningOutcome, setSelectedWinningOutcome] = useState(0);
   const [isResolving, setIsResolving] = useState(false);
 
   const handleResolveMarket = async () => {
-    if (!publicKey || !requestTransaction) {
+    if (!address || !executeTransaction) {
       alert('Please connect your wallet first');
       return;
     }
@@ -25,7 +25,7 @@ export default function ResolveMarket({ market, onResolved }: ResolveMarketProps
     }
 
     // Check if user is the creator
-    const isCreator = publicKey === market.creator;
+    const isCreator = address === market.creator;
     const now = Math.floor(Date.now() / 1000);
     const hasEnded = now >= market.endTime;
 
@@ -56,19 +56,18 @@ export default function ResolveMarket({ market, onResolved }: ResolveMarketProps
 
       console.log('Resolving market with inputs:', inputs);
 
-      // Create transaction using the Aleo wallet adapter
-      const transaction = Transaction.createTransaction(
-        publicKey,
-        'testnetbeta', // Use testnetbeta network
-        'zkpredict_v6.aleo', // v5 program with reputation, parlays, and time-weighted betting
-        'resolve_market',
+      // Execute transaction using the Aleo wallet adapter
+      const result = await executeTransaction({
+        program: 'zkpredict_v6.aleo',
+        function: 'resolve_market',
         inputs,
-        100000, // 0.1 credits fee (reduced for testing)
-        false // Public fee
-      );
+        fee: 100000, // 0.1 credits fee (reduced for testing)
+      });
 
-      // Request transaction from wallet
-      const txResponse = await requestTransaction(transaction);
+      const txResponse = result?.transactionId;
+      if (!txResponse) {
+        throw new Error('Transaction failed: No transaction ID returned');
+      }
 
       console.log('Market resolved:', txResponse);
 
@@ -92,7 +91,7 @@ export default function ResolveMarket({ market, onResolved }: ResolveMarketProps
   };
 
   // Check if user can resolve
-  const isCreator = publicKey === market.creator;
+  const isCreator = address === market.creator;
   const now = Math.floor(Date.now() / 1000);
   const hasEnded = now >= market.endTime;
   const canResolve = isCreator || (market.autoResolve && hasEnded);
@@ -222,7 +221,7 @@ export default function ResolveMarket({ market, onResolved }: ResolveMarketProps
               <button
                 className={`btn btn-success ${isResolving ? 'loading' : ''}`}
                 onClick={handleResolveMarket}
-                disabled={isResolving || !publicKey}
+                disabled={isResolving || !address}
               >
                 {isResolving ? 'Resolving...' : 'Resolve Market'}
               </button>

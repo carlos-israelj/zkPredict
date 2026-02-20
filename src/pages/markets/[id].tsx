@@ -6,7 +6,7 @@ import ResolveMarket from '@/components/markets/ResolveMarket';
 import ClaimWinnings from '@/components/markets/ClaimWinnings';
 import { Market, MarketCategory, CATEGORY_LABELS } from '@/types';
 import Link from 'next/link';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import { useMarketMetadata } from '@/hooks/useMarketMetadata';
 import { useOnChainMarketPolling } from '@/hooks/useOnChainMarket';
 import { MarketDetailSkeleton } from '@/components/ui/SkeletonLoader';
@@ -37,7 +37,7 @@ const MOCK_POOLS: Record<string, number[]> = {
 const MarketDetailPage: NextPageWithLayout = () => {
   const router = useRouter();
   const { id } = router.query;
-  const { publicKey } = useWallet();
+  const { address } = useWallet();
   const [combinedMarket, setCombinedMarket] = useState<Market | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 

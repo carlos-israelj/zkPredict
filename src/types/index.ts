@@ -1,9 +1,9 @@
 import type { NextPage } from 'next';
 import type { ReactElement, ReactNode } from 'react';
-import { WalletAdapterNetwork } from '@demox-labs/aleo-wallet-adapter-base';
+import { Network } from '@provablehq/aleo-types';
 
-//Change to MainnetBeta for mainnet or TestnetBeta for testnet
-export const CURRENT_NETWORK: WalletAdapterNetwork = WalletAdapterNetwork.TestnetBeta;
+//Change to Network.MAINNET for mainnet or Network.TESTNET for testnet
+export const CURRENT_NETWORK: Network = Network.TESTNET;
 
 
 //TESTNET_RPC_URL=https://testnetbeta.aleorpc.com
@@ -11,7 +11,7 @@ export const CURRENT_NETWORK: WalletAdapterNetwork = WalletAdapterNetwork.Testne
 export const CURRENT_RPC_URL = "https://testnetbeta.aleorpc.com";
 
 // Explorer URL based on current network
-export const EXPLORER_URL = CURRENT_NETWORK === WalletAdapterNetwork.TestnetBeta
+export const EXPLORER_URL = CURRENT_NETWORK === Network.TESTNET
   ? "https://testnet.explorer.provable.com"
   : "https://explorer.provable.com";
 

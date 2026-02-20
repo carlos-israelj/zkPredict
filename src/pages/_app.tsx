@@ -8,28 +8,41 @@ import { ReactQueryDevtools } from 'react-query/devtools';
 import { ThemeProvider } from 'next-themes';
 
 // Import Aleo Wallet Adapter dependencies
-import { WalletProvider } from '@demox-labs/aleo-wallet-adapter-react';
-import { WalletModalProvider } from '@demox-labs/aleo-wallet-adapter-reactui';
-import { LeoWalletAdapter } from '@demox-labs/aleo-wallet-adapter-leo';
-import {
-  DecryptPermission,
-  WalletAdapterNetwork,
-  WalletReadyState,
-} from '@demox-labs/aleo-wallet-adapter-base';
+import { AleoWalletProvider } from '@provablehq/aleo-wallet-adaptor-react';
+import { WalletModalProvider } from '@provablehq/aleo-wallet-adaptor-react-ui';
+import { LeoWalletAdapter } from '@provablehq/aleo-wallet-adaptor-leo';
+import { FoxWalletAdapter } from '@provablehq/aleo-wallet-adaptor-fox';
+import { PuzzleWalletAdapter } from '@provablehq/aleo-wallet-adaptor-puzzle';
+import { SoterWalletAdapter } from '@provablehq/aleo-wallet-adaptor-soter';
+import { ShieldWalletAdapter } from '@provablehq/aleo-wallet-adaptor-shield';
+import { DecryptPermission } from '@provablehq/aleo-wallet-adaptor-core';
+import { Network } from '@provablehq/aleo-types';
 
 // Import global styles and wallet modal styles
 import 'swiper/swiper-bundle.css';
 
 import '@/assets/css/globals.css';
 
-import '@demox-labs/aleo-wallet-adapter-reactui/styles.css';
+import '@provablehq/aleo-wallet-adaptor-react-ui/dist/styles.css';
 
 import { CURRENT_NETWORK, CURRENT_RPC_URL } from '@/types';
 
 // Initialize the wallet adapters outside the component
-// The wallet adapter will automatically detect all available Aleo wallets
+// Multiple wallet support: Leo, Shield, Fox, Puzzle, Soter
 const wallets = [
   new LeoWalletAdapter({
+    appName: 'zkPredict',
+  }),
+  new ShieldWalletAdapter({
+    appName: 'zkPredict',
+  }),
+  new FoxWalletAdapter({
+    appName: 'zkPredict',
+  }),
+  new PuzzleWalletAdapter({
+    appName: 'zkPredict',
+  }),
+  new SoterWalletAdapter({
     appName: 'zkPredict',
   }),
 ];
@@ -51,18 +64,20 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
       </Head>
       <QueryClientProvider client={queryClient}>
         <Hydrate state={pageProps.dehydratedState}>
-          <WalletProvider
+          <AleoWalletProvider
             wallets={wallets}
-            decryptPermission={DecryptPermission.OnChainHistory}
-            network={WalletAdapterNetwork.TestnetBeta}
-            autoConnect
+            decryptPermission={DecryptPermission.AutoDecrypt}
+            network={Network.TESTNET}
+            programs={['zkpredict.aleo', 'credits.aleo']}
+            autoConnect={false}
+            onError={(error) => console.error('[Wallet Error]', error.message)}
           >
             <WalletModalProvider>
               <ThemeProvider attribute="data-theme" enableSystem={true} defaultTheme="dark">
                 {getLayout(<Component {...pageProps} />)}
               </ThemeProvider>
             </WalletModalProvider>
-          </WalletProvider>
+          </AleoWalletProvider>
         </Hydrate>
         <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
       </QueryClientProvider>

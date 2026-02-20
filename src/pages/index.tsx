@@ -2,11 +2,11 @@ import type { NextPageWithLayout } from '@/types';
 import { NextSeo } from 'next-seo';
 import Layout from '@/layouts/_layout';
 import Button from '@/components/ui/button';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import Link from 'next/link';
 
 const MainPage: NextPageWithLayout = () => {
-  const { publicKey } = useWallet();
+  const { address } = useWallet();
 
   return (
     <>
@@ -48,7 +48,7 @@ const MainPage: NextPageWithLayout = () => {
                 Browse Markets
               </Button>
             </Link>
-            {publicKey && (
+            {address && (
               <Link href="/markets" className="w-full sm:w-auto">
                 <Button className="btn btn-outline btn-lg w-full sm:w-auto px-8 sm:px-12 text-base font-bold min-h-[48px] sm:min-h-[52px] touch-manipulation">
                   Create Market
@@ -57,7 +57,7 @@ const MainPage: NextPageWithLayout = () => {
             )}
           </div>
 
-          {!publicKey && (
+          {!address && (
             <p className="text-xs sm:text-sm opacity-50 mt-4">
               Connect your wallet to start trading
             </p>

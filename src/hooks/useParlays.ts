@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
-import { Transaction, WalletAdapterNetwork } from '@demox-labs/aleo-wallet-adapter-base';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
+
 import { ZKPREDICT_PROGRAM_ID, ReputationTier, TIER_MAX_LEGS } from '@/types';
 
 export interface ParlayLegInput {
@@ -39,7 +39,7 @@ interface UseParlaysReturn {
  * - Requires the Reputation record to enforce tier gates
  */
 export function useParlays(): UseParlaysReturn {
-  const { publicKey, requestTransaction } = useWallet();
+  const { address, executeTransaction } = useWallet();
   const [isCreating, setIsCreating] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export function useParlays(): UseParlaysReturn {
     reputationRecord: string,
     tier: ReputationTier
   ): Promise<CreateParlayResult | null> => {
-    if (!publicKey || !requestTransaction) return null;
+    if (!address || !executeTransaction) return null;
 
     const numLegs = legs.length;
     if (numLegs < 2 || numLegs > 5) {
@@ -98,20 +98,20 @@ export function useParlays(): UseParlaysReturn {
 
       inputs.push(nonce); // nonce: field
 
-      const transaction = Transaction.createTransaction(
-        publicKey,
-        WalletAdapterNetwork.TestnetBeta,
-        ZKPREDICT_PROGRAM_ID,
-        functionName,
+      const result = await executeTransaction({
+        program: ZKPREDICT_PROGRAM_ID,
+        function: functionName,
         inputs,
-        150000, // 0.15 credits fee
-        false
-      );
+        fee: 150000, // 0.15 credits fee
+      });
 
-      const txId = await requestTransaction(transaction);
+      const txId = result?.transactionId;
+      if (!txId) {
+        throw new Error('Transaction failed: No transaction ID returned');
+      }
       const parlayId = `${nonce.replace('field', '')}_parlay`;
 
-      return { txId: txId as string, parlayId };
+      return { txId, parlayId };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
@@ -119,13 +119,13 @@ export function useParlays(): UseParlaysReturn {
     } finally {
       setIsCreating(false);
     }
-  }, [publicKey, requestTransaction]);
+  }, [address, executeTransaction]);
 
   const claimParlay = useCallback(async (
     parlayRecord: string,
     reputationRecord: string
   ): Promise<string | null> => {
-    if (!publicKey || !requestTransaction) return null;
+    if (!address || !executeTransaction) return null;
 
     if (!parlayRecord.trim().startsWith('{')) {
       setError('Invalid Parlay record format');
@@ -147,18 +147,18 @@ export function useParlays(): UseParlaysReturn {
         reputationRecord.trim(), // reputation: Reputation (full record JSON)
       ];
 
-      const transaction = Transaction.createTransaction(
-        publicKey,
-        WalletAdapterNetwork.TestnetBeta,
-        ZKPREDICT_PROGRAM_ID,
-        'claim_parlay',
+      const result = await executeTransaction({
+        program: ZKPREDICT_PROGRAM_ID,
+        function: 'claim_parlay',
         inputs,
-        100000,
-        false
-      );
+        fee: 100000,
+      });
 
-      const txId = await requestTransaction(transaction);
-      return txId as string;
+      const txId = result?.transactionId;
+      if (!txId) {
+        throw new Error('Transaction failed: No transaction ID returned');
+      }
+      return txId;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
@@ -166,7 +166,7 @@ export function useParlays(): UseParlaysReturn {
     } finally {
       setIsClaiming(false);
     }
-  }, [publicKey, requestTransaction]);
+  }, [address, executeTransaction]);
 
   return {
     createParlay,

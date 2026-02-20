@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
-import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
+
 import { Market, Reputation, TIER_MAX_LEGS, PARLAY_BASE_ODDS, TIER_BONUSES, ReputationTier, getTransactionExplorerUrl } from '@/types';
 import TierBadge from '../reputation/TierBadge';
 
@@ -24,7 +24,7 @@ interface ParlayBuilderProps {
 }
 
 export default function ParlayBuilder({ availableMarkets, reputation }: ParlayBuilderProps) {
-  const { publicKey, requestTransaction } = useWallet();
+  const { address, executeTransaction } = useWallet();
   const [selectedLegs, setSelectedLegs] = useState<ParlayLeg[]>([]);
   const [betAmount, setBetAmount] = useState('');
   const [isPlacingParlay, setIsPlacingParlay] = useState(false);
@@ -39,7 +39,7 @@ export default function ParlayBuilder({ availableMarkets, reputation }: ParlayBu
   // Fetch wallet balance
   useEffect(() => {
     const fetchBalance = async () => {
-      if (!publicKey) {
+      if (!address) {
         setWalletBalance(0);
         return;
       }
@@ -47,7 +47,7 @@ export default function ParlayBuilder({ availableMarkets, reputation }: ParlayBu
       try {
         setIsLoadingBalance(true);
         const response = await fetch(
-          `https://api.provable.com/v2/testnet/program/credits.aleo/mapping/account/${publicKey}`
+          `https://api.provable.com/v2/testnet/program/credits.aleo/mapping/account/${address}`
         );
 
         if (response.ok) {
@@ -70,7 +70,7 @@ export default function ParlayBuilder({ availableMarkets, reputation }: ParlayBu
     fetchBalance();
     const interval = setInterval(fetchBalance, 30000);
     return () => clearInterval(interval);
-  }, [publicKey]);
+  }, [address]);
 
   // Calculate combined odds
   const combinedOdds = useMemo(() => {
@@ -116,7 +116,7 @@ export default function ParlayBuilder({ availableMarkets, reputation }: ParlayBu
   };
 
   const handlePlaceParlay = async () => {
-    if (!publicKey || !requestTransaction) {
+    if (!address || !executeTransaction) {
       alert('Please connect your wallet first');
       return;
     }
@@ -159,19 +159,20 @@ export default function ParlayBuilder({ availableMarkets, reputation }: ParlayBu
 
       console.log('Placing parlay with inputs:', inputs);
 
-      const transaction = Transaction.createTransaction(
-        publicKey,
-        'testnetbeta',
-        'zkpredict_v6.aleo',
-        'place_parlay',
+      const result = await executeTransaction({
+        program: 'zkpredict_v6.aleo',
+        function: 'place_parlay',
         inputs,
-        100000, // 0.1 credits fee
-        false
-      );
+        fee: 100000, // 0.1 credits fee
+      });
 
-      const txResponse = await requestTransaction(transaction);
+      const txResponse = result?.transactionId;
+      if (!txResponse) {
+        throw new Error('Transaction failed: No transaction ID returned');
+      }
+
       console.log('Parlay placed:', txResponse);
-      setSuccessTxId(txResponse as string);
+      setSuccessTxId(txResponse);
 
     } catch (error) {
       console.error('Error placing parlay:', error);
@@ -448,7 +449,7 @@ export default function ParlayBuilder({ availableMarkets, reputation }: ParlayBu
                     type="button"
                     className="px-3 py-3 rounded-lg font-bold text-sm transition-all transform hover:scale-105 active:scale-95 bg-base-100 hover:bg-primary hover:text-primary-content border-2 border-base-content/10 hover:border-primary disabled:opacity-50 disabled:hover:scale-100 min-h-[44px]"
                     onClick={() => handleQuickBet(value)}
-                    disabled={!publicKey || walletBalance === 0}
+                    disabled={!address || walletBalance === 0}
                   >
                     {label}
                   </button>
@@ -485,12 +486,12 @@ export default function ParlayBuilder({ availableMarkets, reputation }: ParlayBu
             <div className="mt-6">
               <button
                 className={`w-full h-14 rounded-xl font-bold text-lg transition-all transform ${
-                  isPlacingParlay || !publicKey || !betAmount || selectedLegs.length < 2
+                  isPlacingParlay || !address || !betAmount || selectedLegs.length < 2
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed border-2 border-gray-300'
                     : 'bg-gradient-to-r from-primary to-cyan-600 hover:from-cyan-600 hover:to-primary text-white border-2 border-primary shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]'
                 }`}
                 onClick={handlePlaceParlay}
-                disabled={isPlacingParlay || !publicKey || !betAmount || selectedLegs.length < 2}
+                disabled={isPlacingParlay || !address || !betAmount || selectedLegs.length < 2}
               >
                 {isPlacingParlay ? (
                   <span className="flex items-center justify-center gap-2">
@@ -500,7 +501,7 @@ export default function ParlayBuilder({ availableMarkets, reputation }: ParlayBu
                     </svg>
                     Placing Parlay...
                   </span>
-                ) : !publicKey ? (
+                ) : !address ? (
                   'Connect Wallet to Place Parlay'
                 ) : selectedLegs.length < 2 ? (
                   'Select at Least 2 Markets'

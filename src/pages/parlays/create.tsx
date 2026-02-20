@@ -2,7 +2,7 @@ import type { NextPageWithLayout } from '@/types';
 import { useState, useEffect } from 'react';
 import { NextSeo } from 'next-seo';
 import Layout from '@/layouts/_layout';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import Link from 'next/link';
 import { useReputation } from '@/hooks/useReputation';
 import { useParlays, ParlayLegInput } from '@/hooks/useParlays';
@@ -30,7 +30,7 @@ function metadataToMarket(m: { marketId: string; title?: string; numOutcomes?: n
 }
 
 const CreateParlayPage: NextPageWithLayout = () => {
-  const { publicKey } = useWallet();
+  const { address } = useWallet();
   const { reputation } = useReputation();
   const { createParlay, isCreating, error } = useParlays();
   const { markets: allOffChain } = useAllMarketsMetadata();
@@ -45,15 +45,15 @@ const CreateParlayPage: NextPageWithLayout = () => {
 
   // Fetch wallet balance
   useEffect(() => {
-    if (!publicKey) return;
-    fetch(`https://api.provable.com/v2/testnet/program/credits.aleo/mapping/account/${publicKey}`)
+    if (!address) return;
+    fetch(`https://api.provable.com/v2/testnet/program/credits.aleo/mapping/account/${address}`)
       .then((r) => r.json())
       .then((data) => {
         const micro = typeof data === 'string' ? parseInt(data.replace('u64', '')) : data;
         setWalletBalance(micro / 1_000_000);
       })
       .catch(() => setWalletBalance(0));
-  }, [publicKey]);
+  }, [address]);
 
   const handleAddLeg = (leg: ParlayLegInput) => {
     if (legs.length >= maxLegs) return;
@@ -65,7 +65,7 @@ const CreateParlayPage: NextPageWithLayout = () => {
   };
 
   const handleConfirm = async () => {
-    if (!publicKey || !reputation) return;
+    if (!address || !reputation) return;
 
     const amountNum = parseFloat(amount);
     if (!amountNum || amountNum <= 0) {
@@ -78,7 +78,7 @@ const CreateParlayPage: NextPageWithLayout = () => {
       return;
     }
 
-    const reputationRecord = localStorage.getItem(`zkpredict_reputation_record_${publicKey}`);
+    const reputationRecord = localStorage.getItem(`zkpredict_reputation_record_${address}`);
     if (!reputationRecord) {
       alert('Reputation record not found. Go to Reputation page and update your record.');
       return;
@@ -154,7 +154,7 @@ const CreateParlayPage: NextPageWithLayout = () => {
           </div>
         </div>
 
-        {!publicKey || !reputation ? (
+        {!address || !reputation ? (
           <div className="card bg-base-200 shadow-xl">
             <div className="card-body items-center text-center py-12 space-y-3">
               <p className="opacity-50">Connect wallet and set up reputation to build parlays</p>

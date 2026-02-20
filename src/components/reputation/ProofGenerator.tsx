@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import { Reputation, ReputationTier, TIER_LABELS, calculateAccuracy } from '@/types';
 import { useReputation } from '@/hooks/useReputation';
 
@@ -9,7 +9,7 @@ interface ProofGeneratorProps {
 }
 
 export function ProofGenerator({ reputation, reputationRecord }: ProofGeneratorProps) {
-  const { publicKey } = useWallet();
+  const { address } = useWallet();
   const { proveReputation, isProving, error } = useReputation();
 
   const [minTier, setMinTier] = useState<ReputationTier>(reputation.tier as ReputationTier);
@@ -148,7 +148,7 @@ export function ProofGenerator({ reputation, reputationRecord }: ProofGeneratorP
               <button
                 className={`btn btn-primary ${isProving ? 'loading' : ''}`}
                 onClick={handleGenerate}
-                disabled={isProving || !publicKey}
+                disabled={isProving || !address}
               >
                 {isProving ? 'Generating Proof...' : 'Generate ZK Proof'}
               </button>

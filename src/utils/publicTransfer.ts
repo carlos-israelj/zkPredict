@@ -1,6 +1,6 @@
 // publicTransfer.ts
-import { Transaction, WalletAdapterNetwork } from '@demox-labs/aleo-wallet-adapter-base';
-import { LeoWalletAdapter } from '@demox-labs/aleo-wallet-adapter-leo';
+
+import { LeoWalletAdapter } from '@provablehq/aleo-wallet-adaptor-leo';
 import { CURRENT_NETWORK } from '@/types';
 
 export const CREDITS_PROGRAM_ID = 'credits.aleo';
@@ -14,7 +14,7 @@ import { getFeeForFunction } from '@/utils/feeCalculator';
  * then updates the reward state via the API.
  *
  * @param wallet - The wallet adapter instance.
- * @param publicKey - The public key of the user performing the transfer.
+ * @param address - The public key of the user performing the transfer.
  * @param proposerAddress - The address to receive the public transfer.
  * @param bountyReward - The reward amount (in microcredits) to be transferred.
  * @param setTxStatus - Function to update the transaction status in the UI.
@@ -25,7 +25,7 @@ import { getFeeForFunction } from '@/utils/feeCalculator';
  */
 export async function publicTransfer(
   wallet: LeoWalletAdapter,
-  publicKey: string,
+  address: string,
   proposerAddress: string,
   bountyReward: number,
   setTxStatus: (status: string | null) => void,
@@ -44,26 +44,26 @@ export async function publicTransfer(
   const fee = getFeeForFunction(TRANSFER_PUBLIC_FUNCTION);
   console.log('Calculated fee (in micro credits):', fee);
 
-  // 2. Build the transaction
-  const transTx = Transaction.createTransaction(
-    publicKey,
-    CURRENT_NETWORK,
-    CREDITS_PROGRAM_ID,
-    TRANSFER_PUBLIC_FUNCTION,
-    transferInput,
+  // 2. Execute the transaction
+  const result = await wallet.executeTransaction({
+    program: CREDITS_PROGRAM_ID,
+    function: TRANSFER_PUBLIC_FUNCTION,
+    inputs: transferInput,
     fee,
-    true
-  );
+  });
 
-  // 3. Send the transaction
-  const txId = await wallet.requestTransaction(transTx);
+  const txId = result?.transactionId;
+  if (!txId) {
+    throw new Error('Transaction failed: No transaction ID returned');
+  }
   setTxStatus(`Public transfer submitted: ${txId}`);
 
   // 4. Poll for finalization
   let finalized = false;
   for (let attempt = 0; attempt < 60; attempt++) {
-    const status = await wallet.transactionStatus(txId);
-    if (status === 'Finalized') {
+    const statusResponse = await wallet.transactionStatus(txId);
+    const status = statusResponse?.status || 'Unknown';
+    if (status === 'Finalized' || status === 'Confirmed') {
       finalized = true;
       break;
     }

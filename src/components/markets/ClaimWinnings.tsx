@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
-import { Transaction, WalletAdapterNetwork } from '@demox-labs/aleo-wallet-adapter-base';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
+
 import { Market } from '@/types';
 
 interface ClaimWinningsProps {
@@ -9,14 +9,14 @@ interface ClaimWinningsProps {
 }
 
 export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps) {
-  const { publicKey, requestTransaction } = useWallet();
+  const { address, executeTransaction } = useWallet();
   const [betRecord, setBetRecord] = useState('');
   const [isClaiming, setIsClaiming] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [claimedTxId, setClaimedTxId] = useState<string | null>(null);
 
   const handleClaimWinnings = async () => {
-    if (!publicKey || !requestTransaction) {
+    if (!address || !executeTransaction) {
       alert('Please connect your wallet first');
       return;
     }
@@ -49,20 +49,20 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
 
       console.log('Claiming winnings with Bet record');
 
-      const transaction = Transaction.createTransaction(
-        publicKey,
-        WalletAdapterNetwork.TestnetBeta,
-        'zkpredict_v6.aleo',
-        'claim_winnings',
+      const result = await executeTransaction({
+        program: 'zkpredict_v6.aleo',
+        function: 'claim_winnings',
         inputs,
-        100000, // 0.1 credits fee
-        false   // Public fee
-      );
+        fee: 100000, // 0.1 credits fee
+      });
 
-      const txResponse = await requestTransaction(transaction);
+      const txResponse = result?.transactionId;
+      if (!txResponse) {
+        throw new Error('Transaction failed: No transaction ID returned');
+      }
+
       console.log('Winnings claimed:', txResponse);
-
-      setClaimedTxId(txResponse as string);
+      setClaimedTxId(txResponse);
       setBetRecord('');
 
       if (onClaimed) {
@@ -214,7 +214,7 @@ export default function ClaimWinnings({ market, onClaimed }: ClaimWinningsProps)
               <button
                 className={`btn btn-success ${isClaiming ? 'loading' : ''}`}
                 onClick={handleClaimWinnings}
-                disabled={isClaiming || !publicKey || !betRecord.trim()}
+                disabled={isClaiming || !address || !betRecord.trim()}
               >
                 {isClaiming ? 'Claiming...' : 'Claim Winnings'}
               </button>

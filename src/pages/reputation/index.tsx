@@ -2,7 +2,7 @@ import type { NextPageWithLayout } from '@/types';
 import { useState } from 'react';
 import { NextSeo } from 'next-seo';
 import Layout from '@/layouts/_layout';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import Link from 'next/link';
 import { useReputation, saveReputationRecord } from '@/hooks/useReputation';
 import { TierProgress } from '@/components/reputation/TierProgress';
@@ -15,7 +15,7 @@ import {
 } from '@/types';
 
 const ReputationPage: NextPageWithLayout = () => {
-  const { publicKey } = useWallet();
+  const { address } = useWallet();
   const { reputation, initReputation, isInitializing, error } = useReputation();
 
   const [showRecordInput, setShowRecordInput] = useState(false);
@@ -29,8 +29,8 @@ const ReputationPage: NextPageWithLayout = () => {
   };
 
   const handleSaveRecord = () => {
-    if (!publicKey || !recordInput.trim().startsWith('{')) return;
-    saveReputationRecord(publicKey, recordInput.trim());
+    if (!address || !recordInput.trim().startsWith('{')) return;
+    saveReputationRecord(address, recordInput.trim());
     setSaveSuccess(true);
     setRecordInput('');
     setTimeout(() => setSaveSuccess(false), 3000);
@@ -56,7 +56,7 @@ const ReputationPage: NextPageWithLayout = () => {
           </p>
         </div>
 
-        {!publicKey ? (
+        {!address ? (
           <div className="card bg-base-200 shadow-xl">
             <div className="card-body items-center text-center py-16">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 opacity-30 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

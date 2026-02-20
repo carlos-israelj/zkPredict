@@ -3,14 +3,14 @@ import { useIsMounted } from '@/hooks/use-is-mounted';
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { WalletMultiButton } from '@demox-labs/aleo-wallet-adapter-reactui';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { WalletMultiButton } from '@provablehq/aleo-wallet-adaptor-react-ui';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import { HomeIcon } from '@/components/icons/home';
 import { Twitter } from '@/components/icons/twitter';
 import { Discord } from '@/components/icons/discord';
 import Footer from '@/components/ui/Footer';
 
-require('@demox-labs/aleo-wallet-adapter-reactui/dist/styles.css');
+require('@provablehq/aleo-wallet-adaptor-react-ui/dist/styles.css');
 
 function HeaderRightArea() {
   return (
@@ -26,7 +26,7 @@ export function Header() {
   const windowScroll = useWindowScroll();
   const isMounted = useIsMounted();
   const router = useRouter();
-  const { publicKey } = useWallet();
+  const { address } = useWallet();
 
   const isActive = (path: string) => router.pathname === path;
   const isMarketsPage = router.pathname === '/markets';
@@ -151,7 +151,7 @@ export function Header() {
               </Link>
 
               {/* Create Market Button - Only on Markets page when wallet connected */}
-              {isMarketsPage && publicKey && (
+              {isMarketsPage && address && (
                 <Link
                   href="/markets/create"
                   className="relative ml-2 px-4 py-2.5 text-sm font-bold font-mono uppercase tracking-wider transition-all group bg-primary/10 text-primary border border-primary/30 rounded-lg hover:bg-primary/20 hover:border-primary/50 hover:-translate-y-0.5 active:translate-y-0"

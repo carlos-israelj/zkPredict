@@ -2,11 +2,11 @@ import type { NextPageWithLayout } from '@/types';
 import { useState } from 'react';
 import { NextSeo } from 'next-seo';
 import Layout from '@/layouts/_layout';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import Link from 'next/link';
 
 const PortfolioPage: NextPageWithLayout = () => {
-  const { publicKey } = useWallet();
+  const { address } = useWallet();
   const [showAmounts, setShowAmounts] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'settled' | 'claimable'>('active');
 
@@ -69,7 +69,7 @@ const PortfolioPage: NextPageWithLayout = () => {
           </button>
         </div>
 
-        {!publicKey ? (
+        {!address ? (
           /* Not Connected State */
           <div className="card bg-base-200 border-2 border-base-300 p-12 text-center animate-fade-in">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-primary/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

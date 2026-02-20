@@ -1,14 +1,14 @@
 import type { NextPageWithLayout } from '@/types';
 import { NextSeo } from 'next-seo';
 import Layout from '@/layouts/_layout';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import Link from 'next/link';
 import ClaimParlay from '@/components/parlay/ClaimParlay';
 import { useReputation } from '@/hooks/useReputation';
 import { TIER_LABELS, TIER_MAX_LEGS, ReputationTier } from '@/types';
 
 const ParlaysPage: NextPageWithLayout = () => {
-  const { publicKey } = useWallet();
+  const { address } = useWallet();
   const { reputation } = useReputation();
 
   return (
@@ -29,14 +29,14 @@ const ParlaysPage: NextPageWithLayout = () => {
               Combine 2-5 markets for multiplied odds. All picks stay private.
             </p>
           </div>
-          {publicKey && reputation && (
+          {address && reputation && (
             <Link href="/parlays/create" className="btn btn-primary">
               Build Parlay
             </Link>
           )}
         </div>
 
-        {!publicKey ? (
+        {!address ? (
           <div className="card bg-base-200 shadow-xl">
             <div className="card-body items-center text-center py-16">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 opacity-30 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

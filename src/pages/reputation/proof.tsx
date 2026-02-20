@@ -2,19 +2,19 @@ import type { NextPageWithLayout } from '@/types';
 import { useState } from 'react';
 import { NextSeo } from 'next-seo';
 import Layout from '@/layouts/_layout';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import Link from 'next/link';
 import { useReputation } from '@/hooks/useReputation';
 import { ProofGenerator } from '@/components/reputation/ProofGenerator';
 import { ProofVerifier } from '@/components/reputation/ProofVerifier';
 
 const ReputationProofPage: NextPageWithLayout = () => {
-  const { publicKey } = useWallet();
+  const { address } = useWallet();
   const { reputation } = useReputation();
   const [activeTab, setActiveTab] = useState<'generate' | 'verify'>('generate');
 
-  const storedRecord = publicKey
-    ? localStorage.getItem(`zkpredict_reputation_record_${publicKey}`) ?? ''
+  const storedRecord = address
+    ? localStorage.getItem(`zkpredict_reputation_record_${address}`) ?? ''
     : '';
 
   return (
@@ -58,7 +58,7 @@ const ReputationProofPage: NextPageWithLayout = () => {
 
         {activeTab === 'generate' ? (
           <>
-            {!publicKey ? (
+            {!address ? (
               <div className="card bg-base-200 shadow-xl">
                 <div className="card-body items-center text-center py-12">
                   <p className="opacity-50">Connect your wallet to generate reputation proofs</p>

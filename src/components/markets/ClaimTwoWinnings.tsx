@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
-import { Transaction, WalletAdapterNetwork } from '@demox-labs/aleo-wallet-adapter-base';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
+
 import { Market } from '@/types';
 
 interface ClaimTwoWinningsProps {
@@ -9,14 +9,14 @@ interface ClaimTwoWinningsProps {
 }
 
 export default function ClaimTwoWinnings({ market, onClaimed }: ClaimTwoWinningsProps) {
-  const { publicKey, requestTransaction } = useWallet();
+  const { address, executeTransaction } = useWallet();
   const [betId1, setBetId1] = useState('');
   const [betId2, setBetId2] = useState('');
   const [isClaiming, setIsClaiming] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
 
   const handleClaimBatch = async () => {
-    if (!publicKey || !requestTransaction) {
+    if (!address || !executeTransaction) {
       alert('Please connect your wallet first');
       return;
     }
@@ -46,25 +46,22 @@ export default function ClaimTwoWinnings({ market, onClaimed }: ClaimTwoWinnings
       ];
 
       console.log('Claiming 2 winnings with inputs:', inputs);
-      console.log('PublicKey:', publicKey);
+      console.log('PublicKey:', address);
       console.log('Bet ID 1:', betId1Trimmed);
       console.log('Bet ID 2:', betId2Trimmed);
 
-      // Create transaction using the Aleo wallet adapter
-      const transaction = Transaction.createTransaction(
-        publicKey,
-        WalletAdapterNetwork.TestnetBeta,
-        'zkpredict_v6.aleo', // v5 program with reputation, parlays, and time-weighted betting
-        'claim_two_winnings',
+      // Execute transaction using the Aleo wallet adapter
+      const result = await executeTransaction({
+        program: 'zkpredict_v6.aleo',
+        function: 'claim_two_winnings',
         inputs,
-        150000, // Slightly higher fee for batch operation
-        false // Public fee
-      );
+        fee: 150000, // Slightly higher fee for batch operation
+      });
 
-      console.log('Transaction object:', transaction);
-
-      // Request transaction from wallet
-      const txResponse = await requestTransaction(transaction);
+      const txResponse = result?.transactionId;
+      if (!txResponse) {
+        throw new Error('Transaction failed: No transaction ID returned');
+      }
 
       console.log('Batch winnings claimed:', txResponse);
 
@@ -198,7 +195,7 @@ export default function ClaimTwoWinnings({ market, onClaimed }: ClaimTwoWinnings
           <button
             className="btn btn-primary btn-block"
             onClick={handleClaimBatch}
-            disabled={isClaiming || !market.resolved || !publicKey || !betId1.trim() || !betId2.trim()}
+            disabled={isClaiming || !market.resolved || !address || !betId1.trim() || !betId2.trim()}
           >
             {isClaiming ? (
               <>

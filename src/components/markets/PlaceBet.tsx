@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
-import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import { Market, OddsData, getTransactionExplorerUrl } from '@/types';
 import { generateCreditsRecord, waitForTransactionConfirmation, getEstimatedConfirmationTime } from '@/utils/creditsHelper';
+import { decryptRecord, isValidRecordCiphertext, isValidViewKey } from '@/utils/recordDecryption';
 
 const QUICK_BET_PERCENTAGES = [
   { label: '10%', value: 0.1 },
@@ -17,7 +17,7 @@ interface PlaceBetProps {
 }
 
 export default function PlaceBet({ market, pools }: PlaceBetProps) {
-  const { publicKey, requestTransaction, requestRecords } = useWallet();
+  const { address, executeTransaction, requestRecords } = useWallet();
   const [selectedOutcome, setSelectedOutcome] = useState(0);
   const [betAmount, setBetAmount] = useState('');
   const [isPlacingBet, setIsPlacingBet] = useState(false);
@@ -40,7 +40,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   // Fetch wallet balance from Aleo blockchain
   useEffect(() => {
     const fetchBalance = async () => {
-      if (!publicKey) {
+      if (!address) {
         setWalletBalance(0);
         return;
       }
@@ -51,7 +51,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
         // Query balance from Aleo testnet
         // Credits are stored in the credits.aleo program
         const response = await fetch(
-          `https://api.explorer.provable.com/v1/testnet/program/credits.aleo/mapping/account/${publicKey}`
+          `https://api.explorer.provable.com/v1/testnet/program/credits.aleo/mapping/account/${address}`
         );
 
         if (response.ok) {
@@ -82,7 +82,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
     const interval = setInterval(fetchBalance, 30000);
 
     return () => clearInterval(interval);
-  }, [publicKey]);
+  }, [address]);
 
   // Calculate odds for all outcomes (Wave 3)
   useEffect(() => {
@@ -162,7 +162,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   };
 
   const handlePlaceBet = async () => {
-    if (!publicKey || !requestTransaction) {
+    if (!address || !executeTransaction) {
       alert('Please connect your wallet first');
       return;
     }
@@ -216,20 +216,19 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
 
       console.log('Placing bet with credits record');
 
-      // Create transaction using the Aleo wallet adapter
-      // The wallet adapter (Leo Wallet / Puzzle) handles the Credits record resolution
-      const transaction = Transaction.createTransaction(
-        publicKey,
-        'testnetbeta',
-        'zkpredict_v6.aleo',
-        'place_bet',
+      // Execute transaction using the Aleo wallet adapter
+      // The wallet adapter (Leo Wallet / Shield / Puzzle) handles the Credits record resolution
+      const result = await executeTransaction({
+        program: 'zkpredict_v6.aleo',
+        function: 'place_bet',
         inputs,
-        100000, // 0.1 credits fee
-        false   // Public fee
-      );
+        fee: 100000, // 0.1 credits fee
+      });
 
-      // Request transaction from wallet
-      const txResponse = await requestTransaction(transaction);
+      const txResponse = result?.transactionId;
+      if (!txResponse) {
+        throw new Error('Transaction failed: No transaction ID returned');
+      }
 
       console.log('Bet placed:', txResponse);
 
@@ -296,7 +295,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   };
 
   const handleFetchRecordsFromWallet = async () => {
-    if (!publicKey || !requestRecords) {
+    if (!address || !requestRecords) {
       alert('Please connect your wallet first');
       return;
     }
@@ -375,7 +374,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   };
 
   const handleGenerateCreditsRecord = async () => {
-    if (!publicKey || !requestTransaction) {
+    if (!address || !executeTransaction) {
       alert('Please connect your wallet first');
       return;
     }
@@ -395,9 +394,9 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
     try {
       // Step 1: Generate credits record via transfer_public_to_private
       const txId = await generateCreditsRecord(
-        publicKey,
+        address,
         amountInMicrocredits,
-        requestTransaction
+        executeTransaction
       );
 
       setRecordGenerationTxId(txId);
@@ -675,7 +674,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                     type="button"
                     className="px-2 sm:px-3 py-3 sm:py-2.5 rounded-lg font-bold text-sm transition-all transform hover:scale-105 active:scale-95 bg-gray-100 hover:bg-indigo-600 hover:text-white border-2 border-gray-200 hover:border-indigo-600 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-gray-100 disabled:hover:text-gray-900 touch-manipulation min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                     onClick={() => handleQuickBet(value)}
-                    disabled={!publicKey || walletBalance === 0}
+                    disabled={!address || walletBalance === 0}
                     aria-label={`Set bet amount to ${label} of balance (${(walletBalance * value).toFixed(2)} credits)`}
                   >
                     {label}
@@ -690,7 +689,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                 <button
                   className={`btn btn-primary w-full ${isGeneratingRecord ? 'loading' : ''}`}
                   onClick={handleGenerateCreditsRecord}
-                  disabled={isGeneratingRecord || !publicKey || !betAmount}
+                  disabled={isGeneratingRecord || !address || !betAmount}
                   type="button"
                 >
                   {isGeneratingRecord ? 'Generating Record...' : 'Step 1a: Generate New Credits Record'}
@@ -717,7 +716,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                 <button
                   className={`btn btn-secondary w-full ${isFetchingRecords ? 'loading' : ''}`}
                   onClick={handleFetchRecordsFromWallet}
-                  disabled={isFetchingRecords || !publicKey}
+                  disabled={isFetchingRecords || !address}
                   type="button"
                 >
                   {isFetchingRecords ? 'Fetching Records...' : 'Step 1b: Fetch Records from Wallet'}
@@ -1003,14 +1002,14 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
             <div className="mt-6">
               <button
                 className={`w-full h-14 sm:h-14 rounded-xl font-bold text-base sm:text-lg transition-all transform touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                  isPlacingBet || !publicKey || !betAmount || !creditsRecord.trim()
+                  isPlacingBet || !address || !betAmount || !creditsRecord.trim()
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed border-2 border-gray-300'
                     : 'bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 active:from-indigo-800 active:to-indigo-900 text-white border-2 border-indigo-600 hover:border-indigo-700 shadow-lg hover:shadow-xl active:shadow-md hover:scale-[1.02] active:scale-[0.98]'
                 }`}
                 onClick={handlePlaceBet}
-                disabled={isPlacingBet || !publicKey || !betAmount || !creditsRecord.trim()}
+                disabled={isPlacingBet || !address || !betAmount || !creditsRecord.trim()}
                 aria-label={
-                  !publicKey
+                  !address
                     ? 'Connect wallet to place bet'
                     : !betAmount
                     ? 'Enter bet amount to continue'
@@ -1028,7 +1027,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                     </svg>
                     Placing Bet...
                   </span>
-                ) : !publicKey ? (
+                ) : !address ? (
                   'Connect Wallet to Bet'
                 ) : !betAmount ? (
                   'Enter Bet Amount'
