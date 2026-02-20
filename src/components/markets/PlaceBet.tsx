@@ -17,7 +17,7 @@ interface PlaceBetProps {
 }
 
 export default function PlaceBet({ market, pools }: PlaceBetProps) {
-  const { publicKey, requestTransaction } = useWallet();
+  const { publicKey, requestTransaction, requestRecords } = useWallet();
   const [selectedOutcome, setSelectedOutcome] = useState(0);
   const [betAmount, setBetAmount] = useState('');
   const [isPlacingBet, setIsPlacingBet] = useState(false);
@@ -31,6 +31,8 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   const [showInstructions, setShowInstructions] = useState(false);
   const [isGeneratingRecord, setIsGeneratingRecord] = useState(false);
   const [recordGenerationTxId, setRecordGenerationTxId] = useState<string | null>(null);
+  const [isFetchingRecords, setIsFetchingRecords] = useState(false);
+  const [availableRecords, setAvailableRecords] = useState<any[]>([]);
 
   // Fetch wallet balance from Aleo blockchain
   useEffect(() => {
@@ -238,6 +240,67 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
     setCreditsRecord('');
   };
 
+  const handleFetchRecordsFromWallet = async () => {
+    if (!publicKey || !requestRecords) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    setIsFetchingRecords(true);
+    setAvailableRecords([]);
+
+    try {
+      // Request credits records from the wallet
+      const records = await requestRecords('credits.aleo');
+
+      if (!records || records.length === 0) {
+        alert(
+          'No credits records found in your wallet.\n\n' +
+          'Click "Generate Credits Record" to create one first.'
+        );
+        return;
+      }
+
+      // Filter for credits records and sort by amount (descending)
+      const creditsRecords = records
+        .filter((r: any) => r.microcredits || r.amount)
+        .sort((a: any, b: any) => {
+          const aAmount = parseInt((a.microcredits || a.amount || '0').replace('u64', ''));
+          const bAmount = parseInt((b.microcredits || b.amount || '0').replace('u64', ''));
+          return bAmount - aAmount;
+        });
+
+      if (creditsRecords.length === 0) {
+        alert('No credits records available in your wallet.');
+        return;
+      }
+
+      setAvailableRecords(creditsRecords);
+
+    } catch (error) {
+      console.error('Error fetching records from wallet:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert(`Failed to fetch records from wallet: ${errorMessage}`);
+    } finally {
+      setIsFetchingRecords(false);
+    }
+  };
+
+  const handleSelectRecord = (record: any) => {
+    // Convert the record object to the encrypted ciphertext format
+    // The wallet should provide the ciphertext format
+    if (record.ciphertext) {
+      setCreditsRecord(record.ciphertext);
+    } else if (typeof record === 'string' && record.startsWith('record1')) {
+      setCreditsRecord(record);
+    } else {
+      // Fallback: serialize the record object as JSON
+      const recordStr = JSON.stringify(record, null, 2);
+      setCreditsRecord(recordStr);
+    }
+    setAvailableRecords([]); // Close the record selection UI
+  };
+
   const handleGenerateCreditsRecord = async () => {
     if (!publicKey || !requestTransaction) {
       alert('Please connect your wallet first');
@@ -272,11 +335,9 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
         `Transaction ID: ${txId}\n\n` +
         `The transaction will confirm in ${getEstimatedConfirmationTime()}.\n\n` +
         `After confirmation:\n` +
-        `1. Open your wallet\n` +
-        `2. Go to Records/Private Records\n` +
-        `3. Find the new Credits record\n` +
-        `4. Copy the full JSON\n` +
-        `5. Paste it in the field below`
+        `1. Click "Fetch Records from Wallet" below\n` +
+        `2. Or manually copy from transaction explorer\n` +
+        `3. Paste the encrypted record (starts with "record1...")`
       );
 
     } catch (error) {
@@ -559,13 +620,13 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                   disabled={isGeneratingRecord || !publicKey || !betAmount}
                   type="button"
                 >
-                  {isGeneratingRecord ? 'Generating Record...' : 'Step 1: Get Credits Record'}
+                  {isGeneratingRecord ? 'Generating Record...' : 'Step 1a: Generate New Credits Record'}
                 </button>
                 {recordGenerationTxId && (
                   <div className="alert alert-success mt-2 text-xs">
                     <div>
                       <p className="font-bold">Record generation started!</p>
-                      <p>Wait {getEstimatedConfirmationTime()}, then check your wallet for the new Credits record.</p>
+                      <p>Wait {getEstimatedConfirmationTime()}, then click "Fetch Records from Wallet" below.</p>
                       <a
                         href={getTransactionExplorerUrl(recordGenerationTxId)}
                         target="_blank"
@@ -579,7 +640,42 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                 )}
               </div>
 
-              <div className="divider text-xs text-base-content/50">OR use existing record</div>
+              <div className="mb-4">
+                <button
+                  className={`btn btn-secondary w-full ${isFetchingRecords ? 'loading' : ''}`}
+                  onClick={handleFetchRecordsFromWallet}
+                  disabled={isFetchingRecords || !publicKey}
+                  type="button"
+                >
+                  {isFetchingRecords ? 'Fetching Records...' : 'Step 1b: Fetch Records from Wallet'}
+                </button>
+                {availableRecords.length > 0 && (
+                  <div className="alert alert-info mt-2">
+                    <div className="w-full">
+                      <p className="font-bold mb-2">Select a Credits Record:</p>
+                      <div className="space-y-2">
+                        {availableRecords.map((record, index) => {
+                          const microcredits = parseInt((record.microcredits || record.amount || '0').replace('u64', ''));
+                          const credits = (microcredits / 1_000_000).toFixed(2);
+                          return (
+                            <button
+                              key={index}
+                              className="btn btn-sm btn-outline w-full justify-between"
+                              onClick={() => handleSelectRecord(record)}
+                              type="button"
+                            >
+                              <span>Record #{index + 1}</span>
+                              <span className="font-bold">{credits} credits</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="divider text-xs text-base-content/50">OR paste manually</div>
             </div>
 
             {/* Manual Credits Record Input */}
@@ -596,15 +692,29 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                 <div className="alert alert-info mb-4">
                   <div className="text-sm space-y-2">
                     <p><strong>How to get your Credits record:</strong></p>
-                    <ol className="list-decimal list-inside space-y-1 ml-2">
-                      <li>Click "Step 1: Get Credits Record" above and wait for confirmation (~10 seconds)</li>
-                      <li>Click "View Transaction" to open the explorer</li>
-                      <li>Scroll to "OUTPUTS" section in the transaction</li>
-                      <li>Copy the encrypted record (starts with <code className="bg-base-300 px-1 rounded">record1...</code>)</li>
-                      <li>Paste it in the field below</li>
-                    </ol>
+
+                    <div className="mb-2">
+                      <p className="font-semibold">Option 1: Automated (Recommended)</p>
+                      <ol className="list-decimal list-inside space-y-1 ml-2">
+                        <li>Click "Generate New Credits Record" and wait ~10 seconds</li>
+                        <li>Click "Fetch Records from Wallet" button</li>
+                        <li>Select a record from the list</li>
+                      </ol>
+                    </div>
+
+                    <div className="mb-2">
+                      <p className="font-semibold">Option 2: Manual</p>
+                      <ol className="list-decimal list-inside space-y-1 ml-2">
+                        <li>Click "Generate New Credits Record"</li>
+                        <li>Click "View Transaction" to open the explorer</li>
+                        <li>Scroll to "OUTPUTS" section</li>
+                        <li>Copy the encrypted record (starts with <code className="bg-base-300 px-1 rounded">record1...</code>)</li>
+                        <li>Paste it in the field below</li>
+                      </ol>
+                    </div>
+
                     <p className="text-xs mt-2 opacity-70">
-                      <strong>Note:</strong> With DecryptPermission.OnChainHistory, your wallet will automatically decrypt the record when placing the bet.
+                      <strong>Note:</strong> With DecryptPermission.OnChainHistory, your wallet automatically decrypts records when needed.
                     </p>
                   </div>
                 </div>
