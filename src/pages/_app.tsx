@@ -11,9 +11,6 @@ import { ThemeProvider } from 'next-themes';
 import { AleoWalletProvider } from '@provablehq/aleo-wallet-adaptor-react';
 import { WalletModalProvider } from '@provablehq/aleo-wallet-adaptor-react-ui';
 import { LeoWalletAdapter } from '@provablehq/aleo-wallet-adaptor-leo';
-import { FoxWalletAdapter } from '@provablehq/aleo-wallet-adaptor-fox';
-import { PuzzleWalletAdapter } from '@provablehq/aleo-wallet-adaptor-puzzle';
-import { SoterWalletAdapter } from '@provablehq/aleo-wallet-adaptor-soter';
 import { ShieldWalletAdapter } from '@provablehq/aleo-wallet-adaptor-shield';
 import { DecryptPermission } from '@provablehq/aleo-wallet-adaptor-core';
 import { Network } from '@provablehq/aleo-types';
@@ -28,21 +25,12 @@ import '@provablehq/aleo-wallet-adaptor-react-ui/dist/styles.css';
 import { CURRENT_NETWORK, CURRENT_RPC_URL } from '@/types';
 
 // Initialize the wallet adapters outside the component
-// Multiple wallet support: Leo, Shield, Fox, Puzzle, Soter
+// Multiple wallet support: Leo, Shield
 const wallets = [
   new LeoWalletAdapter({
     appName: 'zkPredict',
   }),
   new ShieldWalletAdapter({
-    appName: 'zkPredict',
-  }),
-  new FoxWalletAdapter({
-    appName: 'zkPredict',
-  }),
-  new PuzzleWalletAdapter({
-    appName: 'zkPredict',
-  }),
-  new SoterWalletAdapter({
     appName: 'zkPredict',
   }),
 ];
