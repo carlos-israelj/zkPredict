@@ -16,7 +16,7 @@ interface PlaceBetProps {
 }
 
 export default function PlaceBet({ market, pools }: PlaceBetProps) {
-  const { publicKey, requestTransaction } = useWallet();
+  const { publicKey, requestTransaction, wallet } = useWallet();
   const [selectedOutcome, setSelectedOutcome] = useState(0);
   const [betAmount, setBetAmount] = useState('');
   const [isPlacingBet, setIsPlacingBet] = useState(false);
