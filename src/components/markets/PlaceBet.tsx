@@ -117,9 +117,9 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
       return;
     }
 
-    // Basic validation: must look like a credits record JSON object
-    if (!recordTrimmed.startsWith('{')) {
-      alert('Invalid Credits record format. It should be a JSON object starting with "{"');
+    // Basic validation: must be an encrypted record ciphertext
+    if (!recordTrimmed.startsWith('record1')) {
+      alert('Invalid Credits record format. It should start with "record1"');
       return;
     }
 
@@ -595,16 +595,16 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
               {showInstructions && (
                 <div className="alert alert-info mb-4">
                   <div className="text-sm space-y-2">
-                    <p><strong>To place a bet, you need a Credits record with enough balance:</strong></p>
+                    <p><strong>How to get your Credits record:</strong></p>
                     <ol className="list-decimal list-inside space-y-1 ml-2">
-                      <li>Open your Leo Wallet (or Puzzle Wallet)</li>
-                      <li>Go to Records / Private Records</li>
-                      <li>Find a Credits record (credits.aleo/credits) with enough microcredits</li>
-                      <li>Copy the full JSON (starts with <code className="bg-base-300 px-1 rounded">{'{'}</code>)</li>
-                      <li>Paste it below</li>
+                      <li>Click "Step 1: Get Credits Record" above and wait for confirmation (~10 seconds)</li>
+                      <li>Click "View Transaction" to open the explorer</li>
+                      <li>Scroll to "OUTPUTS" section in the transaction</li>
+                      <li>Copy the encrypted record (starts with <code className="bg-base-300 px-1 rounded">record1...</code>)</li>
+                      <li>Paste it in the field below</li>
                     </ol>
                     <p className="text-xs mt-2 opacity-70">
-                      <strong>Note:</strong> 1 credit = 1,000,000 microcredits. Make sure your record has at least {betAmount ? Math.ceil(parseFloat(betAmount) * 1_000_000) : '0'} microcredits plus fees.
+                      <strong>Note:</strong> With DecryptPermission.OnChainHistory, your wallet will automatically decrypt the record when placing the bet.
                     </p>
                   </div>
                 </div>
@@ -612,18 +612,18 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
 
               <div className="form-control w-full">
                 <label className="label">
-                  <span className="label-text font-medium">Paste Your Credits Record (JSON)</span>
-                  <span className="label-text-alt opacity-60">From your wallet</span>
+                  <span className="label-text font-medium">Paste Your Credits Record</span>
+                  <span className="label-text-alt opacity-60">Encrypted record from transaction</span>
                 </label>
                 <textarea
-                  placeholder={'{\n  "owner": "aleo1...",\n  "microcredits": "1000000u64",\n  ...\n}'}
+                  placeholder='record1qvqsq...'
                   className="textarea textarea-bordered font-mono text-xs h-32 w-full"
                   value={creditsRecord}
                   onChange={(e) => setCreditsRecord(e.target.value)}
                 />
-                {creditsRecord && !creditsRecord.trim().startsWith('{') && (
+                {creditsRecord && !creditsRecord.trim().startsWith('record1') && (
                   <label className="label">
-                    <span className="label-text-alt text-error">Invalid format - must be a JSON object starting with {'{'}</span>
+                    <span className="label-text-alt text-error">Invalid format - must start with "record1"</span>
                   </label>
                 )}
               </div>
