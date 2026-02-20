@@ -326,41 +326,54 @@ zkPredict has evolved through multiple versions, each adding new features and pr
 
 | Version | Program ID | Status | Deployment TX | Explorer |
 |---------|-----------|--------|---------------|----------|
-| **v4 (Current)** | `zkpredict4.aleo` | ✅ Active | `at1yhatjncdrag3m4yk2fjf5a2s94hp2eddzmrwhpvsjrst33zr3uyqhdvmg8` | [View](https://testnet.explorer.provable.com/transaction/at1yhatjncdrag3m4yk2fjf5a2s94hp2eddzmrwhpvsjrst33zr3uyqhdvmg8) |
-| **v3** | `zkpredict3.aleo` | 📦 Legacy | `at1tfrz4jv57rvypqtmr8mfhz9e5wdzjzm3rxr0vf0u7mlrzvzayqyqz5ghc8` | [View](https://testnet.explorer.provable.com/transaction/at1tfrz4jv57rvypqtmr8mfhz9e5wdzjzm3rxr0vf0u7mlrzvzayqyqz5ghc8) |
-| **v2** | `zkpredict2.aleo` | 📦 Legacy | `at1uaezw9wsrskwex086wu6aj6ryas6m6eq90xn5qydwj7ymlva2qgstgl3vt` | [View](https://testnet.explorer.provable.com/program/zkpredict2.aleo) |
+| **v6 (Current)** | `zkpredict_v6.aleo` | ✅ Active | `at1hcty9vhpnpnpcsyrx2lk5w0mrwf882j3p968fya0nvdyhrq26ypqcmfwak` | [View](https://testnet.explorer.provable.com/transaction/at1hcty9vhpnpnpcsyrx2lk5w0mrwf882j3p968fya0nvdyhrq26ypqcmfwak) |
+| **v5** | `zkpredict_v5.aleo` | ⚠️ Legacy (bugs) | `at1j6fcl5u5ra8p4ltr4l60xyuycx55dul5ts2mzamd6s6aae0n3qzqs8m5gu` | [View](https://testnet.explorer.provable.com/transaction/at1j6fcl5u5ra8p4ltr4l60xyuycx55dul5ts2mzamd6s6aae0n3qzqs8m5gu) |
+| **v2 (Wave 1)** | `zkpredict2.aleo` | 📦 Legacy | `at1uaezw9wsrskwex086wu6aj6ryas6m6eq90xn5qydwj7ymlva2qgstgl3vt` | [View](https://testnet.explorer.provable.com/program/zkpredict2.aleo) |
 
-### Current Version: zkpredict4.aleo (v2.0.0)
+### Current Version: zkpredict_v6.aleo (v6.0.0)
 
 **Deployment Details:**
 
 | Metric | Value |
 |--------|-------|
-| **Program ID** | `zkpredict4.aleo` |
-| **Version** | 2.0.0 |
-| **Deployment TX** | `at1yhatjncdrag3m4yk2fjf5a2s94hp2eddzmrwhpvsjrst33zr3uyqhdvmg8` |
-| **Deployment Cost** | 9.537099 credits |
-| **Variables** | 175,616 |
-| **Constraints** | 136,483 |
-| **Deployed** | February 2, 2026 |
+| **Program ID** | `zkpredict_v6.aleo` |
+| **Version** | 6.0.0 |
+| **Deployment TX** | `at1hcty9vhpnpnpcsyrx2lk5w0mrwf882j3p968fya0nvdyhrq26ypqcmfwak` |
+| **Deployment Cost** | 36.479722 credits |
+| **Variables** | 1,842,851 (87.9%) |
+| **Constraints** | 1,431,871 |
+| **Deployed** | February 19, 2026 |
 | **Network** | Aleo TestnetBeta |
 
-**New Features in v4:**
-- ✨ **Private Transaction Inputs**: `outcome`, `amount`, and `nonce` are now private in `place_bet` (not visible in transaction metadata)
-- ⚡ **Batch Claiming**: New `claim_two_winnings` function to claim 2 bets in one transaction (~25% gas savings)
-- 🔒 **Enhanced Privacy**: Transaction-level privacy improvements while maintaining simple bet_id claim mechanism
-- 🎯 **Better Privacy Score**: Improved from 9.5/10 to maximum privacy within UX constraints
+**Wave 2 Major Updates - Privacy-First Refactor:**
+- 🔒 **Privacy Fix (Wave 1 Feedback)**: Eliminated public input privacy leak. Bet amounts extracted from private `credits.aleo/credits` record instead of public parameters
+- 🚫 **Removed bet_data Mapping**: All individual bet data now stored exclusively in private Records (not in public mappings)
+- 🔐 **Private Transfers**: Uses `transfer_private_to_public()` to hide sender identity and amounts
+- ✨ **Private Outcome Choices**: Changed from public `outcome: bool` to private input `outcome: u8`
 
-**Bug Fixes from v3:**
-- Fixed multi-outcome pool key generation (now includes outcome in hash)
-- Fixed dynamic odds calculation for all outcomes
-- Fixed claim_winnings to support 2-255 outcomes dynamically
+**Wave 3 Features - Multi-Outcome Markets:**
+- 📊 **2-10 Outcome Support**: Dynamic outcome pools using hash-based keys
+- 🏷️ **Category System**: Sports, Politics, Crypto, Weather, Other
+- ⏱️ **Auto-Resolution**: Time-based resolution by anyone after end_time
 
-### Contract Functions (v4)
+**Wave 4 Features - Reputation & Parlays:**
+- 🎖️ **Reputation System**: Private tracking with 4 tiers (Novice→Skilled→Expert→Oracle), tier bonuses (1.0x→1.3x)
+- 🎰 **Parlay Betting**: 2-5 leg combinations with exponential odds (2-leg: 3.5x, 5-leg: 28x)
+- ⏰ **Time-Weighted Betting**: Early bettor rewards (2.0x first 6h → 1.0x after 24h)
+- ⚡ **Batch Operations**: `claim_two_winnings()` for 50% gas savings
+
+**Critical Bug Fixes (v5 → v6):**
+- ✅ Fixed funds trapped bug - `claim_winnings` now transfers credits via `transfer_public_to_private()`
+- ✅ Fixed post-expiration bets - Added `assert(block.height < market.end_time)`
+- ✅ Fixed parlay validation failures - Using `get_or_use()` pattern with sentinel values
+- ✅ Fixed pool initialization race conditions - Explicit unconditional initialization
+- ✅ Fixed async function scope violations - Using ternary expressions
+
+### Contract Functions (v6)
 
 **create_market** - Create a new prediction market
 ```leo
-transition create_market(
+async transition create_market(
     public market_id: field,
     public end_time: u32,
     public num_outcomes: u8,
@@ -369,61 +382,75 @@ transition create_market(
 ) -> Future
 ```
 
-**place_bet** - Place a private bet on an outcome (ENHANCED in v4)
+**place_bet** - Place a private bet using Credits record (PRIVACY-FIRST in v6)
 ```leo
 async transition place_bet(
-    public market_id: field,
-    outcome: u8,        // PRIVATE: Not visible in transaction
-    amount: u64,        // PRIVATE: Not visible in transaction
-    nonce: field        // PRIVATE: For bet_id generation
-) -> (Bet, Future)
+    payment: credits.aleo/credits,  // PRIVATE: Credits record (amount hidden)
+    public market_id: field,        // PUBLIC: For routing only
+    outcome: u8,                    // PRIVATE: Not visible in transaction
+    nonce: field                    // PRIVATE: For bet_id generation
+) -> (Bet, credits.aleo/credits, Future)
 ```
 
-**resolve_market** - Resolve market with winning outcome (creator only)
+**resolve_market** - Resolve market with winning outcome (creator or auto-resolve)
 ```leo
-transition resolve_market(
+async transition resolve_market(
     public market_id: field,
-    public winning_outcome: u8,
-    public current_time: u32
+    public winning_outcome: u8
 ) -> Future
 ```
 
-**claim_winnings** - Claim winnings with bet_id
+**claim_winnings** - Claim winnings by consuming Bet record
 ```leo
-transition claim_winnings(
-    public bet_id: field
-) -> (Winnings, Future)
+async transition claim_winnings(
+    bet: Bet
+) -> (Winnings, credits.aleo/credits, Future)
 ```
 
-**claim_two_winnings** - Batch claim 2 winning bets (NEW in v4)
+**claim_two_winnings** - Batch claim 2 winning bets (gas optimization)
 ```leo
 async transition claim_two_winnings(
-    public bet_id_1: field,
-    public bet_id_2: field
-) -> (Winnings, Future)
+    bet1: Bet,
+    bet2: Bet
+) -> (Winnings, credits.aleo/credits, Future)
 ```
+
+**Reputation Functions:**
+- `init_reputation()` - Initialize reputation record
+- `update_reputation_win/loss()` - Update after bet resolution
+- `prove_reputation()` - Generate selective disclosure proof
+- `verify_reputation_proof()` - Verify a reputation proof
+
+**Parlay Functions:**
+- `create_parlay_2/3/4/5()` - Create 2-5 leg parlays (tier-gated)
+- `claim_parlay()` - Claim parlay winnings (all legs must win)
 
 ### Version Changelog
 
-**v4 (zkpredict4.aleo) - February 2026**
-- Privacy Enhancement #1: Private inputs in place_bet transition
-- Privacy Enhancement #4: Batch claiming with claim_two_winnings
-- Gas optimization: ~25% savings when claiming multiple bets
-- Improved metadata privacy (transaction inputs not publicly visible)
+**v6 (zkpredict_v6.aleo) - February 2026**
+- **Wave 2**: Privacy-first refactor addressing Wave 1 judge feedback
+  - Eliminated public input privacy leak (amount extracted from private Credits record)
+  - Removed bet_data mapping - all individual data in private Records only
+  - Private transfers via `transfer_private_to_public()`
+  - Private outcome choices (not public parameters)
+- **Wave 3**: Multi-outcome markets (2-10), category system, auto-resolution
+- **Wave 4**: Reputation system (4 tiers), parlays (2-5 legs), time-weighted betting, batch claiming
+- **Critical Fixes**: 7 production bugs fixed (funds trapped, post-expiration bets, scope violations, parlay validation, pool initialization)
+- **Tech**: 1,300 lines Leo, 1.43M constraints, 36.48 credits deploy
 
-**v3 (zkpredict3.aleo) - January 2026**
-- Bug fixes for multi-outcome markets
-- Fixed pool key generation to include outcome
-- Dynamic odds calculation for all outcomes
-- Enhanced claim_winnings to support 2-255 outcomes
+**v5 (zkpredict_v5.aleo) - February 2026**
+- Wave 3-4 features with 7 critical bugs (immutable, cannot upgrade)
+- Bug: `claim_winnings` never transferred credits (funds trapped)
+- Bug: Markets accepted bets after expiration
+- Bug: Parlay validation failures on optional legs
+- Bug: Pool initialization race conditions
+- Superseded by v6
 
-**v2 (zkpredict2.aleo) - January 2026**
-- Initial public release
+**v2 (zkpredict2.aleo) - January 2026 (Wave 1)**
+- Initial release with privacy leak (public inputs for amount/outcome)
 - Multi-outcome support (2-255 outcomes)
-- Market categories (Sports, Politics, Crypto, Weather, Other)
-- Bet ID system with BHP256 hashing
-- Auto-resolve functionality
-- Double-claim prevention
+- Market categories and bet ID system
+- Judge feedback: "predictions made using public inputs" → Fixed in v6
 
 ---
 
@@ -521,34 +548,35 @@ Create niche markets for your community: tech product launches, social trends, o
 ## Roadmap
 
 ### Phase 1: Foundation (Completed ✅)
-**Status:** v4 Deployed on Aleo TestnetBeta
+**Status:** v6 Deployed on Aleo TestnetBeta
 **Timeline:** Q4 2025 - Q1 2026
 
 **Core Features**
-- Binary and multi-outcome prediction markets (2-255 outcomes)
-- Private betting with Aleo Records
-- Bet ID system for secure claiming
-- Market creation, resolution, and claiming
+- Multi-outcome prediction markets (2-10 outcomes)
+- Privacy-first betting (Credits record-based, no public inputs)
+- Reputation system with 4 tiers and selective disclosure
+- Parlay betting (2-5 legs) with exponential odds
+- Time-weighted betting (early bettor rewards)
+- Batch claiming for gas efficiency
 - Full Zero-Knowledge privacy guarantees
-- ✨ **NEW in v4**: Private transaction inputs (outcome, amount, nonce)
-- ✨ **NEW in v4**: Batch claiming for gas efficiency
 
 **Smart Contract**
-- Leo program v4 deployed (`zkpredict4.aleo`)
-- Private Records (Bet, Winnings)
-- Public Mappings (markets, bet_data, outcome_pools, claimed_bets)
-- BHP256 hash-based bet ID generation
-- Private inputs for enhanced metadata privacy
-- Batch operations with claim_two_winnings
+- Leo program v6 deployed (`zkpredict_v6.aleo`)
+- Private Records (Bet, Parlay, Reputation, Winnings, RepProof)
+- Public Mappings (markets, outcome_pools, claimed_bets/parlays, market_stats)
+- NO bet_data mapping (privacy fix from Wave 1)
+- BHP256 hash-based pool keys
+- Private Credits record transfers
 
 **Frontend**
 - Next.js application with Aleo Wallet Adapter
-- Create markets, place bets, resolve, and claim UI
-- Market browsing with categories
-- Transaction status tracking
-- Batch claiming interface for gas optimization
+- Hybrid on-chain/off-chain architecture (Aleo + Supabase)
+- Market creation wizard (4-step flow)
+- Parlay builder with visual leg selector
+- Reputation dashboard with tier progress
+- Batch claiming interface
 
-**Current Status:** v4 live on testnet with maximum privacy and gas-efficient batch operations.
+**Current Status:** v6 live on testnet with production-ready privacy, 7 critical bugs fixed, comprehensive feature set.
 
 ---
 
