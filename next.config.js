@@ -34,6 +34,10 @@ const nextConfig = {
     Object.assign(fallback, {
       stream: require.resolve('stream-browserify'),
       fs: require.resolve('browserify-fs'),
+      crypto: require.resolve('crypto-browserify'),
+      path: require.resolve('path-browserify'),
+      os: require.resolve('os-browserify/browser'),
+      vm: require.resolve('vm-browserify'),
     });
     config.resolve.fallback = fallback;
     config.plugins = (config.plugins || []).concat([

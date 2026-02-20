@@ -30,6 +30,7 @@
     "@tailwindcss/typography": "0.5.19",
     "browserify-fs": "^1.0.0",
     "classnames": "2.5.1",
+    "crypto-browserify": "^3.12.1",
     "daisyui": "5.5.14",
     "json-rpc-2.0": "^1.6.0",
     "minimatch": "^10.1.1",
@@ -37,6 +38,8 @@
     "next-pwa": "5.6.0",
     "next-seo": "6.6.0",
     "next-themes": "0.4.6",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "react": "19.0.0",
     "react-dom": "19.0.0",
@@ -44,6 +47,7 @@
     "react-use": "17.6.0",
     "stream-browserify": "^3.0.0",
     "swiper": "12.0.3",
+    "vm-browserify": "^1.1.2",
     "webpack": "^5.104.1"
   },
   "devDependencies": {

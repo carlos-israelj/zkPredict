@@ -53,7 +53,7 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
         <Hydrate state={pageProps.dehydratedState}>
           <WalletProvider
             wallets={wallets}
-            decryptPermission={DecryptPermission.UponRequest}
+            decryptPermission={DecryptPermission.OnChainHistory}
             network={WalletAdapterNetwork.TestnetBeta}
             autoConnect
           >
