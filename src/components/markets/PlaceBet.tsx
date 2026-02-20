@@ -3,6 +3,7 @@ import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
 import { Transaction } from '@demox-labs/aleo-wallet-adapter-base';
 import { Market, OddsData, getTransactionExplorerUrl } from '@/types';
 import { generateCreditsRecord, waitForTransactionConfirmation, getEstimatedConfirmationTime } from '@/utils/creditsHelper';
+import { decryptRecord, isValidViewKey, isValidRecordCiphertext } from '@/utils/recordDecryption';
 
 const QUICK_BET_PERCENTAGES = [
   { label: '10%', value: 0.1 },
@@ -33,6 +34,9 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
   const [recordGenerationTxId, setRecordGenerationTxId] = useState<string | null>(null);
   const [isFetchingRecords, setIsFetchingRecords] = useState(false);
   const [availableRecords, setAvailableRecords] = useState<any[]>([]);
+  const [encryptedRecord, setEncryptedRecord] = useState('');
+  const [viewKey, setViewKey] = useState('');
+  const [isDecrypting, setIsDecrypting] = useState(false);
 
   // Fetch wallet balance from Aleo blockchain
   useEffect(() => {
@@ -107,6 +111,57 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
     setOddsData(calculatedOdds);
   }, [pools]);
 
+  const handleDecryptRecord = async () => {
+    const encryptedTrimmed = encryptedRecord.trim();
+    const viewKeyTrimmed = viewKey.trim();
+
+    // Validate inputs
+    if (!encryptedTrimmed) {
+      alert('Please paste your encrypted record (starts with "record1...")');
+      return;
+    }
+
+    if (!viewKeyTrimmed) {
+      alert('Please enter your View Key (starts with "AViewKey1...")');
+      return;
+    }
+
+    if (!isValidRecordCiphertext(encryptedTrimmed)) {
+      alert('Invalid encrypted record format. Must start with "record1" and be a valid ciphertext.');
+      return;
+    }
+
+    if (!isValidViewKey(viewKeyTrimmed)) {
+      alert('Invalid View Key format. Must start with "AViewKey1".');
+      return;
+    }
+
+    setIsDecrypting(true);
+
+    try {
+      // Decrypt the record using the view key
+      const decryptedRecord = await decryptRecord(encryptedTrimmed, viewKeyTrimmed);
+
+      // Convert decrypted record to JSON string format expected by wallet adapter
+      const recordJson = JSON.stringify(decryptedRecord, null, 2);
+
+      // Set the decrypted record in the credits record field
+      setCreditsRecord(recordJson);
+
+      alert('Record decrypted successfully! You can now place your bet.');
+
+      // Clear the encrypted record and view key fields for security
+      setEncryptedRecord('');
+      setViewKey('');
+    } catch (error) {
+      console.error('Error decrypting record:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert(`Failed to decrypt record: ${errorMessage}\n\nPlease check that your View Key is correct and that the encrypted record is valid.`);
+    } finally {
+      setIsDecrypting(false);
+    }
+  };
+
   const handlePlaceBet = async () => {
     if (!publicKey || !requestTransaction) {
       alert('Please connect your wallet first');
@@ -119,9 +174,10 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
       return;
     }
 
-    // Basic validation: must be an encrypted record ciphertext
-    if (!recordTrimmed.startsWith('record1')) {
-      alert('Invalid Credits record format. It should start with "record1"');
+    // Basic validation: must be JSON or decrypted record format
+    // After decryption, the record will be in JSON format
+    if (!recordTrimmed.startsWith('{')) {
+      alert('Invalid Credits record format. Please use the decryption feature if you have an encrypted record.');
       return;
     }
 
@@ -250,13 +306,24 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
     setAvailableRecords([]);
 
     try {
+      console.log('Requesting records from wallet...');
+
       // Request credits records from the wallet
       const records = await requestRecords('credits.aleo');
+
+      console.log('Records received from wallet:', records);
 
       if (!records || records.length === 0) {
         alert(
           'No credits records found in your wallet.\n\n' +
-          'Click "Generate Credits Record" to create one first.'
+          'This could mean:\n' +
+          '1. Your wallet does not support requestRecords() yet\n' +
+          '2. You need to generate a credits record first\n\n' +
+          'Please use the manual method:\n' +
+          '1. Click "Generate New Credits Record"\n' +
+          '2. Wait ~10 seconds for confirmation\n' +
+          '3. Click "View Transaction" and copy the record from the OUTPUTS section\n' +
+          '4. Paste it in the field below'
         );
         return;
       }
@@ -270,6 +337,8 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
           return bAmount - aAmount;
         });
 
+      console.log('Filtered credits records:', creditsRecords);
+
       if (creditsRecords.length === 0) {
         alert('No credits records available in your wallet.');
         return;
@@ -280,7 +349,12 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
     } catch (error) {
       console.error('Error fetching records from wallet:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      alert(`Failed to fetch records from wallet: ${errorMessage}`);
+      alert(
+        `Failed to fetch records from wallet.\n\n` +
+        `Error: ${errorMessage}\n\n` +
+        `Your wallet may not support this feature yet.\n` +
+        `Please use the manual method instead.`
+      );
     } finally {
       setIsFetchingRecords(false);
     }
@@ -675,11 +749,82 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
                 )}
               </div>
 
-              <div className="divider text-xs text-base-content/50">OR paste manually</div>
+              <div className="divider text-xs text-base-content/50">OR decrypt encrypted record</div>
+            </div>
+
+            {/* Decrypt Encrypted Record Section */}
+            <div className="mt-4 mb-6">
+              <div className="alert alert-warning mb-4">
+                <div className="flex flex-col gap-2 w-full text-sm">
+                  <div className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <strong>Security Warning</strong>
+                  </div>
+                  <p className="text-xs">
+                    Entering your View Key allows decrypting your private records. Never share your View Key with untrusted applications.
+                    This feature runs entirely in your browser - your View Key is not sent to any server.
+                  </p>
+                </div>
+              </div>
+
+              <div className="form-control w-full mb-3">
+                <label className="label">
+                  <span className="label-text font-medium">Encrypted Record</span>
+                  <span className="label-text-alt opacity-60">From blockchain explorer (starts with "record1...")</span>
+                </label>
+                <textarea
+                  placeholder='record1qvqspd...'
+                  className="textarea textarea-bordered font-mono text-xs h-20 w-full"
+                  value={encryptedRecord}
+                  onChange={(e) => setEncryptedRecord(e.target.value)}
+                />
+                {encryptedRecord && !encryptedRecord.trim().startsWith('record1') && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">Invalid format - must start with "record1"</span>
+                  </label>
+                )}
+              </div>
+
+              <div className="form-control w-full mb-4">
+                <label className="label">
+                  <span className="label-text font-medium">Your View Key</span>
+                  <span className="label-text-alt opacity-60">From wallet (starts with "AViewKey1...")</span>
+                </label>
+                <input
+                  type="password"
+                  placeholder='AViewKey1...'
+                  className="input input-bordered font-mono text-xs w-full"
+                  value={viewKey}
+                  onChange={(e) => setViewKey(e.target.value)}
+                />
+                {viewKey && !viewKey.trim().startsWith('AViewKey1') && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">Invalid format - must start with "AViewKey1"</span>
+                  </label>
+                )}
+                <label className="label">
+                  <span className="label-text-alt text-xs opacity-70">
+                    Find your View Key in Leo Wallet: Settings → View Key
+                  </span>
+                </label>
+              </div>
+
+              <button
+                className={`btn btn-primary w-full ${isDecrypting ? 'loading' : ''}`}
+                onClick={handleDecryptRecord}
+                disabled={isDecrypting || !encryptedRecord || !viewKey}
+                type="button"
+              >
+                {isDecrypting ? 'Decrypting...' : 'Step 1c: Decrypt Record'}
+              </button>
             </div>
 
             {/* Manual Credits Record Input */}
             <div className="mt-4">
+              <div className="divider text-xs text-base-content/50">Decrypted record will appear below</div>
+
               <button
                 className="btn btn-sm btn-ghost mb-2"
                 onClick={() => setShowInstructions(!showInstructions)}
@@ -722,18 +867,20 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
 
               <div className="form-control w-full">
                 <label className="label">
-                  <span className="label-text font-medium">Paste Your Credits Record</span>
-                  <span className="label-text-alt opacity-60">Encrypted record from transaction</span>
+                  <span className="label-text font-medium">Decrypted Record (JSON format)</span>
+                  <span className="label-text-alt opacity-60">Will be populated after decryption</span>
                 </label>
                 <textarea
-                  placeholder='record1qvqsq...'
+                  placeholder='{ "owner": "aleo1...", "microcredits": "1000000u64", ... }'
                   className="textarea textarea-bordered font-mono text-xs h-32 w-full"
                   value={creditsRecord}
                   onChange={(e) => setCreditsRecord(e.target.value)}
                 />
-                {creditsRecord && !creditsRecord.trim().startsWith('record1') && (
+                {creditsRecord && !creditsRecord.trim().startsWith('{') && (
                   <label className="label">
-                    <span className="label-text-alt text-error">Invalid format - must start with "record1"</span>
+                    <span className="label-text-alt text-warning">
+                      Record should be in decrypted JSON format. Use the decryption feature above if you have an encrypted record.
+                    </span>
                   </label>
                 )}
               </div>
