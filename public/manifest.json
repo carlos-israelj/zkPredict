@@ -1,6 +1,7 @@
 {
   "name": "zkPredict - Private Prediction Markets",
   "short_name": "zkPredict",
+  "version": "1.0.1",
   "description": "Zero-Knowledge Private Prediction Markets on Aleo blockchain",
   "start_url": "/",
   "display": "standalone",
