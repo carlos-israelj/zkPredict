@@ -23,7 +23,7 @@ const shapes: Record<ShapeNames, string[]> = {
 const variants: Record<VariantNames, string[]> = {
   ghost: ['bg-transparent'],
   solid: ['text-brand'],
-  transparent: ['bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800'],
+  transparent: ['bg-transparent hover:bg-gray-50'],
 };
 const colors: Record<ColorNames, string[]> = {
   primary: ['text-brand', 'bg-brand', 'border-brand'],
@@ -108,7 +108,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         buttonColorClassNames = `${colorClassNames[0]} ${
           disabled || isLoading
             ? ''
-            : 'hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800'
+            : 'hover:bg-gray-100 focus:bg-gray-100'
         } `;
         buttonDripColor = 'rgba(0, 0, 0, 0.1)';
         break;

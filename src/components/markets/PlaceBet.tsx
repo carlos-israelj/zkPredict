@@ -451,7 +451,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
           </div>
 
           <h2 className="card-title text-3xl mb-2">Bet Placed Successfully!</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-gray-600 mb-4">
             Your bet has been submitted to the Aleo blockchain.
           </p>
 
@@ -518,7 +518,7 @@ export default function PlaceBet({ market, pools }: PlaceBetProps) {
           </div>
 
           {/* Info Message */}
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-xl">
+          <div className="text-sm text-gray-500 mb-6 max-w-xl">
             <strong>Note:</strong> Pool balances will update once the transaction is confirmed (3-5 minutes).
           </div>
 

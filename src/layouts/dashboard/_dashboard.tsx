@@ -28,7 +28,7 @@ export function Header() {
     <nav
       className={`fixed top-0 z-30 w-full transition-all duration-300 ltr:right-0 rtl:left-0 ltr:xl:pl-72 rtl:xl:pr-72 ltr:2xl:pl-80 rtl:2xl:pr-80 ${
         isMounted && windowScroll.y > 10
-          ? 'h-16 bg-gradient-to-b from-white to-white/80 shadow-card backdrop-blur dark:from-dark dark:to-dark/80 sm:h-20'
+          ? 'h-16 bg-gradient-to-b from-white to-white/80 shadow-card backdrop-blur sm:h-20'
           : 'h-16 sm:h-24'
       }`}
     >

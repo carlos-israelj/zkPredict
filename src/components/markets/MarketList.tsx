@@ -155,8 +155,8 @@ export default function MarketList({ markets, poolsMap }: MarketListProps) {
         </div>
       ) : (
         <div className="text-center py-10 sm:py-12" role="status">
-          <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">No markets found</p>
-          <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-500 mt-2">
+          <p className="text-gray-500 text-sm sm:text-base">No markets found</p>
+          <p className="text-xs sm:text-sm text-gray-400 mt-2">
             Try adjusting your filters or search query
           </p>
         </div>

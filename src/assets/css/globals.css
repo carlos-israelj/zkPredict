@@ -119,35 +119,6 @@
     --color-brand: 6 182 212;
   }
 
-  /* Custom DaisyUI Theme: zkpredict-dark */
-  [data-theme="zkpredict-dark"], [data-theme="dark"] {
-    color-scheme: dark;
-    --b1: 8 10 20; /* Deep space blue-black */
-    --b2: 15 18 32; /* Slightly lighter */
-    --b3: 22 26 44; /* Card backgrounds */
-    --bc: 226 232 240; /* Text color */
-    --p: 6 182 212; /* Primary - Cyan */
-    --pc: 8 10 20; /* Primary content */
-    --s: 251 191 36; /* Secondary - Amber */
-    --sc: 8 10 20;
-    --a: 167 139 250; /* Accent - Purple */
-    --ac: 8 10 20;
-    --n: 30 35 55;
-    --nc: 226 232 240;
-    --in: 59 130 246; /* Info - Blue */
-    --su: 52 211 153; /* Success - Emerald */
-    --wa: 251 191 36; /* Warning - Amber */
-    --er: 248 113 113; /* Error - Red */
-    --rounded-box: 0.75rem;
-    --rounded-btn: 0.5rem;
-    --rounded-badge: 0.5rem;
-    --animation-btn: 0.25s;
-    --animation-input: 0.2s;
-    --btn-focus-scale: 0.98;
-    --border-btn: 1px;
-    --tab-border: 1px;
-  }
-
   /* Custom DaisyUI Theme: zkpredict-light */
   [data-theme="zkpredict-light"], [data-theme="light"] {
     color-scheme: light;
@@ -442,7 +413,7 @@ Styles for Swiper slider
 }
 
 .swiper-scrollbar {
-  @apply relative bg-gray-200 rounded dark:bg-gray-600;
+  @apply relative bg-gray-200 rounded;
 }
 
 .swiper-horizontal > .swiper-scrollbar {
@@ -454,7 +425,7 @@ Styles for Swiper slider
 }
 
 .swiper-scrollbar-drag {
-  @apply relative bg-gray-900 rounded dark:bg-gray-700;
+  @apply relative bg-gray-900 rounded;
 }
 
 .swiper-horizontal .swiper-scrollbar-drag {

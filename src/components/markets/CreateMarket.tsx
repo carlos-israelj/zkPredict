@@ -157,7 +157,7 @@ export default function CreateMarket() {
           </div>
 
           <h2 className="card-title text-3xl mb-2">Market Created Successfully!</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-gray-600 mb-6">
             Your market has been submitted to the Aleo blockchain.
           </p>
 
@@ -182,7 +182,7 @@ export default function CreateMarket() {
           </div>
 
           {/* Info Message */}
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-xl">
+          <div className="text-sm text-gray-500 mb-6 max-w-xl">
             <strong>Note:</strong> Your market will appear in the list once the transaction is confirmed
             (usually 3-5 minutes). Pool data will be available after confirmation.
           </div>
@@ -602,7 +602,7 @@ export default function CreateMarket() {
             </svg>
             <div className="flex-1">
               <h4 className="font-semibold mb-1">Privacy-Preserving Prediction Markets</h4>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-gray-600">
                 zkPredict uses Aleo's zero-knowledge technology to protect sensitive betting information
               </p>
             </div>
@@ -686,7 +686,7 @@ export default function CreateMarket() {
           </div>
 
           <div className="mt-3 pt-3 border-t border-base-content/10">
-            <p className="text-xs text-gray-600 dark:text-gray-400">
+            <p className="text-xs text-gray-600">
               <strong>Note:</strong> Market title and description are stored off-chain for better UX and are not part of the blockchain state.
             </p>
           </div>

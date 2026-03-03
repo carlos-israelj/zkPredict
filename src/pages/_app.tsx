@@ -5,7 +5,6 @@ import { useState } from 'react';
 import Head from 'next/head';
 import { Hydrate, QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
-import { ThemeProvider } from 'next-themes';
 
 // Import Aleo Wallet Adapter dependencies
 import { AleoWalletProvider } from '@provablehq/aleo-wallet-adaptor-react';
@@ -61,9 +60,7 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
             onError={(error) => console.error('[Wallet Error]', error.message)}
           >
             <WalletModalProvider>
-              <ThemeProvider attribute="data-theme" enableSystem={true} defaultTheme="dark">
-                {getLayout(<Component {...pageProps} />)}
-              </ThemeProvider>
+              {getLayout(<Component {...pageProps} />)}
             </WalletModalProvider>
           </AleoWalletProvider>
         </Hydrate>

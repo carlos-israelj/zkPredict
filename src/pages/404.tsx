@@ -19,10 +19,10 @@ const ErrorPage: NextPageWithLayout = () => {
         <div className="relative w-52 max-w-full sm:w-[400px] xl:w-[450px] 3xl:w-[500px]">
         </div>
 
-        <h2 className="mt-5 mb-2 text-base font-medium uppercase tracking-wide text-gray-900 dark:text-white sm:mt-10 sm:mb-4 sm:text-xl 3xl:mt-12 3xl:text-2xl">
+        <h2 className="mt-5 mb-2 text-base font-medium uppercase tracking-wide text-gray-900 sm:mt-10 sm:mb-4 sm:text-xl 3xl:mt-12 3xl:text-2xl">
           Error! No Result Found
         </h2>
-        <p className="mb-4 max-w-full text-xs leading-loose tracking-tight text-gray-600 dark:text-gray-400 sm:mb-6 sm:w-[430px] sm:text-sm sm:leading-loose">
+        <p className="mb-4 max-w-full text-xs leading-loose tracking-tight text-gray-600 sm:mb-6 sm:w-[430px] sm:text-sm sm:leading-loose">
           Sorry, the page you are looking for might be renamed, removed, or
           might never exist.
         </p>
